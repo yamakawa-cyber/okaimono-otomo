@@ -51,7 +51,7 @@ function aiView(r){
  if(r.kind==='hacks')return `<div class="card">${badge()}<b>${esc(r.title)}</b>${r.items.map(i=>`<div class="hack"><span class="tag">${esc(i.about)}</span> ${esc(i.tip)}</div>`).join('')}</div>`;
  if(r.kind==='advise')return `<div class="card">${badge()}<b>${esc(r.title)}</b><p>${esc(r.summary)}</p><b>必要なこと</b><ul>${r.needs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><b>進め方</b><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><div class="muted">費用：${esc(r.cost)}</div></div>`;
  return ''}
-function lessonView(rc){const n=rc.steps.length,i=AI.step;
+var lessonView=function(rc){const n=rc.steps.length,i=AI.step;
  if(i<0)return '';const head=`<div class="card">${badge()}<b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves)}・${esc(rc.time)}</span><div class="bar"><div style="width:${(i+1)/(n+1)*100}%"></div></div></div>`;
  if(i===0&&!AI.started)return head+`<div class="card lesson"><h2>まずは材料をそろえよう</h2><ul class="chk">${rc.ingredients.map(x=>`<li><input type="checkbox"><span>${esc(x)}</span></li>`).join('')}</ul><div class="row"><button class="sub" onclick="AI.lesson=false;render()">もどる</button><button onclick="AI.started=true;render()">そろった！始める</button></div></div>`;
  const s=rc.steps[i];
@@ -69,5 +69,76 @@ const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep
  advise:r=>isStr(r.summary)&&isArr(r.needs)&&isArr(r.steps),chat:r=>isStr(r.reply)};
 function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='AIの答え';return r}
 function aiImport(ev){const inp=ev.target,f=inp.files[0];if(!f)return;f.text().then(t=>{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
- if(r.kind==='receipt')return rcImport([r]);if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}location.hash='#ai';render()})
+ const hid=histAdd(r,'file');if(r.kind==='receipt')return rcImport([r]);AT.open=hid;AT.lesson=null;location.hash='#ai';render()})
  .catch(e=>alert('読めませんでした：'+e.message)).finally(()=>{inp.value=''})}
+// ===== v14：AIタブ（ワンタップ相談・返事の保管庫・料理レッスン）。見本は ?demo=1 のときだけ =====
+AISHAPE.recipe=r=>isStr(r.name)&&isArr(r.ingredients)&&r.ingredients.every(isStr)&&isArr(r.steps)&&r.steps.length>0&&r.steps.every(x=>isObj(x)&&isStr(x.t)&&isStr(x.d));
+const HK=IS_DEMO?'okaimono_hist_demo':'okaimono_hist',HIST_MAX=150,HIST_BYTES=1500000;
+const KLABEL={menu:'🍳 献立',recipe:'🥘 レシピ',shop:'🛒 買い物',money:'💰 家計',hacks:'💡 こつ',advise:'🧭 相談',chat:'💬 ひとこと',receipt:'🧾 レシート'};
+function hist(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return isArr(a)?a.filter(e=>isObj(e)&&isStr(e.id)&&isObj(e.item)&&AISHAPE[e.item.kind]):[]}catch(e){return []}}
+function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));localStorage.setItem(HK,JSON.stringify(a))}}
+function histTitle(r){return r.kind==='receipt'?`${r.store}（${yen(r.total)}）`:r.kind==='recipe'?r.name:r.kind==='chat'?String(r.reply).slice(0,40):(r.title||KLABEL[r.kind])}
+function histAdd(item,src){if(!isObj(item)||!AISHAPE[item.kind])return null;const sig=JSON.stringify(item);const a=hist();const old=a.find(e=>e.sig===sig);if(old)return old.id;
+ const e={id:'h'+uid(),at:new Date().toISOString(),src:src||'',sig,item};a.unshift(e);saveHist(a);return e.id}
+let AT={filter:'',open:null,lesson:null,step:0,checked:{},timer:null};
+const QUICK=[['menu','🍳 冷蔵庫で今夜の献立','冷蔵庫にあるもので、今夜の献立を考えて。作り方（レシピ）も1品つけてね。'],
+ ['menu','🥡 作り置きプラン','今週の作り置きプランを考えて。日持ちの目安と、1品は作り方（レシピ）もつけてね。'],
+ ['shop','🛒 特売で買い物リスト','きょう・次の買い物日の特売に合わせて、予算内の買い物リストを作って。'],
+ ['money','💰 今週の出費どう？','今週と今月の出費を見て、使いすぎていないか、来週どうすればいいか教えて。'],
+ ['hacks','💡 節約ワザ','最近買ったものや冷蔵庫のもので使える、節約のこつ・ライフハックを教えて。'],
+ ['receipt','🧾 レシート読み取り','']];
+function quickAsk(i){const [t,,q]=QUICK[i];
+ if(IS_DEMO){if(t==='receipt')return alert('見本モードではレシートを送りません');AI.mode=t;return aiAsk().then(()=>{if(AI.res){AT.open='demo';render()}})}
+ CON.open=true;CON.from=location.hash||'#ai';CON.type=t;CON.q=q;CON.status='';
+ if(t==='receipt'){CON.stage='form';render();scrollTo(0,0);const f=document.getElementById('rc_file');if(f&&secret().url)f.click();return}
+ CON.stage='confirm';render();scrollTo(0,0)}
+function histOpen(id){AT.open=id;AT.lesson=null;render();scrollTo(0,0)}
+function histDel(id){if(!confirm('この答えを保管庫から消しますか？'))return;saveHist(hist().filter(e=>e.id!==id));if(AT.open===id)AT.open=null;render()}
+function receiptView(r){const g=rcGroups(r);return `<div class="card"><b>🧾 ${esc(r.store)}</b> <span class="muted">${esc(r.date)}・合計 ${yen(r.total)}</span><table>${r.items.map(i=>`<tr><td>${esc(i.name)}<div class="muted">${esc(rcCat(i.category))}</div></td><td>${yen(i.price)}</td></tr>`).join('')}</table>
+ <b>費目別</b><table>${g.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${yen(v)}</td></tr>`).join('')}</table>${rcDup(r)?'<div class="muted">家計簿に取り込み済み</div>':`<div class="row"><button onclick="histToSpend()">家計簿に入れる</button></div>`}</div>`}
+function histToSpend(){const e=hist().find(x=>x.id===AT.open);if(!e)return;const k='hist'+uid();INBOX.push({key:k,id:null,item:e.item,err:''});rcApply([k])}
+function curItem(){if(AT.open==='demo')return AI.res;const e=hist().find(x=>x.id===AT.open);return e?e.item:null}
+function recipeOf(r){return r.kind==='recipe'?r:r.kind==='menu'?r.recipe:null}
+function startLesson(){const r=curItem(),rc=r&&recipeOf(r);if(!rc)return;AT.lesson=rc;AT.step=-1;AT.checked={};timerStop();wakeOn();render();scrollTo(0,0)}
+function endLesson(){AT.lesson=null;timerStop();wakeOff();render()}
+// 画面を消さない（Wake Lock）
+let WAKE=null;async function wakeOn(){try{if('wakeLock' in navigator&&!WAKE){WAKE=await navigator.wakeLock.request('screen');WAKE.addEventListener('release',()=>{WAKE=null})}}catch(e){}}
+function wakeOff(){try{if(WAKE)WAKE.release()}catch(e){}WAKE=null}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&AT.lesson)wakeOn()});
+// タイマー
+let TM={left:0,run:false,h:null,step:-2};
+function timerStop(){clearInterval(TM.h);TM.run=false;TM.h=null}
+function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function timerShow(){const el=document.getElementById('lt_time');if(el)el.textContent=fmt(TM.left);const b=document.getElementById('lt_btn');if(b)b.textContent=TM.run?'⏸ 止める':'▶ スタート'}
+function timerToggle(){if(TM.run){timerStop();return timerShow()}if(TM.left<=0)return;TM.run=true;const end=Date.now()+TM.left*1000;
+ TM.h=setInterval(()=>{TM.left=Math.max(0,Math.round((end-Date.now())/1000));timerShow();if(TM.left<=0){timerStop();timerShow();ding()}},250);timerShow()}
+function timerReset(){timerStop();const s=AT.lesson&&AT.lesson.steps[AT.step];TM.left=Math.round((s&&Number(s.min)>0?Number(s.min):0)*60);timerShow()}
+function ding(){try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}catch(e){}
+ try{const C=window.AudioContext||window.webkitAudioContext;const c=new C();[0,0.5,1].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0.3,c.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+0.4);o.start(c.currentTime+t);o.stop(c.currentTime+t+0.45)})}catch(e){}
+ const el=document.getElementById('lt_time');if(el)el.textContent='⏰ 時間です！'}
+function goStep(n){const rc=AT.lesson;AT.step=Math.max(-1,Math.min(rc.steps.length-1,n));timerStop();TM.step=-2;render();scrollTo(0,0)}
+lessonView=function(rc){const n=rc.steps.length,i=AT.step;
+ const head=`<div class="card"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}${rc.time?'・'+esc(rc.time):''}</span><div class="bar"><div style="width:${(i+1)/n*100}%"></div></div><div class="muted">${WAKE?'💡 画面がつきっぱなしになります':''}</div></div>`;
+ if(i<0)return head+`<div class="card lesson"><h2>材料をそろえよう</h2><ul class="chk">${rc.ingredients.map((x,k)=>`<li><input type="checkbox" ${AT.checked[k]?'checked':''} onchange="AT.checked[${k}]=this.checked"><span class="big">${esc(x)}</span></li>`).join('')}</ul>
+  <div class="row"><button class="sub" onclick="endLesson()">やめる</button><button onclick="goStep(0)">はじめる →</button></div></div>`;
+ const s=rc.steps[i];if(TM.step!==i){TM.step=i;TM.left=Math.round((Number(s.min)>0?Number(s.min):0)*60)}
+ return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}</div><h2>${esc(s.t)}</h2><p class="big">${esc(s.d)}</p>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}
+ ${Number(s.min)>0?`<div class="timer"><span id="lt_time" class="tbig">${fmt(TM.left)}</span><div class="row"><button id="lt_btn" onclick="timerToggle()">${TM.run?'⏸ 止める':'▶ スタート'}</button><button class="sub" onclick="timerReset()">↺</button></div></div>`:''}
+ <div class="row"><button class="sub" onclick="goStep(${i-1})">← もどる</button>${i<n-1?`<button onclick="goStep(${i+1})">つぎへ →</button>`:`<button onclick="endLesson();alert('できあがり！おつかれさま')">できあがり 🎉</button>`}</div></div>`};
+V.ai=function(){
+ if(AT.lesson)return lessonView(AT.lesson);
+ let h='';
+ if(IS_DEMO)h+=`<div class="card sample">🧪 見本モード：ここに出る答えは見本です（保管庫は本データと別）。</div>`;
+ if(AT.open){const r=curItem();if(r){const rc=recipeOf(r);
+  h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" onclick="histDel('${esc(AT.open)}')">🗑 消す</button>`:''}</div>`;
+  h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${r.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
+  if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div>`;return h}AT.open=null}
+ h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div>
+ <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
+ const all=hist(),kinds=[...new Set(all.map(e=>e.item.kind))],list=all.filter(e=>!AT.filter||e.item.kind===AT.filter);
+ h+=`<h2>返事の保管庫 <span class="muted">${all.length}件</span></h2>`;
+ if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" onclick="AT.filter='${k}';render()">${KLABEL[k]||k}</button>`).join('')}</div>`;
+ h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" onclick="histOpen('${e.id}')"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" onclick="histOpen('${e.id}')">ひらく</button><button class="sub" onclick="histDel('${e.id}')" aria-label="消す">🗑</button></div>`).join('')
+  :`<div class="card muted">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
+ h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
+ return h};

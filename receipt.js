@@ -27,7 +27,7 @@ let fetching=false;
 async function fetchReplies(manual){const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
  if(!p.length){if(manual){INBOX_ST='待っている返事はありません';render()}return}
  fetching=true;try{const r=await fetch(b+'/replies?ids='+p.map(x=>x.id).join(','),{headers:{'X-App-Pass':secret().key}});if(!r.ok)throw new Error('受け取りエラー（'+r.status+'）');
-  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;x.items.forEach((it,k)=>{const key=x.id+'#'+k;if(INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it)}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
+  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;x.items.forEach((it,k)=>{const key=x.id+'#'+k;if(INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
   INBOX_ST=n?'':(manual?'まだ返事は届いていません':INBOX_ST)}
  catch(e){if(manual)INBOX_ST='返事を確かめられませんでした：'+e.message}finally{fetching=false;render()}}
 async function ackId(id){if(!id||INBOX.some(e=>e.id===id))return;savePending(pending().filter(x=>x.id!==id));const b=relayBase();if(!b)return;
@@ -43,7 +43,7 @@ function rcApply(keys){let n=0,sk=0;INBOX.filter(e=>keys.includes(e.key)&&!e.err
  save();dropInbox(keys);alert(`家計簿に${n}枚分を入れました`+(sk?`（同じレシート${sk}枚は入れませんでした）`:''))}
 function rcImport(arr){arr.forEach((r,k)=>INBOX.push({key:'paste'+uid()+'#'+k,id:null,item:r,err:''}));CON.open=false;location.hash='#home';render()}
 function openReply(key){const e=INBOX.find(x=>x.key===key);if(!e||e.err)return;const r=e.item;
- if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}dropInbox([key]);location.hash='#ai';render()}
+ AT.open=histAdd(r,'reply');AT.lesson=null;dropInbox([key]);location.hash='#ai';render()}
 function inboxHtml(){if(IS_DEMO)return '';if(!INBOX.length)return INBOX_ST?`<div class="card tip">${esc(INBOX_ST)}</div>`:'';
  const rc=INBOX.filter(e=>!e.err&&e.item.kind==='receipt'),other=INBOX.filter(e=>!(!e.err&&e.item.kind==='receipt'));
  let h=`<div class="card inbox"><b>📩 アキラちゃんから返事（${INBOX.length}件）</b>`;
@@ -54,7 +54,7 @@ function inboxHtml(){if(IS_DEMO)return '';if(!INBOX.length)return INBOX_ST?`<div
    <div class="row"><button class="sub" onclick="dropInbox(['${e.key}'])">入れない</button>${rcDup(r)?'':`<button onclick="rcApply(['${e.key}'])">これを家計簿に入れる</button>`}</div></div>`}).join('');
   if(okKeys.length>1)h+=`<div class="row"><button onclick="rcApply(${esc(JSON.stringify(okKeys))})">まとめて家計簿に入れる（${okKeys.length}枚）</button></div>`}
  h+=other.map(e=>e.err?`<div class="err">読めない返事がありました（${esc(e.err)}）<button class="sub" onclick="dropInbox(['${e.key}'])">消す</button></div>`
-  :`<div class="rcprev">${esc({menu:'🍳 献立',shop:'🛒 買い物リスト',money:'💰 節約',hacks:'💡 ライフハック',advise:'🧭 やりたいこと',chat:'💬 ひとこと'}[e.item.kind]||e.item.kind)}：<b>${esc(e.item.title||'')}</b>${e.item.kind==='chat'?`<div>${esc(String(e.item.reply).slice(0,200))}</div>`:''}
+  :`<div class="rcprev">${esc(KLABEL[e.item.kind]||e.item.kind)}：<b>${esc(histTitle(e.item))}</b>${e.item.kind==='chat'?`<div>${esc(String(e.item.reply).slice(0,200))}</div>`:''}
    <div class="row"><button class="sub" onclick="dropInbox(['${e.key}'])">消す</button><button onclick="openReply('${e.key}')">ひらく</button></div></div>`).join('');
  return h+'</div>'}
 for(const t of ['home','fridge','list','money','ai','stores','settings'])if(V[t]){const f=V[t];V[t]=function(){return inboxHtml()+f.apply(this,arguments)}}

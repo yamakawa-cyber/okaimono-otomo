@@ -119,7 +119,7 @@ settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 
  <h2>冷蔵庫点検の曜日</h2><div class="seg">${WD.map((w,i)=>`<button class="${st.fridgeDay===i?'on':''}" onclick="S.settings.fridgeDay=${i};save();render()">${w}</button>`).join('')}</div>
  <h2>予算</h2><div class="card">1回の買い物 <input type="number" value="${st.perTrip}" onchange="S.settings.perTrip=+this.value||9000;save()"> 円<br>月の予算 <input type="number" value="${st.monthly}" onchange="S.settings.monthly=+this.value||100000;save()"> 円
  <div class="muted">費目別の月予算：${CATS.map(([k,b])=>k+' '+yen(b)).join('、')}</div></div>
- <h2>AI</h2><div class="card">中継サーバーのURL（空なら見本モード）<input id="relay" placeholder="https://…workers.dev" value="${esc(st.aiRelay||'')}" style="width:100%" onchange="setRelay(this.value)">
+ <h2>AI</h2><div class="card">（旧方式）AI中継サーバーのURL（ふだんは空のままでOK。相談は下の「アキラちゃんに相談」を使います）<input id="relay" placeholder="https://…workers.dev" value="${esc(st.aiRelay||'')}" style="width:100%" onchange="setRelay(this.value)">
  <div class="muted">APIキーはアプリに入れません。キーは中継サーバーだけが持ちます。</div>
  <div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike">AIの答えを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div></div>
  <h2>バックアップ</h2><div class="card">${bkDue()?'<div class="tip">⚠️ 最後のバックアップから1週間たちました。書き出しておきましょう。</div>':''}<div class="muted">最後のバックアップ：${S.lastBackup?md(S.lastBackup):'まだ'}</div>
@@ -165,8 +165,8 @@ window.addEventListener('hashchange',render);
 Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json())]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
  const q=new URLSearchParams(location.search);if(IS_DEMO)demo();render();if(q.get('ai'))setTimeout(()=>aiDemo(q),50)}).catch(e=>{$('#view').innerHTML='データを読めませんでした：'+esc(e)});
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}
-async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();return}
- await aiAsk();if(q.has('lesson')){AI.lesson=true;AI.started=+q.get('lesson')>0;AI.step=Math.max(0,+q.get('lesson')-1);render()}}
+async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();AT.open='demo';render();return}
+ await aiAsk();AT.open='demo';render();if(q.has('lesson')){startLesson();goStep(+q.get('lesson')-1)}}
 function menuArr(){if(isArr(S.menu)&&S.menu.length===7)return S.menu;const a=['','','','','','',''];String(S.menu||'').split('\n').forEach(l=>{const m=l.match(/^([日月火水木金土])[：:](.*)$/);if(m)a[WD.indexOf(m[1])]=m[2].trim()});return a}
 function setMenu(w,v){const a=menuArr().slice();a[w]=v;S.menu=a;save()}
 function bkDue(){return !S.lastBackup||(today()-new Date(S.lastBackup+'T12:00'))>7*864e5}

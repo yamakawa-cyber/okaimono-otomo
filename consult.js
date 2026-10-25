@@ -1,7 +1,7 @@
 'use strict';
 // 「アキラちゃんに相談」：受け取りURLへ JSON をPOSTする。送信キーは localStorage の別キーだけに保存（バックアップに含めない）。
 const SK='okaimono_secret';
-const CTYPES=[['menu','献立・作り置き'],['lesson','レシピレッスン'],['shop','買い物リスト'],['money','節約アドバイス'],['hacks','ライフハック'],['advise','やりたいこと相談'],['receipt','レシート読み取り'],['chat','雑談']];
+const CTYPES=[['menu','献立・作り置き'],['lesson','レシピレッスン'],['shop','買い物リスト'],['money','節約アドバイス'],['hacks','ライフハック'],['advise','やりたいこと相談'],['recipe','レシピ'],['receipt','レシート読み取り'],['chat','雑談']];
 const MAXBYTES=100000;
 function secret(){try{const j=JSON.parse(localStorage.getItem(SK)||'{}');return {url:isStr(j.url)?j.url:'',key:isStr(j.key)?j.key:'',header:isStr(j.header)?j.header:'Authorization'}}catch(e){return {url:'',key:'',header:'Authorization'}}}
 function saveSecret(x){localStorage.setItem(SK,JSON.stringify(x))}
@@ -75,7 +75,7 @@ async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;if(
   :/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'送れませんでした：受け取り先につながりませんでした。URLの間違い、受け取り側が止まっている、または受け取り側がブラウザからの送信を許可していない（CORSの設定）可能性があります。CORSの場合は、設定の「中継サーバー」の方法を使ってください。':'送れませんでした：'+e.message}
  finally{CON.sending=false;render()}}
 function importCode(){const t=val('c_code');if(!t)return;try{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
- if(r.kind==='receipt'){CON.code=false;return rcImport([r])}if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}CON.open=false;location.hash='#ai';render()}
+ const hid=histAdd(r,'code');if(r.kind==='receipt'){CON.code=false;return rcImport([r])}AT.open=hid;AT.lesson=null;CON.code=false;CON.open=false;location.hash='#ai';render()}
  catch(e){CON.status='取り込めませんでした：'+e.message;CON.ok=false;render()}}
 // 各タブに相談ボタンを差し込む
 for(const [tab,t] of [['home','menu'],['fridge','menu'],['list','shop'],['money','money'],['ai','advise']]){const f=V[tab];V[tab]=function(){return consultBtn(t)+f.apply(this,arguments)}}
