@@ -19,7 +19,7 @@ function cleanSettings(s){const d=structuredClone(def.settings);if(!isObj(s))ret
 const MAXS=2000,MAXN=10000000,MAXITEMS=5000;
 const okS=(v,n=MAXS)=>v===undefined||(isStr(v)&&v.length<=n);
 const okAmt=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=MAXN;
-const okAmt1=v=>okAmt(v)&&v>=1;const okB=v=>v===undefined||typeof v==='boolean';const TYPES=['super','big','daily','car'];
+const okAmt1=v=>okAmt(v)&&v>=1;const okB=v=>v===undefined||typeof v==='boolean';const TYPES=['super','big','drug','yen100','daily','car'];const SCATS=[['all','すべて'],['super','スーパー'],['drug','ドラッグストア'],['yen100','100均']];let SC='all',SMORE={};const stCat=s=>{const t=s.type||'super';return t==='big'?'super':['super','drug','yen100'].includes(t)?t:'other'};
 function dedupe(a,pfx){const seen=new Set();a.forEach(x=>{if(!x.id||seen.has(x.id))x.id=pfx+uid();seen.add(x.id)})}
 const okWd=x=>Number.isInteger(x)&&x>=0&&x<=6;
 function validate(data){if(!isObj(data))throw new Error('データの形が違います');
@@ -68,7 +68,7 @@ function curTrip(d){const t=ymd(d),a=trips(d);return a.find(x=>t>=x.from&&t<=x.t
 function storeCard(s,d){const on=d?salesOn(s,d):[];
  return `<div class="card ${on.length?'sale':''}">${mapA(s.name,s)} <span class="muted">${esc(s.dist||'')}</span>
  ${s.kind?`<span class="tag">${esc(s.kind)}</span>`:''}${s.address?`<div class="muted">📍${esc(s.address)}</div>`:''}
- <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}</div>
+ <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}${s.checked?'／確認日 '+esc(s.checked):''}</div>
  ${s.note?`<div class="muted">${esc(s.note)}</div>`:''}
  ${saleText(s).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
  <div>${links(s)}</div>
@@ -85,10 +85,10 @@ home(){const d=today(),st=S.settings,mo=ymd(d).slice(0,7);
  今月 ${yen(mUsed)} / ${yen(st.monthly)}${bar(mUsed,st.monthly)}</div>
  <h2>きょう特売のお店（${esc(regName())}）</h2>${sale.length?sale.map(s=>`<div class="card sale">${mapA(s.name,s)}${goes.has(s.name)?' <span class="tag">🛒きょう行く</span>':''}<br>${salesOn(s,d).map(x=>`<span class="tag">${esc(x.text)}</span>`).join('')}<div>${links(s)}</div></div>`).join(''):'<div class="card muted">きょう決まった特売日のお店はありません（特売日が未確認のお店もあります）</div>'}
  <h2>買い物リスト</h2><div class="card">${S.list.filter(i=>!i.done).length} 品が未購入 <a class="link" href="#list">ひらく</a></div>`},
-stores(){const d=today();const grp=(t,l)=>{const a=regStores().filter(s=>(s.type||'super')===t);return a.length?`<h2>${l}</h2>`+a.map(s=>storeCard(s,d)).join(''):''};
- return regionSeg()+`<p class="muted">${regStores().length}店。${esc(BASE.source||'')} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>`
- +grp('super','スーパー')+grp('big','大型店（総合スーパー）')+grp('daily','ドラッグストア・100均・ホームセンター')+grp('car','車圏')+(()=>{const a=regStores().filter(s=>!TYPES.includes(s.type||'super'));return a.length?'<h2>そのほか</h2>'+a.map(s=>storeCard(s,d)).join(''):''})()+(regStores().length?'':'<div class="card muted">この地域のお店はまだありません。下から追加してください。</div>')
- +`<h2>お店を追加（${esc(regName())}）</h2><div class="card"><input id="ns_name" placeholder="店名" style="width:100%"><div class="row"><input id="ns_hours" placeholder="営業時間"><select id="ns_type"><option value="super">スーパー</option><option value="daily">日用品</option><option value="car">車圏</option></select></div>
+stores(){const d=today(),all=regStores(),inC=s=>SC==='all'||stCat(s)===SC;const grp=(t,l)=>{const a=all.filter(s=>(s.type||'super')===t&&inC(s));if(!a.length)return '';const lim=SMORE[t]?a.length:30;return `<h2>${l}（${a.length}店）</h2>`+a.slice(0,lim).map(s=>storeCard(s,d)).join('')+(a.length>lim?`<button class="sub more" data-act="smore" data-id="${t}">残り${a.length-lim}店を表示</button>`:'')};
+ return regionSeg()+`<div class="seg wrap">${SCATS.map(([k,l])=>`<button class="${SC===k?'on':''}" data-act="scat" data-id="${k}">${l}（${all.filter(s=>k==='all'||stCat(s)===k).length}）</button>`).join('')}</div><p class="muted">${all.length}店。${esc(BASE.source||'')} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>`
+ +grp('super','スーパー')+grp('big','大型店（総合スーパー）')+grp('drug','ドラッグストア')+grp('yen100','100均')+grp('daily','ホームセンター・日用品')+grp('car','車圏')+(()=>{const a=all.filter(s=>!TYPES.includes(s.type||'super')&&inC(s));return a.length?'<h2>そのほか</h2>'+a.map(s=>storeCard(s,d)).join(''):''})()+(all.length?'':'<div class="card muted">この地域のお店はまだありません。下から追加してください。</div>')
+ +`<h2>お店を追加（${esc(regName())}）</h2><div class="card"><input id="ns_name" placeholder="店名" style="width:100%"><div class="row"><input id="ns_hours" placeholder="営業時間"><select id="ns_type"><option value="super">スーパー</option><option value="drug">ドラッグストア</option><option value="yen100">100均</option><option value="daily">日用品</option><option value="car">車圏</option></select></div>
  <div class="row"><select id="ns_wd"><option value="">特売の曜日なし</option>${WD.map((w,i)=>`<option value="${i}">${w}曜</option>`).join('')}</select><input id="ns_sale" placeholder="特売の内容（例：玉子）"></div>
  <input id="ns_url" placeholder="公式ページやチラシのURL（https://…）" style="width:100%"><div class="row"><button onclick="addStore()">追加</button></div></div>`},
 list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>`<option>${esc(s.name)}</option>`).join('');
@@ -245,6 +245,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  case 'delSpend':if(confirm('消しますか？')){S.spend=S.spend.filter(r=>r.id!==id);save();render()}break;
  case 'delFr':S.fridge=S.fridge.filter(f=>f.id!==id);save();render();break;
  case 'toList':{const f=S.fridge.find(x=>x.id===id);if(f){S.list.push({name:f.name,store:'',trip:curTrip(today()).wd,done:false});save();alert('買い物リストに入れました')}break}
+ case 'scat':if(SCATS.some(c=>c[0]===id)){SC=id;SMORE={};render()}break;
+ case 'smore':if(TYPES.includes(id)){SMORE[id]=1;render()}break;
  case 'region':if(BASE.regions.some(r=>r.id===id)){S.settings.region=id;save();render()}break;
  case 'often':{const o=oft()[+b.dataset.id];if(o){const t=val('li_trip');const it={name:o.name,qty:o.qty||'',store:val('li_store'),trip:t!==''?+t:curTrip(today()).wd,done:false};if(o.cat)it.cat=o.cat;if(o.price)it.price=o.price;S.list.push(it);save();render();toast('「'+o.name.slice(0,14)+'」を入れました')}break}}});
 function render(){const t=(location.hash||'#home').slice(1);const f=V[t]||V.home;$('#view').innerHTML=f();

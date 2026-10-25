@@ -84,6 +84,7 @@ let REQ=null;const RQ={delivery:{},goods:{}};
 const RQF={delivery:[['what','食べたいもの','例：ピザとポテト、子ども向けも','ta'],['people','人数','4','num'],['budget','予算（円・任意）','','num'],['time','希望の時間（任意）','例：19時ごろ'],['note','メモ（任意）','例：辛くないもの、アレルギーなど']],
  goods:[['what','ほしいもの','例：子ども用の水筒 500mlくらい','ta'],['qty','数量','1'],['budget','予算（円・任意）','','num'],['cond','条件（任意）','例：メーカー、サイズ、〇日までに届く'],['note','メモ（任意）','']]};
 function rqVal(m,k){const v=RQ[m][k];return v===undefined?(k==='people'?'4':k==='qty'?'1':''):v}
+document.addEventListener('input',e=>{const t=e.target;if(!REQ||!t||!t.id||t.id.slice(0,3)!=='rq_')return;const k=t.id.slice(3);if(RQF[REQ].some(f=>f[0]===k))RQ[REQ][k]=t.value});
 function rqKeep(){if(!REQ)return;RQF[REQ].forEach(([k])=>{const e=document.getElementById('rq_'+k);if(e)RQ[REQ][k]=e.value.trim()})}
 function rqLatest(m){let best=null;try{hist().forEach(e=>{if(e.item.kind==='compare'&&(e.item.target.mode||'goods')===m&&(!best||e.at>best.at))best=e})}catch(e){}return best}
 function reqHtml(){const tab=(m,l)=>`<button class="${REQ===m?'on':''}" data-rq="${m}">${l}</button>`;let h=`<div class="seg req2">${tab('delivery','🛵 出前を頼む')}${tab('goods','📦 通販で頼む')}</div>`;if(!REQ)return h;const m=REQ,dv=m==='delivery';
