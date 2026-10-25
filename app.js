@@ -164,7 +164,7 @@ function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def
 window.addEventListener('hashchange',render);
 Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json())]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
  const q=new URLSearchParams(location.search);if(IS_DEMO)demo();render();if(q.get('ai'))setTimeout(()=>aiDemo(q),50)}).catch(e=>{$('#view').innerHTML='データを読めませんでした：'+esc(e)});
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'});
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}
 async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();return}
  await aiAsk();if(q.has('lesson')){AI.lesson=true;AI.started=+q.get('lesson')>0;AI.step=Math.max(0,+q.get('lesson')-1);render()}}
 function menuArr(){if(isArr(S.menu)&&S.menu.length===7)return S.menu;const a=['','','','','','',''];String(S.menu||'').split('\n').forEach(l=>{const m=l.match(/^([日月火水木金土])[：:](.*)$/);if(m)a[WD.indexOf(m[1])]=m[2].trim()});return a}
