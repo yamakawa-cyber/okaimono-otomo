@@ -1,4 +1,4 @@
-const C='okaimono-v11';const F=['./','index.html','style.css','app.js','ai.js','consult.js','receipt.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','data/regions.json','data/stores.json'];
+const C='okaimono-v12';const F=['./','index.html','style.css','app.js','ai.js','consult.js','receipt.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','data/regions.json','data/stores.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});
 // 店データ（data/*.json）はネットワーク優先（更新が届くように。圏外ならキャッシュ）。そのほかはキャッシュ優先。

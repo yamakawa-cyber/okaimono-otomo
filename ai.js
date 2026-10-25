@@ -69,5 +69,5 @@ const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep
  advise:r=>isStr(r.summary)&&isArr(r.needs)&&isArr(r.steps),chat:r=>isStr(r.reply)};
 function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='AIの答え';return r}
 function aiImport(ev){const inp=ev.target,f=inp.files[0];if(!f)return;f.text().then(t=>{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
- if(r.kind==='receipt')return rcImport(r);if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}location.hash='#ai';render()})
+ if(r.kind==='receipt')return rcImport([r]);if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}location.hash='#ai';render()})
  .catch(e=>alert('読めませんでした：'+e.message)).finally(()=>{inp.value=''})}
