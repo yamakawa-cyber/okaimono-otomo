@@ -51,11 +51,17 @@ function inboxHtml(){if(IS_DEMO)return '';if(!INBOX.length)return INBOX_ST?`<div
   h+=rc.map(e=>{const r=e.item,g=rcGroups(r),sum=g.reduce((a,[,v])=>a+v,0);return `<div class="rcprev"><div>🧾 <b>${esc(r.store)}</b> <span class="muted">${esc(r.date)}・合計 ${yen(r.total)}（${r.items.length}品）</span></div>
    <table>${g.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${yen(v)}</td></tr>`).join('')}</table>
    ${sum!==Math.round(r.total)?`<div class="err">品目の合計（${yen(sum)}）とレシートの合計が合いません。値引きなどを確かめてください。</div>`:''}${rcDup(r)?'<div class="err">同じレシート（店・日付・合計が同じ）はもう取り込み済みです。</div>':''}
-   <div class="row"><button class="sub" onclick="dropInbox(['${e.key}'])">入れない</button>${rcDup(r)?'':`<button onclick="rcApply(['${e.key}'])">これを家計簿に入れる</button>`}</div></div>`}).join('');
-  if(okKeys.length>1)h+=`<div class="row"><button onclick="rcApply(${esc(JSON.stringify(okKeys))})">まとめて家計簿に入れる（${okKeys.length}枚）</button></div>`}
- h+=other.map(e=>e.err?`<div class="err">読めない返事がありました（${esc(e.err)}）<button class="sub" onclick="dropInbox(['${e.key}'])">消す</button></div>`
+   <div class="row"><button class="sub" data-x="drop" data-k="${esc(e.key)}">入れない</button>${rcDup(r)?'':`<button data-x="apply" data-k="${esc(e.key)}">これを家計簿に入れる</button>`}</div></div>`}).join('');
+  if(okKeys.length>1)h+=`<div class="row"><button data-x="applyall">まとめて家計簿に入れる（${okKeys.length}枚）</button></div>`}
+ h+=other.map(e=>e.err?`<div class="err">読めない返事がありました（${esc(e.err)}）<button class="sub" data-x="drop" data-k="${esc(e.key)}">消す</button></div>`
   :`<div class="rcprev">${esc(KLABEL[e.item.kind]||e.item.kind)}：<b>${esc(histTitle(e.item))}</b>${e.item.kind==='chat'?`<div>${esc(String(e.item.reply).slice(0,200))}</div>`:''}
-   <div class="row"><button class="sub" onclick="dropInbox(['${e.key}'])">消す</button><button onclick="openReply('${e.key}')">ひらく</button></div></div>`).join('');
+   <div class="row"><button class="sub" data-x="drop" data-k="${esc(e.key)}">消す</button><button data-x="open" data-k="${esc(e.key)}">ひらく</button></div></div>`).join('');
  return h+'</div>'}
 for(const t of ['home','fridge','list','money','ai','stores','settings'])if(V[t]){const f=V[t];V[t]=function(){return inboxHtml()+f.apply(this,arguments)}}
 setTimeout(()=>fetchReplies(false),1500);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')fetchReplies(false)});
+
+// ボタンの動作（idは data-k で渡す。onclick に文字列を埋め込まない）
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(!b)return;const k=b.dataset.k||'';
+ switch(b.dataset.x){case 'drop':return dropInbox([k]);case 'open':return openReply(k);case 'apply':return rcApply([k]);
+  case 'applyall':return rcApply(INBOX.filter(e=>!e.err&&e.item.kind==='receipt'&&!rcDup(e.item)).map(e=>e.key));
+  case 'hdel':return histDel(k);case 'hopen':return histOpen(k);case 'hfilter':AT.filter=k;return render()}});

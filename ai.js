@@ -130,15 +130,15 @@ V.ai=function(){
  let h='';
  if(IS_DEMO)h+=`<div class="card sample">🧪 見本モード：ここに出る答えは見本です（保管庫は本データと別）。</div>`;
  if(AT.open){const r=curItem();if(r){const rc=recipeOf(r);
-  h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" onclick="histDel('${esc(AT.open)}')">🗑 消す</button>`:''}</div>`;
+  h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" data-x="hdel" data-k="${esc(AT.open)}">🗑 消す</button>`:''}</div>`;
   h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${r.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
   if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div>`;return h}AT.open=null}
  h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div>
  <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
  const all=hist(),kinds=[...new Set(all.map(e=>e.item.kind))],list=all.filter(e=>!AT.filter||e.item.kind===AT.filter);
  h+=`<h2>返事の保管庫 <span class="muted">${all.length}件</span></h2>`;
- if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" onclick="AT.filter='${k}';render()">${KLABEL[k]||k}</button>`).join('')}</div>`;
- h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" onclick="histOpen('${e.id}')"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" onclick="histOpen('${e.id}')">ひらく</button><button class="sub" onclick="histDel('${e.id}')" aria-label="消す">🗑</button></div>`).join('')
+ if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" data-x="hfilter" data-k="${esc(k)}">${KLABEL[k]||k}</button>`).join('')}</div>`;
+ h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" data-x="hopen" data-k="${esc(e.id)}"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" data-x="hopen" data-k="${esc(e.id)}">ひらく</button><button class="sub" data-x="hdel" data-k="${esc(e.id)}" aria-label="消す">🗑</button></div>`).join('')
   :`<div class="card muted">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
  h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
  return h};
