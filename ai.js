@@ -55,7 +55,7 @@ var lessonView=function(rc){const n=rc.steps.length,i=AI.step;
  if(i<0)return '';const head=`<div class="card">${badge()}<b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves)}・${esc(rc.time)}</span><div class="bar"><div style="width:${(i+1)/(n+1)*100}%"></div></div></div>`;
  if(i===0&&!AI.started)return head+`<div class="card lesson"><h2>まずは材料をそろえよう</h2><ul class="chk">${rc.ingredients.map(x=>`<li><input type="checkbox"><span>${esc(x)}</span></li>`).join('')}</ul><div class="row"><button class="sub" onclick="AI.lesson=false;render()">もどる</button><button onclick="AI.started=true;render()">そろった！始める</button></div></div>`;
  const s=rc.steps[i];
- return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}（約${s.min}分）</div><h2>${esc(s.t)}</h2><p class="big">${esc(s.d)}</p><div class="tip">💡 ${esc(s.tip)}</div>
+ return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}（約${esc(s.min)}分）</div><h2>${esc(s.t)}</h2><p class="big">${esc(s.d)}</p><div class="tip">💡 ${esc(s.tip)}</div>
  <div class="row"><button class="sub" onclick="${i===0?'AI.started=false':'AI.step--'};render()">← もどる</button>${i<n-1?`<button onclick="AI.step++;render()">つぎへ →</button>`:`<button onclick="AI.lesson=false;AI.started=false;AI.step=0;alert('できあがり！おつかれさま');render()">できあがり 🎉</button>`}</div></div>`}
 async function aiAsk(){const m=AI.mode;const ctx=aiContext(m);const q=document.getElementById('aiq');if(q){ctx.q=q.value.trim();if(!ctx.q)return}
  try{const r=checkAI(await aiProvider().ask(m,ctx));if(m==='chat'){AI.chat.push({me:true,t:ctx.q},{t:r.reply});}else{AI.res=r;AI.lesson=false;AI.started=false;AI.step=0}render()}catch(e){alert('AIにつながりませんでした：'+e.message)}}
@@ -137,7 +137,7 @@ V.ai=function(){
  <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
  const all=hist(),kinds=[...new Set(all.map(e=>e.item.kind))],list=all.filter(e=>!AT.filter||e.item.kind===AT.filter);
  h+=`<h2>返事の保管庫 <span class="muted">${all.length}件</span></h2>`;
- if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" data-x="hfilter" data-k="${esc(k)}">${KLABEL[k]||k}</button>`).join('')}</div>`;
+ if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" data-x="hfilter" data-k="${esc(k)}">${esc(KLABEL[k]||k)}</button>`).join('')}</div>`;
  h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" data-x="hopen" data-k="${esc(e.id)}"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" data-x="hopen" data-k="${esc(e.id)}">ひらく</button><button class="sub" data-x="hdel" data-k="${esc(e.id)}" aria-label="消す">🗑</button></div>`).join('')
   :`<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
  h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
