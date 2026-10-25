@@ -46,7 +46,7 @@ function openReply(key){const e=INBOX.find(x=>x.key===key);if(!e||e.err)return;c
  AT.open=histAdd(r,'reply');AT.lesson=null;dropInbox([key]);location.hash='#ai';render()}
 function inboxHtml(){if(IS_DEMO)return '';if(!INBOX.length)return INBOX_ST?`<div class="card tip">${esc(INBOX_ST)}</div>`:'';
  const rc=INBOX.filter(e=>!e.err&&e.item.kind==='receipt'),other=INBOX.filter(e=>!(!e.err&&e.item.kind==='receipt'));
- let h=`<div class="card inbox"><b>📩 アキラちゃんから返事（${INBOX.length}件）</b>`;
+ let h=`<div class="card inbox"><b><img class="ava" src="img/face.webp" alt="">アキラちゃんから返事（${INBOX.length}件）</b>`;
  if(rc.length){const okKeys=rc.filter(e=>!rcDup(e.item)).map(e=>e.key);
   h+=rc.map(e=>{const r=e.item,g=rcGroups(r),sum=g.reduce((a,[,v])=>a+v,0);return `<div class="rcprev"><div>🧾 <b>${esc(r.store)}</b> <span class="muted">${esc(r.date)}・合計 ${yen(r.total)}（${r.items.length}品）</span></div>
    <table>${g.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${yen(v)}</td></tr>`).join('')}</table>

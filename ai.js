@@ -139,13 +139,13 @@ V.ai=function(){
  h+=`<h2>返事の保管庫 <span class="muted">${all.length}件</span></h2>`;
  if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" data-x="hfilter" data-k="${esc(k)}">${KLABEL[k]||k}</button>`).join('')}</div>`;
  h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" data-x="hopen" data-k="${esc(e.id)}"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" data-x="hopen" data-k="${esc(e.id)}">ひらく</button><button class="sub" data-x="hdel" data-k="${esc(e.id)}" aria-label="消す">🗑</button></div>`).join('')
-  :`<div class="card muted">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
+  :`<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
  h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
  return h};
 
 // v16: 開いている答え（保管庫・返事・見本）に対して動くボタン
 function aiCur(){return (typeof AT!=='undefined'&&AT.open&&curItem())||AI.res||null}
-function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');t.style.cssText='position:fixed;left:50%;bottom:72px;transform:translateX(-50%);background:#333;color:#fff;padding:10px 16px;border-radius:20px;z-index:9999;font-size:15px;max-width:90%;text-align:center';document.body.appendChild(t)}t.textContent=msg;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.hidden=true;t.setAttribute('role','status');t.style.cssText='position:fixed;left:50%;bottom:72px;transform:translateX(-50%);background:#333;color:#fff;padding:10px 16px;border-radius:20px;z-index:9999;font-size:15px;max-width:90%;text-align:center';document.body.appendChild(t)}const bad=/ません|失敗|エラー/.test(msg);t.innerHTML='';const im=document.createElement('img');im.src='img/chibi_'+(bad?'sorry':'happy')+'.webp';im.alt='';const sp=document.createElement('span');sp.textContent=msg;t.append(im,sp);t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,2600)}
 function usesOf(i){const out=[];const add=(d,dish)=>{if(typeof d==='string')d=WD.indexOf(d.replace(/曜日?$/,''));if(okWd(d)&&!out.some(u=>u.d===d&&u.dish===dish))out.push({d,dish:String(dish||'').slice(0,100)})};
  const L=i.uses||i.for||i.days;if(isArr(L))L.forEach(u=>isObj(u)?add(u.d!==undefined?u.d:u.day,u.dish||u.name):add(u,i.dish||''));
  if(!out.length&&isStr(i.why))i.why.split(/[・、,]/).forEach(p=>{const m=p.trim().match(/^([日月火水木金土])(?:曜日?)?\s*[：:]\s*(.*)$/);if(m)add(WD.indexOf(m[1]),m[2])});
@@ -166,4 +166,5 @@ function aiToMenu(){try{const r=aiCur();if(!r||!isArr(r.plan))return toast('献�
  let items=[];const sh=r.shop||r.items;(isArr(sh)?sh:[sh]).forEach(x=>{if(isObj(x)&&!x.name)items=items.concat(listItemsOf(x));else if(x)items=items.concat(listItemsOf({items:[x]}))});
  if(isArr(r.days))r.days.forEach(x=>isObj(x)&&isArr(x.dishes)&&x.dishes.forEach(y=>{if(isObj(y)&&isArr(y.buy)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;items=items.concat(listItemsOf({items:y.buy.map(b=>Object.assign(isObj(b)?b:{name:b},{uses:[{d,dish:y.name}]}))}))}}));
  if(!items.length&&AT.open&&AT.open!=='demo'){const me=hist().find(e=>e.id===AT.open);if(me){const t0=Date.parse(me.at);hist().filter(e=>e.item.kind==='shop'&&Math.abs(Date.parse(e.at)-t0)<600000).reverse().forEach(e=>items=items.concat(listItemsOf(e.item)))}}
+ if(!items.length&&typeof INBOX!=='undefined'){const ks=[];INBOX.forEach(e=>{if(!e.err&&isObj(e.item)&&e.item.kind==='shop'){items=items.concat(listItemsOf(e.item));histAdd(e.item,'reply');ks.push(e.key)}});if(ks.length&&typeof dropInbox==='function')setTimeout(()=>dropInbox(ks),0)}
  save();let msg=`献立タブに${n}日分入れました`;if(items.length){const[k,sk]=pushList(items);msg+=`・買い物リストに${k}品`+(sk?`（${sk}品は既存にまとめ）`:'')}toast(msg);render()}catch(e){alert('献立に入れられませんでした：'+e.message)}}

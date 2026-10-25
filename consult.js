@@ -19,9 +19,9 @@ function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃん�
  <div class="muted">Authorization の場合は「Bearer キー」の形で送ります。中継サーバー（Cloudflare Workers）を使うときは X-App-Pass を選び、キーの欄には中継用の合言葉を入れます。キーはこのスマホの中だけに保存し、バックアップには入れません。</div>
  <div class="row"><button class="sub" onclick="if(confirm('受け取りURLと送信キーを消しますか？')){localStorage.removeItem(SK);render()}">消す</button></div></div>`}
 let CON={open:false,type:'menu',status:'',stage:'form',inc:{fridge:true,list:true,spend:'sum',memo:false}};
-function consultBtn(def){return `<div class="row"><button class="consult" data-act="consult" data-type="${esc(def)}">💬 アキラちゃんに相談</button></div>${CON.open&&CON.from===location.hash?consultPanel():''}`}
+function consultBtn(def){return `<div class="row"><button class="consult" data-act="consult" data-type="${esc(def)}"><img class="ava" src="img/face.webp" alt="">アキラちゃんに相談</button></div>${CON.open&&CON.from===location.hash?consultPanel():''}`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act=consult]');if(!b)return;CON.open=!(CON.open&&CON.from===location.hash);CON.from=location.hash;CON.type=b.dataset.type;CON.status='';CON.stage='form';render()});
-const st=()=>CON.status?`<div class="${CON.ok?'tip':'err'}">${esc(CON.status)}</div>`:'';
+const st=()=>CON.status?`<div class="${CON.ok?'tip':'err'}">${CON.sending?'<img class="loadchibi" src="img/chibi_thinking.webp" alt="">':!CON.ok?'<img class="loadchibi" style="animation:none" src="img/chibi_sorry.webp" alt="">':''}${esc(CON.status)}</div>`:'';
 function consultPanel(){const s=secret();
  if(IS_DEMO)return `<div class="card sample">🧪 見本モードでは相談を送りません。</div>`;
  if(!s.url||!s.key)return `<div class="card tip">送信先がまだ設定されていません。<a class="link" href="#settings">設定で「相談の受け取りURL」と「送信キー」を入れる →</a></div>`;
