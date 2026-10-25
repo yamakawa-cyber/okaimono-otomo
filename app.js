@@ -1,0 +1,184 @@
+'use strict';
+const WD=['日','月','火','水','木','金','土'];
+const DATA_VERSION=2;
+const IS_DEMO=new URLSearchParams(location.search).has('demo');
+const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
+const CATS=[['食材・米',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['予備',10000]];
+const OFTEN=['玉子','牛乳','食パン','豆腐','納豆','玉ねぎ','にんじん','鶏むね肉','米','トイレットペーパー'];
+const def={version:DATA_VERSION,settings:{shopDays:[1,4],fridgeDay:0,perTrip:9000,monthly:100000,region:'mukonoso',aiRelay:''},list:[],spend:[],fridge:[],menu:['','','','','','',''],prep:'',userStores:[]};
+// ---- 検証 ----
+const isStr=v=>typeof v==='string',isArr=Array.isArray,isObj=v=>v&&typeof v==='object'&&!isArr(v);
+const isDate=v=>{if(!isStr(v)||!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const [y,m,d]=v.split('-').map(Number);const x=new Date(Date.UTC(y,m-1,d));return x.getUTCFullYear()===y&&x.getUTCMonth()===m-1&&x.getUTCDate()===d};
+const safeUrl=u=>{try{const x=new URL(String(u));return (x.protocol==='https:'||x.protocol==='http:')?x.href:''}catch(e){return ''}};
+function cleanSettings(s){const d=structuredClone(def.settings);if(!isObj(s))return d;
+ if(isArr(s.shopDays)&&s.shopDays.length>=1&&s.shopDays.every(x=>Number.isInteger(x)&&x>=0&&x<=6))d.shopDays=[...new Set(s.shopDays)].sort();
+ if(Number.isInteger(s.fridgeDay)&&s.fridgeDay>=0&&s.fridgeDay<=6)d.fridgeDay=s.fridgeDay;
+ if(Number.isFinite(s.perTrip)&&s.perTrip>0)d.perTrip=s.perTrip;if(Number.isFinite(s.monthly)&&s.monthly>0)d.monthly=s.monthly;
+ if(isStr(s.region)&&(!BASE.regions.length||BASE.regions.some(r=>r.id===s.region)))d.region=s.region;if(isStr(s.aiRelay))d.aiRelay=safeUrl(s.aiRelay)?s.aiRelay:'';return d}
+// 形が違えば例外。正しければ、初期値とマージしたデータを返す（失敗時は呼び出し側が元データを保持）
+const MAXS=2000,MAXN=10000000,MAXITEMS=5000;
+const okS=(v,n=MAXS)=>v===undefined||(isStr(v)&&v.length<=n);
+const okAmt=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=MAXN;
+const okAmt1=v=>okAmt(v)&&v>=1;const okB=v=>v===undefined||typeof v==='boolean';const TYPES=['super','big','daily','car'];
+function dedupe(a,pfx){const seen=new Set();a.forEach(x=>{if(!x.id||seen.has(x.id))x.id=pfx+uid();seen.add(x.id)})}
+const okWd=x=>Number.isInteger(x)&&x>=0&&x<=6;
+function validate(data){if(!isObj(data))throw new Error('データの形が違います');
+ const out=structuredClone(def);const bad=k=>{throw new Error('「'+k+'」の形が違います')};
+ for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])||data[k].length>MAXITEMS)bad(k);out[k]=data[k]}
+ out.list.forEach(i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip)))bad('list')});
+ out.spend.forEach(r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100))bad('spend');if(!r.id)r.id=uid()});
+ out.fridge.forEach(f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until)))bad('fridge');if(!f.id)f.id=uid()});
+ out.userStores.forEach(s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
+  for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
+  if(s.region!==undefined&&BASE.regions.length&&!BASE.regions.some(r=>r.id===s.region))bad('userStores');
+  if(s.sales!==undefined&&(!isArr(s.sales)||!s.sales.every(x=>isObj(x)&&isStr(x.text)&&x.text.length>0&&x.text.length<=200&&(x.wd!==undefined||x.md!==undefined)&&(x.wd===undefined||okWd(x.wd))&&(x.md===undefined||(isArr(x.md)&&x.md.every(n=>Number.isInteger(n)&&n>=1&&n<=31))))))bad('userStores');
+  if(s.links!==undefined&&(!isArr(s.links)||!s.links.every(l=>isObj(l)&&okS(l.t,200)&&okS(l.u,2000))))bad('userStores');
+  s.links=(s.links||[]).filter(l=>safeUrl(l.u));s.sales=s.sales||[]});
+ dedupe(out.spend,'s');dedupe(out.fridge,'f');dedupe(out.userStores,'u');
+ if('menu' in data){if(isArr(data.menu)&&data.menu.length===7&&data.menu.every(x=>isStr(x)&&x.length<=500))out.menu=data.menu;else if(okS(data.menu,5000))out.menu=data.menu;else bad('menu')}
+ if('prep' in data){if(!okS(data.prep,5000))bad('prep');out.prep=data.prep}
+ if('settings' in data){const st=data.settings;if(!isObj(st))bad('settings');
+  if('shopDays' in st&&!(isArr(st.shopDays)&&st.shopDays.length>=1&&st.shopDays.every(okWd)))bad('settings（買い物の曜日）');
+  if('region' in st&&!(isStr(st.region)&&(!BASE.regions.length||BASE.regions.some(r=>r.id===st.region))))bad('settings（地域）');
+  for(const k of ['perTrip','monthly'])if(k in st&&!(okAmt(st[k])&&st[k]>0))bad('settings（予算）');
+  if('aiRelay' in st&&!okS(st.aiRelay,500))bad('settings（AI）')}
+ out.settings=cleanSettings(data.settings);
+ for(const k of Object.keys(data)){if(k==='lastBackup'&&isDate(data[k]))out[k]=data[k];if(k==='sampleKeys'&&isArr(data[k]))out[k]=data[k].filter(isStr).slice(0,50)}
+ out.version=DATA_VERSION;return out}
+let BASE={regions:[],stores:[]};let S=load();
+function load(){try{const t=localStorage.getItem(K);return t?validate(JSON.parse(t)):structuredClone(def)}catch(e){console.log('load: 初期値で開始',e.message);return structuredClone(def)}}
+function save(){localStorage.setItem(K,JSON.stringify(S))}
+const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
+const today=()=>{const p=new URLSearchParams(location.search).get('today');return p&&isDate(p)?new Date(p+'T12:00'):new Date()};
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const md=v=>{if(!isDate(v))return '';const d=new Date(v+'T12:00');return (d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）'};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const stores=()=>BASE.stores.concat(S.userStores.filter(isObj)).sort((a,b)=>(parseFloat(String(a.dist||'').replace(/[^\d.]/g,''))||99)-(parseFloat(String(b.dist||'').replace(/[^\d.]/g,''))||99));
+const regStores=()=>stores().filter(s=>s.region===S.settings.region);
+function salesOn(s,d){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text&&(x.wd!==undefined&&x.wd===d.getDay())||(isArr(x.md)&&x.md.includes(d.getDate())))}
+function saleText(s){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text).map(x=>okWd(x.wd)?WD[x.wd]+'曜：'+x.text:isArr(x.md)?'毎月'+x.md.join('・')+'日：'+x.text:x.text)}
+function weekStart(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)} // 月曜始まり
+function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(!f||f(r))).reduce((t,r)=>t+Number(r.amount||0),0)}
+function bar(used,max){const r=max>0?used/max:0;return `<div class="bar"><div class="${r>1?'over':r>=0.8?'warn':''}" style="width:${Math.min(100,r*100)}%"></div></div>`}
+// 買い物の回：買い物日ごとに、次の買い物日の前日までを1回分とする（[1,4]なら 月〜水／木〜日）
+function trips(d){const days=(S.settings.shopDays.length?S.settings.shopDays:[1]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7));const ws=new Date(weekStart(d)+'T12:00');
+ return days.map((w,i)=>{const off=(w+6)%7,next=i+1<days.length?(days[i+1]+6)%7:7;return {wd:w,from:ymd(addDays(ws,off)),to:ymd(addDays(ws,next-1)),label:WD[w]+'曜分'}})}
+function curTrip(d){const t=ymd(d),a=trips(d);return a.find(x=>t>=x.from&&t<=x.to)||a[a.length-1]}
+function storeCard(s,d){const on=d?salesOn(s,d):[];
+ return `<div class="card ${on.length?'sale':''}"><b>${esc(s.name)}</b> <span class="muted">${esc(s.dist||'')}</span>
+ ${s.kind?`<span class="tag">${esc(s.kind)}</span>`:''}${s.address?`<div class="muted">📍${esc(s.address)}</div>`:''}
+ <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}</div>
+ ${s.note?`<div class="muted">${esc(s.note)}</div>`:''}
+ ${saleText(s).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
+ <div>${links(s)}</div>
+ ${s.user?`<button class="sub" data-act="delStore" data-id="${esc(s.id)}">このお店を消す</button>`:''}</div>`}
+const links=s=>(isArr(s.links)?s.links:[]).filter(isObj).map(l=>({t:l.t,u:safeUrl(l.u)})).filter(l=>l.u).map(l=>`<a class="link" href="${esc(l.u)}" target="_blank" rel="noopener">🔗${esc(l.t)}</a>`).join('');
+const catOpts=sel=>CATS.map(([c])=>`<option${c===sel?' selected':''}>${c}</option>`).join('');
+const V={
+home(){const d=today(),st=S.settings,mo=ymd(d).slice(0,7);
+ const goes=new Set(S.list.filter(i=>!i.done).map(i=>i.store));const sale=regStores().filter(s=>salesOn(s,d).length).sort((a,b)=>goes.has(b.name)-goes.has(a.name));const isShop=st.shopDays.includes(d.getDay()),isFr=st.fridgeDay===d.getDay();
+ const tr=trips(d),mUsed=spentBetween(mo+'-01',mo+'-31');
+ return `<h2>${md(ymd(d))}</h2>
+ <div class="card">${isShop?'🛒 きょうは買い物の日':'買い物の日：'+st.shopDays.map(x=>WD[x]).join('・')+'曜'}<br>${isFr?'<a class="link" href="#fridge">🧊 きょうは冷蔵庫点検と献立の日 → 点検する</a>':'冷蔵庫点検：'+WD[st.fridgeDay]+'曜'}</div>
+ <div class="card">${tr.map(t=>{const u=spentBetween(t.from,t.to);return `${t.label}（${md(t.from)}〜${md(t.to)}） ${yen(u)} / ${yen(st.perTrip)}${bar(u,st.perTrip)}<div class="muted">残り ${yen(st.perTrip-u)}</div>`}).join('')}
+ 今月 ${yen(mUsed)} / ${yen(st.monthly)}${bar(mUsed,st.monthly)}</div>
+ <h2>きょう特売のお店（${esc(regName())}）</h2>${sale.length?sale.map(s=>`<div class="card sale"><b>${esc(s.name)}</b>${goes.has(s.name)?' <span class="tag">🛒きょう行く</span>':''}<br>${salesOn(s,d).map(x=>`<span class="tag">${esc(x.text)}</span>`).join('')}<div>${links(s)}</div></div>`).join(''):'<div class="card muted">きょう決まった特売日のお店はありません（特売日が未確認のお店もあります）</div>'}
+ <h2>買い物リスト</h2><div class="card">${S.list.filter(i=>!i.done).length} 品が未購入 <a class="link" href="#list">ひらく</a></div>`},
+stores(){const d=today();const grp=(t,l)=>{const a=regStores().filter(s=>(s.type||'super')===t);return a.length?`<h2>${l}</h2>`+a.map(s=>storeCard(s,d)).join(''):''};
+ return regionSeg()+`<p class="muted">${regStores().length}店。${esc(BASE.source||'')} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>`
+ +grp('super','スーパー')+grp('big','大型店（総合スーパー）')+grp('daily','ドラッグストア・100均・ホームセンター')+grp('car','車圏')+(()=>{const a=regStores().filter(s=>!TYPES.includes(s.type||'super'));return a.length?'<h2>そのほか</h2>'+a.map(s=>storeCard(s,d)).join(''):''})()+(regStores().length?'':'<div class="card muted">この地域のお店はまだありません。下から追加してください。</div>')
+ +`<h2>お店を追加（${esc(regName())}）</h2><div class="card"><input id="ns_name" placeholder="店名" style="width:100%"><div class="row"><input id="ns_hours" placeholder="営業時間"><select id="ns_type"><option value="super">スーパー</option><option value="daily">日用品</option><option value="car">車圏</option></select></div>
+ <div class="row"><select id="ns_wd"><option value="">特売の曜日なし</option>${WD.map((w,i)=>`<option value="${i}">${w}曜</option>`).join('')}</select><input id="ns_sale" placeholder="特売の内容（例：玉子）"></div>
+ <input id="ns_url" placeholder="公式ページやチラシのURL（https://…）" style="width:100%"><div class="row"><button onclick="addStore()">追加</button></div></div>`},
+list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>`<option>${esc(s.name)}</option>`).join('');
+ const tOf=i=>tr.some(t=>t.wd===i.trip)?i.trip:cur.wd;
+ const block=t=>{const g={};S.list.forEach((i,n)=>{if(tOf(i)!==t.wd)return;const k=i.store||'お店未定';(g[k]=g[k]||[]).push([i,n])});const keys=Object.keys(g);
+  return `<h2>🗓 ${t.label}（${md(t.from)}の買い物）${t.wd===cur.wd?' <span class="tag">いまの回</span>':''}</h2>`+(keys.length?keys.map(st=>`<h3>🏪 ${esc(st)}</h3><ul class="chk card">${g[st].map(([i,n])=>`<li class="${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onchange="tog(${n})"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span>${i.done?'':`<input type="number" inputmode="numeric" id="yen${n}" placeholder="金額" style="width:80px"><select id="cat${n}" style="width:96px">${catOpts('食材・米')}</select>`}<button class="sub" onclick="delItem(${n})">✕</button></li>`).join('')}</ul>`).join(''):'<div class="card muted">まだありません</div>')};
+ return `<div class="card"><div class="row"><input id="li_name" placeholder="品名（例：玉子）"><input id="li_qty" placeholder="数量" style="flex:0 0 80px"></div>
+ <div class="row"><select id="li_store"><option value="">お店</option>${opts}</select><select id="li_trip">${tr.map(t=>`<option value="${t.wd}"${t.wd===cur.wd?' selected':''}>${t.label}</option>`).join('')}</select></div>
+ <div class="row"><button onclick="addItem()">リストに追加</button></div>
+ <div class="often">よく買う品：${OFTEN.map(o=>`<button class="chip" data-act="often" data-name="${esc(o)}">＋${esc(o)}</button>`).join('')}</div></div>
+ ${tr.map(block).join('')}
+ <p class="muted">チェックするときに金額と費目を入れると、家計に「日付・店・費目・金額・メモ（品名）」で記録されます。✕で品物を消しても、家計の記録は残ります（家計タブで消せます）。</p>
+ <div class="row"><button class="sub" onclick="clearDone()">買ったものを消す</button></div>`},
+money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=true}});if(fix)save();const d=today(),st=S.settings,c=curTrip(d),mo=ymd(d).slice(0,7);const tUsed=spentBetween(c.from,c.to);
+ return `<div class="card">${c.label}（${md(c.from)}〜${md(c.to)}） ${yen(tUsed)} / ${yen(st.perTrip)}${bar(tUsed,st.perTrip)}<div class="muted">1回の目安 ${yen(st.perTrip)}、残り ${yen(st.perTrip-tUsed)}</div></div>
+ <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
+ ${(()=>{const o=spentBetween(mo+'-01',mo+'-31',r=>!CATS.some(([k])=>k===r.cat));return o?`<div class="crow muted"><span>そのほかの費目</span><span>${yen(o)}</span></div>`:''})()}</div>
+ <div class="card"><div class="row"><input id="sp_date" type="date" lang="ja" value="${ymd(d)}"><select id="sp_store"><option value="">店</option>${stores().map(s=>`<option>${esc(s.name)}</option>`).join('')}</select></div>
+ <div class="row"><select id="sp_cat">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" placeholder="金額（円）"></div>
+ <input id="sp_memo" placeholder="メモ" style="width:100%"><div class="row"><button onclick="addSpend()">記録する</button><button class="sub" onclick="csv()">CSVで書き出す</button></div></div>
+ ${S.spend.slice().reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">まだ記録がありません</div>'}`},
+fridge(){return `<h2>冷蔵庫の在庫（${WD[S.settings.fridgeDay]}曜に点検）</h2><div class="card"><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_until" type="date" lang="ja"></div><div class="row"><button onclick="addFr()">追加</button></div>
+ <ul class="chk">${S.fridge.slice().sort((a,b)=>String(a.until||'9').localeCompare(String(b.until||'9'))).map(f=>`<li><span style="flex:1">${esc(f.name)} <span class="muted">${isDate(f.until)?'期限 '+md(f.until):''}${isDate(f.until)&&f.until<=ymd(today())?' ⚠️':''}</span></span><button class="sub" data-act="toList" data-id="${esc(f.id)}">→リスト</button><button class="sub" data-act="delFr" data-id="${esc(f.id)}">✕</button></li>`).join('')}</ul></div>
+ <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)"></div>`).join('')}</div>
+ <h2>作り置き</h2><textarea id="prep" rows="5" style="width:100%" placeholder="作るもの・いつ作るか・食べきる目安" oninput="S.prep=this.value;save()">${esc(S.prep)}</textarea>`},
+settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 見本データで表示中です（本データには保存されません）</div>':''}<h2>地域</h2>${regionSeg()}
+ <h2>買い物の曜日（週2回が目安）</h2><div class="seg">${WD.map((w,i)=>`<button class="${st.shopDays.includes(i)?'on':''}" onclick="togDay(${i})">${w}</button>`).join('')}</div>
+ <h2>冷蔵庫点検の曜日</h2><div class="seg">${WD.map((w,i)=>`<button class="${st.fridgeDay===i?'on':''}" onclick="S.settings.fridgeDay=${i};save();render()">${w}</button>`).join('')}</div>
+ <h2>予算</h2><div class="card">1回の買い物 <input type="number" value="${st.perTrip}" onchange="S.settings.perTrip=+this.value||9000;save()"> 円<br>月の予算 <input type="number" value="${st.monthly}" onchange="S.settings.monthly=+this.value||100000;save()"> 円
+ <div class="muted">費目別の月予算：${CATS.map(([k,b])=>k+' '+yen(b)).join('、')}</div></div>
+ <h2>AI</h2><div class="card">中継サーバーのURL（空なら見本モード）<input id="relay" placeholder="https://…workers.dev" value="${esc(st.aiRelay||'')}" style="width:100%" onchange="setRelay(this.value)">
+ <div class="muted">APIキーはアプリに入れません。キーは中継サーバーだけが持ちます。</div>
+ <div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike">AIの答えを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div></div>
+ <h2>バックアップ</h2><div class="card">${bkDue()?'<div class="tip">⚠️ 最後のバックアップから1週間たちました。書き出しておきましょう。</div>':''}<div class="muted">最後のバックアップ：${S.lastBackup?md(S.lastBackup):'まだ'}</div>
+ <div class="row"><button onclick="backup()">全部を書き出す</button><label class="btnlike">読み込んで戻す<input type="file" accept=".json" hidden onchange="restore(event)"></label></div>
+ <div class="muted">お店（追加した店）・買い物リスト・冷蔵庫・献立・家計・設定をまとめて1つのファイルにします。</div></div>
+ <h2>見本データ</h2><div class="card"><button class="sub" onclick="clearSamples()">見本（サンプル）のデータをまとめて消す</button></div>
+ <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p>`}
+};
+function regName(){return (BASE.regions.find(r=>r.id===S.settings.region)||{}).name||''}
+function regionSeg(){return `<div class="seg wrap">${BASE.regions.map(r=>`<button class="${r.id===S.settings.region?'on':''}" data-act="region" data-id="${esc(r.id)}">${esc(r.name)}</button>`).join('')}</div>`}
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function setRelay(v){v=v.trim();if(v&&!safeUrl(v))return alert('URLは http:// か https:// で始めてください');S.settings.aiRelay=v;save()}
+function addStore(){const n=val('ns_name');if(!n)return alert('店名を入れてください');const wd=val('ns_wd'),sl=val('ns_sale'),u=val('ns_url');
+ if(u&&!safeUrl(u))return alert('URLは http:// か https:// で始めてください');
+ S.userStores.push({id:'u'+uid(),user:true,region:S.settings.region,type:val('ns_type'),name:n,hours:val('ns_hours')||'未確認',sales:wd!==''?[{wd:+wd,text:sl||'特売'}]:[],links:u?[{t:'公式・チラシ',u:safeUrl(u)}]:[]});save();render()}
+function addItem(name){const n=name||val('li_name');if(!n)return;const t=val('li_trip');S.list.push({name:n,qty:name?'':val('li_qty'),store:val('li_store'),trip:t!==''?+t:curTrip(today()).wd,done:false});save();render()}
+function tog(n){const i=S.list[n];if(!i)return;i.done=!i.done;if(i.done){const a=+val('yen'+n);if(okAmt(a)&&a>0){i.yen=a;i.cat=val('cat'+n)||'食材・米';i.spendId=uid();S.spend.push({id:i.spendId,date:ymd(today()),store:i.store,cat:i.cat,amount:a,memo:i.name})}}
+ else if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId;delete i.yen;delete i.cat}save();render()}
+function delItem(n){S.list.splice(n,1);save();render()}
+function clearDone(){S.list=S.list.filter(i=>!i.done);save();render()}
+function addSpend(){const a=+val('sp_amt');if(!okAmt(a)||a<=0)return alert('金額は1円以上の数字で入れてください（マイナスは使えません）');const dt=val('sp_date');if(!isDate(dt))return alert('日付を入れてください');S.spend.push({id:uid(),date:dt,store:val('sp_store'),cat:val('sp_cat'),amount:a,memo:val('sp_memo')});save();render()}
+function csv(){const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';const t='\ufeff日付,店,費目,金額,メモ\r\n'+S.spend.map(r=>[r.date,r.store,r.cat,r.amount,r.memo].map(q).join(',')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='家計_'+ymd(today())+'.csv';a.click()}
+function addFr(){const n=val('fr_name');if(!n)return;S.fridge.push({id:uid(),name:n,until:val('fr_until')});save();render()}
+function togDay(i){const a=S.settings.shopDays;S.settings.shopDays=a.includes(i)?a.filter(x=>x!==i):a.concat(i).sort();save();render()}
+function clearSamples(){if(!confirm('メモが「サンプル」の記録や、見本の品物を消します。よろしいですか？'))return;S.spend=S.spend.filter(r=>!/サンプル/.test(r.memo||''));S.list=S.list.filter(i=>!i.sample);S.fridge=S.fridge.filter(f=>!f.sample);S.menu=menuArr().map(x=>/サンプル/.test(x)?'':x);if(isArr(S.sampleKeys)&&S.sampleKeys.includes('prep'))S.prep='';delete S.sampleKeys;save();render()}
+// data属性のボタン（onclickに値を埋め込まない）
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;
+ switch(b.dataset.act){
+ case 'delStore':if(confirm('消しますか？')){S.userStores=S.userStores.filter(s=>s.id!==id);save();render()}break;
+ case 'delSpend':if(confirm('消しますか？')){S.spend=S.spend.filter(r=>r.id!==id);save();render()}break;
+ case 'delFr':S.fridge=S.fridge.filter(f=>f.id!==id);save();render();break;
+ case 'toList':{const f=S.fridge.find(x=>x.id===id);if(f){S.list.push({name:f.name,store:'',trip:curTrip(today()).wd,done:false});save();alert('買い物リストに入れました')}break}
+ case 'region':if(BASE.regions.some(r=>r.id===id)){S.settings.region=id;save();render()}break;
+ case 'often':addItem(b.dataset.name);break}});
+function render(){const t=(location.hash||'#home').slice(1);const f=V[t]||V.home;$('#view').innerHTML=f();
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+t));window.scrollTo(0,0)}
+function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def);
+ S.list=[{name:'玉子',store:'スーパーマルハチ 武庫之荘店',trip:w,done:false,sample:true},{name:'牛乳',store:'フレスコ 武庫之荘店',trip:w,done:true,sample:true},{name:'鶏むね肉',qty:'2枚',store:'',trip:w,done:false,sample:true},{name:'冷凍ブロッコリー',store:'業務スーパー 南武庫之荘店',trip:w,done:false,sample:true}];
+ S.spend=[{id:'a',date:d,store:'KOHYO 武庫之荘店',cat:'食材・米',amount:5480,memo:'サンプル'},{id:'b',date:d,store:'ウエルシア 尼崎南武庫之荘店',cat:'日用品',amount:1260,memo:'サンプル'}];
+ S.fridge=[{id:'c',name:'にんじん',until:d,sample:true},{id:'d',name:'豚こま',until:'',sample:true}];S.menu=['','豚の生姜焼き（サンプル）','カレー（サンプル）','','','',''];S.prep='きんぴら（日曜に作る・水曜まで）';S.sampleKeys=['prep'];save()}
+window.addEventListener('hashchange',render);
+Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json())]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
+ const q=new URLSearchParams(location.search);if(IS_DEMO)demo();render();if(q.get('ai'))setTimeout(()=>aiDemo(q),50)}).catch(e=>{$('#view').innerHTML='データを読めませんでした：'+esc(e)});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'});
+async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();return}
+ await aiAsk();if(q.has('lesson')){AI.lesson=true;AI.started=+q.get('lesson')>0;AI.step=Math.max(0,+q.get('lesson')-1);render()}}
+function menuArr(){if(isArr(S.menu)&&S.menu.length===7)return S.menu;const a=['','','','','','',''];String(S.menu||'').split('\n').forEach(l=>{const m=l.match(/^([日月火水木金土])[：:](.*)$/);if(m)a[WD.indexOf(m[1])]=m[2].trim()});return a}
+function setMenu(w,v){const a=menuArr().slice();a[w]=v;S.menu=a;save()}
+function bkDue(){return !S.lastBackup||(today()-new Date(S.lastBackup+'T12:00'))>7*864e5}
+function backup(){S.lastBackup=ymd(today());save();const data={app:'okaimono',version:DATA_VERSION,exported:new Date().toISOString(),data:S};
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}));a.download='おかいもの_バックアップ_'+ymd(today())+'.json';a.click();render()}
+function restore(ev){const inp=ev.target,f=inp.files[0];if(!f)return;
+ if(f.size>4e6){alert('読めませんでした（いまのデータはそのままです）：ファイルが大きすぎます（4MBまで）');inp.value='';return}
+ f.text().then(t=>{if(new Blob([t]).size>4e6)throw new Error('ファイルが大きすぎます（4MBまで）');let j;try{j=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}
+  if(!isObj(j)||j.app!=='okaimono'||!isObj(j.data))throw new Error('このアプリのバックアップではありません');
+  if(!Number.isInteger(j.version)||j.version<1||j.version>DATA_VERSION)throw new Error(j.version===undefined?'版（version）が書かれていないため読めません':'対応していない版です（version '+String(j.version).slice(0,20)+'）');
+  const nd=validate(j.data); // ここで失敗すれば、いまのデータはそのまま
+  if(!confirm('いまのデータを、バックアップの内容で置き換えます。よろしいですか？'))return;const txt=JSON.stringify(nd);if(new Blob([txt]).size>4e6)throw new Error('データが大きすぎます（4MBまで）');try{localStorage.setItem(K,txt)}catch(e){throw new Error('スマホの保存領域に入りきりませんでした')}S=nd;alert('戻しました');render()})
+ .catch(e=>alert('読めませんでした（いまのデータはそのままです）：'+e.message)).finally(()=>{inp.value=''})}
+// 初回起動で、データを消されにくくする（ブラウザが空き容量不足のときに自動削除しない）
+(function(){try{if(localStorage.getItem('okaimono_persist'))return;if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().then(ok=>{try{localStorage.setItem('okaimono_persist',ok?'granted':'denied:'+new Date().toISOString().slice(0,10))}catch(e){}}).catch(()=>{})}}catch(e){}})();

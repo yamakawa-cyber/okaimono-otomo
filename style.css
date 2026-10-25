@@ -1,0 +1,28 @@
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans JP",sans-serif;background:#fff8f0;color:#333;font-size:17px;padding-bottom:76px}
+header{background:#e8743b;color:#fff;padding:12px 16px;position:sticky;top:0;z-index:2}h1{margin:0;font-size:19px}
+main{padding:12px}h2{font-size:18px;margin:16px 0 8px}.card{background:#fff;border-radius:12px;padding:12px;margin:8px 0;box-shadow:0 1px 3px #0002}
+.sale{background:#fff1e6;border-left:5px solid #e8743b}.muted{color:#888;font-size:14px}.tag{display:inline-block;background:#ffe0cc;border-radius:8px;padding:1px 8px;margin:2px;font-size:14px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}nav a{flex:1;text-align:center;padding:6px 0;font-size:12px;color:#555;text-decoration:none}nav a.on{color:#e8743b;font-weight:bold}
+button,input,select,textarea{font-size:16px;padding:10px;border-radius:8px;border:1px solid #ccc;font-family:inherit}button{background:#e8743b;color:#fff;border:0;min-height:44px}button.sub{background:#eee;color:#333}
+.row{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}.row>*{flex:1;min-width:0}a.link{display:inline-block;margin:4px 8px 0 0;color:#c55a1f}
+.seg{display:flex;gap:4px}.seg button{flex:1;background:#eee;color:#333}.seg button.on{background:#e8743b;color:#fff}
+.bar{height:14px;background:#eee;border-radius:7px;overflow:hidden}.bar div{height:100%;background:#4caf50}.bar div.over{background:#e53935}
+li.done span{text-decoration:line-through;color:#aaa}ul.chk{list-style:none;padding:0}ul.chk li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eee}ul.chk input{width:24px;height:24px}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid #eee;padding:6px 4px;text-align:left}
+.sample{background:#fffbe0;border:2px dashed #e0b400}.sampletag{background:#ffe680;font-weight:bold}.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 0 30%}
+.lesson h2{font-size:22px}.big{font-size:19px;line-height:1.7}.tip{background:#eef7ee;border-radius:8px;padding:10px}.hack{padding:8px 0;border-bottom:1px solid #eee}
+.bub{background:#f1f1f1;border-radius:12px;padding:8px 12px;margin:6px 40px 6px 0}.bub.me{background:#ffe0cc;margin:6px 0 6px 40px}
+.btnlike{flex:1;background:#eee;border-radius:8px;text-align:center;padding:12px 4px;font-size:16px}nav a{font-size:11px}
+.scard{display:flex;align-items:center;gap:10px}.amt{font-size:19px;font-weight:bold;white-space:nowrap}.mrow{align-items:center}
+.bar div.warn{background:#f9a825}.crow{display:flex;justify-content:space-between;margin-top:6px}.chip{background:#ffe0cc;color:#333;min-height:36px;padding:4px 10px;margin:3px;font-size:14px}h3{font-size:16px;margin:10px 0 4px}
+button.consult{background:#7b5ea7}.err{background:#fdecea;color:#b71c1c;border-radius:8px;padding:10px}.consultbox select{width:100%;margin-bottom:6px}
+.chk1{display:block;margin-top:8px}button:disabled{opacity:.5}
+/* 押しやすさ：ボタン・選択肢は最低44px（360px幅でも） */
+button,select,.tabs a,label.chk1,input[type=checkbox]+span{min-height:44px}
+button{min-width:44px;padding-top:8px;padding-bottom:8px}
+input[type=checkbox]{width:22px;height:22px}
+label.chk1{display:flex;align-items:center;gap:6px}
+.chip{min-height:44px}
+ul.chk li{min-height:44px;display:flex;align-items:center}
+input[type=checkbox]{width:28px;height:28px;margin:8px}
+ul.chk li input[type=checkbox],.chk1 input[type=checkbox]{width:28px;height:28px;margin:8px;flex:none}

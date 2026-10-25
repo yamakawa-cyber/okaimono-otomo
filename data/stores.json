@@ -1,0 +1,1507 @@
+{
+ "source": "メイミーの店舗リスト（2026-10-25調査）。距離はすべて武庫之荘駅の近くからの直線距離（道のりはもっと長い）。「不明」は出典が無い項目。",
+ "stores": [
+  {
+   "id": "s01",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "スーパーオオジ 武庫之荘北店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫之荘7-7-2",
+   "dist": "約0.7km",
+   "hours": "9:30〜19:30（まいぷれ）",
+   "closed": "なし（年末年始変更あり／まいぷれ）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": []
+  },
+  {
+   "id": "s02",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 伊丹野間店",
+   "city": "伊丹市",
+   "address": "伊丹市野間1-9-18",
+   "dist": "約0.9km",
+   "hours": "9:00〜21:45（公式）",
+   "closed": "不明",
+   "saleInfo": "毎週水曜 mandai payチャージ特典日／毎週土曜 mandai pay払いでポイント3倍（トクバイ掲載の万代共通イベント。野間店個別は未確認）",
+   "note": "伊丹寄り",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/"
+    }
+   ]
+  },
+  {
+   "id": "s03",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "マックスバリュ 武庫元町店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫元町1-19-1",
+   "dist": "約0.9km",
+   "hours": "24時間（公式）",
+   "closed": "不明",
+   "saleInfo": "毎月10日ありが10デー（イオン系共通。本店舗の適用は未確認）／チラシに『火曜得だ値』『15日iAEON祭り』の掲載あり",
+   "note": "",
+   "sales": [
+    {
+     "wd": 2,
+     "text": "火曜得だ値（チラシ掲載）"
+    },
+    {
+     "md": [
+      10
+     ],
+     "text": "ありが10デー（本店舗の適用は未確認）"
+    },
+    {
+     "md": [
+      15
+     ],
+     "text": "iAEON祭り（チラシ掲載）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.shufoo.net/pntweb/shopDetail/176516/"
+    }
+   ]
+  },
+  {
+   "id": "s04",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープミニ西武庫",
+   "city": "尼崎市",
+   "address": "尼崎市武庫豊町3-9-11",
+   "dist": "約1.0km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s05",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ武庫之荘",
+   "city": "尼崎市",
+   "address": "尼崎市武庫之荘1-36-13",
+   "dist": "約1.1km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s06",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "スーパーマルハチ 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫町1-31",
+   "dist": "約1.4km",
+   "hours": "9:00〜22:00（トクバイ）",
+   "closed": "不明",
+   "saleInfo": "月パン／火玉子／水冷凍食品／木 商品限定ポイント5倍／金『金曜八撰』／毎月8日ポイント5倍（トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 1,
+     "text": "パン"
+    },
+    {
+     "wd": 2,
+     "text": "玉子"
+    },
+    {
+     "wd": 3,
+     "text": "冷凍食品"
+    },
+    {
+     "wd": 4,
+     "text": "商品限定ポイント5倍"
+    },
+    {
+     "wd": 5,
+     "text": "金曜八撰"
+    },
+    {
+     "md": [
+      8
+     ],
+     "text": "ポイント5倍"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%83%9E%E3%83%AB%E3%83%8F%E3%83%81/14353"
+    }
+   ]
+  },
+  {
+   "id": "s07",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "フレスコ 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫之荘1-7-7",
+   "dist": "約1.5km",
+   "hours": "9:00〜21:45（公式・トクバイ）",
+   "closed": "不明",
+   "saleInfo": "毎週金曜 牛乳の日（トクバイ）／金曜ポイント3倍（まとめサイト情報・公式未確認）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 5,
+     "text": "牛乳の日（ポイント3倍は公式未確認）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://tokubai.co.jp/%E3%83%95%E3%83%AC%E3%82%B9%E3%82%B3/4257"
+    }
+   ]
+  },
+  {
+   "id": "s08",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "KOHYO 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘1-3-28",
+   "dist": "約1.7km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "10日ありが10デー／15日GG感謝デー／20日・30日お客さま感謝デー／25日iAEON祭り（トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      10
+     ],
+     "text": "ありが10デー"
+    },
+    {
+     "md": [
+      15
+     ],
+     "text": "GG感謝デー"
+    },
+    {
+     "md": [
+      20,
+      30
+     ],
+     "text": "お客さま感謝デー"
+    },
+    {
+     "md": [
+      25
+     ],
+     "text": "iAEON祭り"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://tokubai.co.jp/KOHYO/4684"
+    }
+   ]
+  },
+  {
+   "id": "s09",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "業務スーパー 富松店",
+   "city": "尼崎市",
+   "address": "尼崎市富松町",
+   "dist": "約1.8km（町レベルの概算）",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://tokubai.co.jp/%E6%A5%AD%E5%8B%99%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC/prefectures/28/areas/712"
+    }
+   ]
+  },
+  {
+   "id": "s10",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "サンディ 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘3-2-15",
+   "dist": "約2.0km",
+   "hours": "10:00〜19:30（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "ディスカウント",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.sundi.co.jp/shop/details-mukukonosou.html"
+    }
+   ]
+  },
+  {
+   "id": "s11",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "スーパーオオジ 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘3-30-5",
+   "dist": "約2.2km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": []
+  },
+  {
+   "id": "s12",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 稲野店",
+   "city": "伊丹市",
+   "address": "伊丹市安堂寺町3-3-1",
+   "dist": "約2.2km",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "伊丹寄り",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s13",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "業務スーパー 南武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘3-15-11",
+   "dist": "約2.4km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "冷凍・大容量",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://tokubai.co.jp/%E6%A5%AD%E5%8B%99%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC/prefectures/28/areas/712"
+    }
+   ]
+  },
+  {
+   "id": "s14",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ塚口",
+   "city": "尼崎市",
+   "address": "尼崎市塚口町1-16-1",
+   "dist": "約2.6km",
+   "hours": "9:30〜21:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s15",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 西宮熊野店",
+   "city": "西宮市",
+   "address": "西宮市熊野町14-14",
+   "dist": "約2.6km",
+   "hours": "9:00〜21:45（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s16",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 西宮門戸店",
+   "city": "西宮市",
+   "address": "西宮市野間町2-9",
+   "dist": "約2.8km",
+   "hours": "9:00〜21:45（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ立花",
+   "city": "尼崎市",
+   "address": "尼崎市立花町1-15-8",
+   "dist": "約3.0km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s18",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー フェスタ立花店",
+   "city": "尼崎市",
+   "address": "尼崎市七松町1-3-1",
+   "dist": "約3.3km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop/5840"
+    }
+   ]
+  },
+  {
+   "id": "s19",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 尼崎大西店",
+   "city": "尼崎市",
+   "address": "尼崎市大西町3-3-13",
+   "dist": "約3.4km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/detail/west182/"
+    }
+   ]
+  },
+  {
+   "id": "s20",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 甲子園店",
+   "city": "西宮市",
+   "address": "西宮市甲子園口3-15-16",
+   "dist": "約3.4km",
+   "hours": "9:00開店（公式。閉店時刻は未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/%E5%85%B5%E5%BA%AB%E7%9C%8C/"
+    }
+   ]
+  },
+  {
+   "id": "s21",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 塚口店",
+   "city": "尼崎市",
+   "address": "尼崎市上坂部1-4-1",
+   "dist": "約3.9km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s22",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 尼崎西店",
+   "city": "尼崎市",
+   "address": "尼崎市西難波町1-2-6",
+   "dist": "約3.9km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/181.html"
+    }
+   ]
+  },
+  {
+   "id": "s23",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 西宮北口店",
+   "city": "西宮市",
+   "address": "西宮市芦原町8-10",
+   "dist": "約4.1km",
+   "hours": "9:30開店（公式。閉店時刻は未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/%E5%85%B5%E5%BA%AB%E7%9C%8C/"
+    }
+   ]
+  },
+  {
+   "id": "s24",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ尼崎近松",
+   "city": "尼崎市",
+   "address": "尼崎市上坂部3-11-1",
+   "dist": "約4.4km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s25",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 大社店",
+   "city": "西宮市",
+   "address": "西宮市大社町13-30",
+   "dist": "約4.5km",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s26",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 尼崎食満店",
+   "city": "尼崎市",
+   "address": "尼崎市食満5-13-13",
+   "dist": "約4.5km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/143.html"
+    }
+   ]
+  },
+  {
+   "id": "s27",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 広田店",
+   "city": "西宮市",
+   "address": "西宮市室川町6-10",
+   "dist": "約4.6km",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s28",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 今津駅前店",
+   "city": "西宮市",
+   "address": "西宮市今津曙町1-1",
+   "dist": "約5.0km",
+   "hours": "9:00開店（公式。閉店時刻は未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/%E5%85%B5%E5%BA%AB%E7%9C%8C/"
+    }
+   ]
+  },
+  {
+   "id": "s29",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 阪神鳴尾店",
+   "city": "西宮市",
+   "address": "西宮市里中町3-13-40",
+   "dist": "約5.3km",
+   "hours": "9:00開店（公式。閉店時刻は未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/%E5%85%B5%E5%BA%AB%E7%9C%8C/"
+    }
+   ]
+  },
+  {
+   "id": "s30",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 尼崎難波店",
+   "city": "尼崎市",
+   "address": "尼崎市東難波町5-22-30",
+   "dist": "約5.3km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s31",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ園田",
+   "city": "尼崎市",
+   "address": "尼崎市東園田町4-104-1",
+   "dist": "約5.4km",
+   "hours": "1F 9:00〜22:00／2F 9:30〜20:00（公式）",
+   "closed": "今月なし（公式）",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.coop-kobe.net/shop/index.php?area=10"
+    }
+   ]
+  },
+  {
+   "id": "s32",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 出屋敷店",
+   "city": "尼崎市",
+   "address": "尼崎市竹谷町2-183",
+   "dist": "約5.4km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s33",
+   "region": "amagasaki",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "ライフ 武庫川店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫川町2-53",
+   "dist": "約5.6km",
+   "hours": "9:30開店（公式。閉店時刻は未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.lifecorp.jp/%E5%85%B5%E5%BA%AB%E7%9C%8C/"
+    }
+   ]
+  },
+  {
+   "id": "s34",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 西宮今津店",
+   "city": "西宮市",
+   "address": "西宮市今津出在家町7-35",
+   "dist": "約5.6km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s35",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 浜松原店",
+   "city": "西宮市",
+   "address": "西宮市浜松原町2-50",
+   "dist": "約5.7km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s36",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 鳴尾店",
+   "city": "西宮市",
+   "address": "西宮市上田西町2-36",
+   "dist": "約6.1km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "s37",
+   "region": "nishinomiya",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 西宮前浜店",
+   "city": "西宮市",
+   "address": "西宮市前浜町1-35",
+   "dist": "約6.4km",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "水 mandai payチャージ特典日／土 mandai pay払いポイント3倍（万代共通・トクバイ）",
+   "note": "",
+   "sales": [
+    {
+     "wd": 3,
+     "text": "mandai payチャージ特典日（万代共通）"
+    },
+    {
+     "wd": 6,
+     "text": "mandai pay払いでポイント3倍（万代共通）"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.mandai-net.co.jp/store/hyogo/"
+    }
+   ]
+  },
+  {
+   "id": "s38",
+   "region": "itami",
+   "type": "big",
+   "kind": "総合スーパー",
+   "name": "イオンモール伊丹昆陽（イオンスタイル伊丹昆陽）",
+   "city": "伊丹市",
+   "address": "伊丹市池尻4-1-1",
+   "dist": "約2.3km",
+   "hours": "1F 9:00〜23:00／2・3F 9:00〜22:00／専門店10:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "毎月10日ありが10デー（イオンリテール公式）",
+   "note": "伊丹寄り",
+   "sales": [
+    {
+     "md": [
+      10
+     ],
+     "text": "ありが10デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.aeon.jp/sc/itamikoya/"
+    }
+   ]
+  },
+  {
+   "id": "s39",
+   "region": "nishinomiya",
+   "type": "big",
+   "kind": "総合スーパー",
+   "name": "阪急西宮ガーデンズ（イズミヤ）",
+   "city": "西宮市",
+   "address": "西宮市高松町14-2",
+   "dist": "約3.5km",
+   "hours": "イズミヤ10:00〜21:00／専門店10:00〜20:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://nishinomiya-gardens.com/access"
+    }
+   ]
+  },
+  {
+   "id": "s40",
+   "region": "amagasaki",
+   "type": "big",
+   "kind": "総合スーパー",
+   "name": "イオンスタイル尼崎",
+   "city": "尼崎市",
+   "address": "尼崎市次屋3-13-18",
+   "dist": "約5.5km",
+   "hours": "9:00〜23:00（一部売場除く・公式）",
+   "closed": "不明",
+   "saleInfo": "毎月10日ありが10デー（イオンリテール公式）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      10
+     ],
+     "text": "ありが10デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.aeon.com/store/%E3%82%A4%E3%82%AA%E3%83%B3/%E3%82%A4%E3%82%AA%E3%83%B3%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB%E5%B0%BC%E5%B4%8E/shop_info/hours/"
+    }
+   ]
+  },
+  {
+   "id": "s41",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "100円ショップ",
+   "name": "DAISO 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘1-19-1",
+   "dist": "約1.7km",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.daiso-sangyo.co.jp/shop/detail/002540"
+    }
+   ]
+  },
+  {
+   "id": "s42",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "100円ショップ",
+   "name": "Can★Do KOHYO武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘1-3-28",
+   "dist": "約1.7km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shopinfo.cando-web.co.jp/detail/shop-5245/"
+    }
+   ]
+  },
+  {
+   "id": "s43",
+   "region": "amagasaki",
+   "type": "daily",
+   "kind": "100円ショップ",
+   "name": "ワッツ（武庫之荘周辺・店舗名未確認）",
+   "city": "尼崎市",
+   "address": "不明",
+   "dist": "不明",
+   "hours": "10:00〜24:00（地図データ・公式未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": []
+  },
+  {
+   "id": "s44",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "ツルハドラッグ 尼崎武庫元町店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫元町1-21-11",
+   "dist": "約0.9km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "毎月1日・10日・20日お客様感謝デー（ポイントカード提示で5%引・公式）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      1,
+      10,
+      20
+     ],
+     "text": "お客様感謝デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.tsuruha-g.com/hyogo/amagasakishi"
+    }
+   ]
+  },
+  {
+   "id": "s45",
+   "region": "itami",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "ドラッグストアコスモス 野間北店",
+   "city": "伊丹市",
+   "address": "伊丹市野間北",
+   "dist": "約1.0km（町レベルの概算）",
+   "hours": "10:00〜21:00（地図データ・公式未確認）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "伊丹寄り",
+   "sales": [],
+   "links": []
+  },
+  {
+   "id": "s46",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "ツルハドラッグ 尼崎武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市武庫之荘本町1-3-1",
+   "dist": "約1.2km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "毎月1日・10日・20日お客様感謝デー（公式）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      1,
+      10,
+      20
+     ],
+     "text": "お客様感謝デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.tsuruha-g.com/3438"
+    }
+   ]
+  },
+  {
+   "id": "s47",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "ツルハドラッグ 尼崎富松店",
+   "city": "尼崎市",
+   "address": "尼崎市富松町3-1-18",
+   "dist": "約1.4km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "毎月1日・10日・20日お客様感謝デー（公式）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      1,
+      10,
+      20
+     ],
+     "text": "お客様感謝デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://shop.tsuruha-g.com/hyogo/amagasakishi"
+    }
+   ]
+  },
+  {
+   "id": "s48",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "スギ薬局 武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘1-19-20 アーク武庫之荘ビル2F",
+   "dist": "約1.7km",
+   "hours": "10:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "ポイント5倍デーは不定期・店舗ごと（公式FAQ）",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.sugi-net.jp/stores/000282"
+    }
+   ]
+  },
+  {
+   "id": "s49",
+   "region": "mukonoso",
+   "type": "daily",
+   "kind": "ドラッグストア",
+   "name": "ウエルシア 尼崎南武庫之荘店",
+   "city": "尼崎市",
+   "address": "尼崎市南武庫之荘7-11-5",
+   "dist": "約2.0km",
+   "hours": "0:00〜3:00、4:00〜24:00（公式）",
+   "closed": "調剤は日・祝休（公式）",
+   "saleInfo": "毎月20日お客様感謝デー（WAON POINT200以上利用で1.5倍分の買い物・公式FAQ）",
+   "note": "",
+   "sales": [
+    {
+     "md": [
+      20
+     ],
+     "text": "お客様感謝デー"
+    }
+   ],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://store.welcia.co.jp/welcia/spot/detail?code=6630D"
+    }
+   ]
+  },
+  {
+   "id": "s50",
+   "region": "itami",
+   "type": "daily",
+   "kind": "ホームセンター",
+   "name": "ホダカ 伊丹店",
+   "city": "伊丹市",
+   "address": "伊丹市山田5-3-6",
+   "dist": "約0.8km",
+   "hours": "月〜土7:00〜20:00／日祝9:00〜19:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "伊丹寄り",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://www.dcm-hc.co.jp/shop/detail/02_4570.html"
+    }
+   ]
+  },
+  {
+   "id": "s51",
+   "region": "nishinomiya",
+   "type": "daily",
+   "kind": "ホームセンター",
+   "name": "コーナン 武庫川店",
+   "city": "西宮市",
+   "address": "西宮市池開町1-20",
+   "dist": "約5.3km",
+   "hours": "9:30〜20:00",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://map.hc-kohnan.com/"
+    }
+   ]
+  },
+  {
+   "id": "s52",
+   "region": "nishinomiya",
+   "type": "daily",
+   "kind": "ホームセンター",
+   "name": "コーナン 西宮今津店",
+   "city": "西宮市",
+   "address": "西宮市今津港町1-26",
+   "dist": "約5.8km",
+   "hours": "9:30〜21:00",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://map.hc-kohnan.com/"
+    }
+   ]
+  },
+  {
+   "id": "s53",
+   "region": "amagasaki",
+   "type": "daily",
+   "kind": "ホームセンター",
+   "name": "コーナン 尼崎道意町店",
+   "city": "尼崎市",
+   "address": "尼崎市道意町7-1",
+   "dist": "約6.0km",
+   "hours": "月〜土9:30〜21:00／日祝9:00〜21:00",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://map.hc-kohnan.com/"
+    }
+   ]
+  },
+  {
+   "id": "s54",
+   "region": "amagasaki",
+   "type": "daily",
+   "kind": "ホームセンター",
+   "name": "コーナン 杭瀬店",
+   "city": "尼崎市",
+   "address": "尼崎市梶ヶ島19-1",
+   "dist": "約7.3km",
+   "hours": "9:30〜21:00",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "",
+   "sales": [],
+   "links": [
+    {
+     "t": "チラシ・特売／公式",
+     "u": "https://map.hc-kohnan.com/"
+    }
+   ]
+  },
+  {
+   "id": "aprice",
+   "region": "mukonoso",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "A-プライス",
+   "city": "不明",
+   "address": "不明",
+   "dist": "約2.3km",
+   "hours": "不明",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "業務用食材（旧メモより。新リストに無し）",
+   "sales": [],
+   "links": []
+  },
+  {
+   "id": "it01",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "万代 伊丹荒牧店",
+   "city": "伊丹市",
+   "address": "伊丹市鴻池7-3-9",
+   "dist": "不明",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.mandai-net.co.jp/store/243.html"
+    }
+   ]
+  },
+  {
+   "id": "it02",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "コープ伊丹",
+   "city": "伊丹市",
+   "address": "伊丹市平松5-1-29-101",
+   "dist": "不明",
+   "hours": "9:00〜21:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://shop.coop-kobe.net/shop/detail/index.php?id=5730"
+    }
+   ]
+  },
+  {
+   "id": "it03",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 中央店",
+   "city": "伊丹市",
+   "address": "伊丹市中央5-3-38",
+   "dist": "不明",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "it04",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 駅前店",
+   "city": "伊丹市",
+   "address": "伊丹市中央1-1-1",
+   "dist": "不明",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop/5831"
+    }
+   ]
+  },
+  {
+   "id": "it05",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー アリオ店",
+   "city": "伊丹市",
+   "address": "伊丹市伊丹1-10-15-101",
+   "dist": "不明",
+   "hours": "9:00〜22:00（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop/5832"
+    }
+   ]
+  },
+  {
+   "id": "it06",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 鴻池店",
+   "city": "伊丹市",
+   "address": "伊丹市鴻池5-6-3",
+   "dist": "不明",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "it07",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 桜台店",
+   "city": "伊丹市",
+   "address": "伊丹市中野北3-5-28",
+   "dist": "不明",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  },
+  {
+   "id": "it08",
+   "region": "itami",
+   "type": "super",
+   "kind": "スーパー",
+   "name": "関西スーパー 荒牧店",
+   "city": "伊丹市",
+   "address": "伊丹市荒牧7-12-15",
+   "dist": "不明",
+   "hours": "9:00〜21:50（公式）",
+   "closed": "不明",
+   "saleInfo": "不明",
+   "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
+   "sales": [],
+   "links": [
+    {
+     "t": "公式ページ",
+     "u": "https://www.kansaisuper.co.jp/shop"
+    }
+   ]
+  }
+ ]
+}
