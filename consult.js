@@ -33,12 +33,13 @@ function consultPanel(){const s=secret();
  ${CON.code?`<textarea id="c_code" rows="4" style="width:100%" placeholder="アキラちゃんから届いた取り込みコード（JSON）"></textarea><div class="row"><button class="sub" onclick="importCode()">取り込む</button></div>`:''}
  ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${pending().length&&relayBase()?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる（待ち${pending().length}件）</button></div>`:''}</div>`}
 function toConfirm(){let q=val('c_q');CON.type=val('c_type')||CON.type;if(!q&&RC.imgs.length)q=CON.type==='receipt'?'レシートの写真です。読み取って receipt の形で返してください。':CON.type==='fridge'?'冷蔵庫の写真です。中身を読み取って fridge の形で返してください。':'写真を見て相談にのってください。';if(!q){alert('相談したいことを書いてください');return}if(CON.type==='receipt'&&!RC.imgs.length){alert('レシートの写真を選んでください');return}if(CON.type==='fridge'&&!RC.imgs.length){alert('冷蔵庫の写真を選んでください');return}if(CON.incType!==CON.type){CON.inc=CON.type==='receipt'?{fridge:false,list:false,spend:'off',memo:false}:{fridge:true,list:true,spend:'sum',memo:false};CON.incType=CON.type}if(!['compare','order'].includes(CON.type))CON.extra=null;CON.q=q;CON.stage='confirm';CON.status='';render()}
-function setInc(k,v){CON.inc[k]=v;render()}
+function keepQ(){const e=document.getElementById('c_qe');if(e)CON.q=e.value}
+function setInc(k,v){keepQ();CON.inc[k]=v;render()}
 function confirmPanel(){let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){pl=null;CON.status=e.message;CON.ok=false}
  const d=pl?JSON.parse(pl.body).data:{},i=CON.inc,cb=(k,l)=>`<label class="chk1"><input type="checkbox" ${i[k]?'checked':''} onchange="setInc('${k}',this.checked)"> ${l}</label>`;
  const ex=(a,f)=>a&&a.length?a.slice(0,3).map(f).map(esc).join('、')+(a.length>3?' ほか':''):'なし';
  return `<div class="card consultbox"><b>送る内容の確認</b>
- <div class="muted">種類：${esc((CTYPES.find(x=>x[0]===CON.type)||[])[1]||'')}／相談：${esc(CON.q)}</div>${RC.imgs.length?`<div>📷 写真 ${RC.imgs.length}枚</div>${rcThumbs(false)}`:''}
+ <div class="muted">種類：${esc((CTYPES.find(x=>x[0]===CON.type)||[])[1]||'')}</div><label class="muted" for="c_qe">送るメッセージ（テンプレのまま送っても、書き足しても、全部書きかえてもOK）</label><textarea id="c_qe" class="qedit" rows="4" style="width:100%" oninput="CON.q=this.value">${esc(CON.q)}</textarea>${CON.type==='order'&&typeof payNote==='function'?payNote():''}${RC.imgs.length?`<div>📷 写真 ${RC.imgs.length}枚</div>${rcThumbs(false)}`:''}
  ${cb('fridge',`冷蔵庫（${i.fridge?S.fridge.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.fridge?ex(d.fridge,f=>f.name):'送らない')}</div>
  ${cb('list',`買い物リスト（${i.list?S.list.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.list?ex(d.list,x=>x.name):'送らない')}</div>
  <div>家計（今月${i.spend==='off'?'・送らない':i.spend==='sum'?'・'+(d.spendingCount||0)+'件を集計':'・'+((d.spending||[]).length)+'件'}）：<select onchange="setInc('spend',this.value)">${[['sum','費目別の集計だけ'],['detail','明細も送る'],['off','送らない']].map(([k,l])=>`<option value="${k}"${i.spend===k?' selected':''}>${l}</option>`).join('')}</select></div>
@@ -62,7 +63,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(size(body)>MAXBYTES)throw new Error('送るデータが大きすぎます（冷蔵庫や買い物リストを減らすか、送るものを減らしてください）');
  if(RC.imgs.length){p.data.images=RC.imgs.slice(0,RC_MAX_IMGS);body=JSON.stringify(p);if(size(body)>MAXBYTES+RC_MAXBYTES)throw new Error('写真が大きすぎます。枚数を減らしてください')}
  return {body,dropped}}
-async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;if(!s.url||!s.key){CON.status='送信先が未設定です';CON.ok=false;return render()}
+async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;keepQ();CON.q=String(CON.q||'').trim().slice(0,4000);if(!CON.q){CON.status='送るメッセージを書いてください';CON.ok=false;return render()}if(!s.url||!s.key){CON.status='送信先が未設定です';CON.ok=false;return render()}
  if(!CTYPES.some(([k])=>k===CON.type)||!CON.q)return;
  if(!navigator.onLine){CON.status='いまオフラインなので送れません。電波のあるところで、もう一度送ってください。';CON.ok=false;return render()}
  CON.reqId='c'+uid();let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){CON.status=e.message;CON.ok=false;return render()}

@@ -72,3 +72,5 @@ ul.frrev li select{min-width:7em}
 .ord .tag{font-weight:bold}.ord.cart{border-left:5px solid #f9a825}.ord.done{opacity:.7}a.btnlink{display:inline-block;background:#c62828;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:bold}
 .nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:40px;color:#1f3a8a;font-weight:bold}
 .maplink{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
+.qedit{font-size:16px;line-height:1.5;margin:4px 0}.myq{margin-top:8px}
+.req2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.req2 button{font-size:16px;font-weight:bold;min-height:52px}.reqbox .rql{display:block;margin-top:6px;font-weight:bold;font-size:14px}.rqself{text-align:right}.rqself a{font-size:14px}

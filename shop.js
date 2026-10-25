@@ -32,7 +32,7 @@ function deliMenu(dish){return `<div class="card nsbox"><b>🛵 出前：${esc(d
 function goConsult(type,q,extra){CON.open=true;CON.from=location.hash;CON.type=type;CON.q=q;CON.extra=extra;CON.inc={fridge:false,list:false,spend:'off',memo:false};CON.incType=type;CON.stage='confirm';CON.status='';render();scrollTo(0,0)}
 function askCompare(mode,name){const amount=val('cp_amt'),conditions=val('cp_cond'),b=+val('cp_bud');const budget=Number.isFinite(b)&&b>0?b:null;
  goConsult('compare',mode==='delivery'?`「${name}」の出前を、安い・ベター・豪華の3つで比べて。配達料と届く目安も。`:`「${name}」${amount?'（'+amount+'）':''}を、安い・ベター・豪華の3つで比べて。送料こみの実質価格も。`,
-  {compare:{mode,name,amount,conditions,budget,area:'兵庫県尼崎市 武庫之荘',known:knownPrices(name).map(x=>({source:x.src,store:x.store,price:x.price||null,text:x.text||'',date:x.date||''}))}})}
+  {compare:{mode,name,amount,conditions,budget,people:mode==='delivery'?4:null,time:'',area:'兵庫県尼崎市 武庫之荘',known:knownPrices(name).map(x=>({source:x.src,store:x.store,price:x.price||null,text:x.text||'',date:x.date||''}))}})}
 function askOrder(items,mode){if(!ORDER_OK)return;const id='o'+uid();items=items.slice(0,30);
  goConsult('order',`注文の準備をお願い：${items.map(i=>i.name+(i.qty?' '+i.qty:'')).join('、')}。カートに入れて決済の直前まで。支払いは自分でします。`,{order:{orderId:id,mode,items,payment:'self'}})}
 function onSent(type,extra){if(type==='order'&&extra&&extra.order){const a=orders();a.push({id:extra.order.orderId,at:new Date().toISOString(),items:extra.order.items,mode:extra.order.mode});saveOrders(a)}}
@@ -72,3 +72,29 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
  if(d.ord!==undefined){const it=S.list.filter(i=>!i.done&&baseName(i.name)===d.ord).map(i=>({name:i.name,qty:i.qty||''}));return askOrder(it.length?it:[{name:d.ord}],d.mode||'goods')}
  if(d.pick!==undefined){const r=CMP_SHOWN,o=r&&r.options[+d.pick];if(!o)return;return askOrder([{name:o.name,qty:r.target.amount||'',store:o.store||'',price:Number.isFinite(o.price)?o.price:null,total:Number.isFinite(o.total)?o.total:null,url:safeUrl(o.url),rank:o.rank}],r.target.mode==='delivery'?'delivery':'goods')}
  if(d.odel){saveOrders(orders().filter(o=>o.id!==d.odel));render();scrollTo(0,y)}});
+// ---- 🛵 出前を頼む ／ 📦 通販で頼む（リストにない物も自由に。頼む＝かならず3つの値段比べ → 「これにする」で注文へ）----
+let REQ=null;const RQ={delivery:{},goods:{}};
+const RQF={delivery:[['what','食べたいもの','例：ピザとポテト、子ども向けも','ta'],['people','人数','4','num'],['budget','予算（円・任意）','','num'],['time','希望の時間（任意）','例：19時ごろ'],['note','メモ（任意）','例：辛くないもの、アレルギーなど']],
+ goods:[['what','ほしいもの','例：子ども用の水筒 500mlくらい','ta'],['qty','数量','1'],['budget','予算（円・任意）','','num'],['cond','条件（任意）','例：メーカー、サイズ、〇日までに届く'],['note','メモ（任意）','']]};
+function rqVal(m,k){const v=RQ[m][k];return v===undefined?(k==='people'?'4':k==='qty'?'1':''):v}
+function rqKeep(){if(!REQ)return;RQF[REQ].forEach(([k])=>{const e=document.getElementById('rq_'+k);if(e)RQ[REQ][k]=e.value.trim()})}
+function rqLatest(m){let best=null;try{hist().forEach(e=>{if(e.item.kind==='compare'&&(e.item.target.mode||'goods')===m&&(!best||e.at>best.at))best=e})}catch(e){}return best}
+function reqHtml(){const tab=(m,l)=>`<button class="${REQ===m?'on':''}" data-rq="${m}">${l}</button>`;let h=`<div class="seg req2">${tab('delivery','🛵 出前を頼む')}${tab('goods','📦 通販で頼む')}</div>`;if(!REQ)return h;const m=REQ,dv=m==='delivery';
+ h+=`<div class="card nsbox reqbox">${RQF[m].map(([k,l,ph,t])=>`<label class="rql" for="rq_${k}">${l}</label>`+(t==='ta'?`<textarea id="rq_${k}" rows="2" style="width:100%" placeholder="${esc(ph)}">${esc(rqVal(m,k))}</textarea>`:`<input id="rq_${k}" ${t==='num'?'type="number" inputmode="numeric"':''} value="${esc(rqVal(m,k))}" placeholder="${esc(ph)}" style="width:100%">`)).join('')}`;
+ const q=RQ[m].what||'';const L=dv?DELIS:NETS;
+ if(SHOP_AI){h+=`<div class="row"><button data-rqgo="${m}">頼む（自動で値段を比べる）</button></div><div class="muted">安い・ベター・豪華の3つが届いたら「これにする」で注文の準備へ。${ORDER_OK?'支払いはご自身で。':''}</div>
+  <div class="rqself"><a class="link" href="#" data-rqself="${m}">自分で探す（リンク）</a></div>${NS==='rq'+m&&q?`<div class="nslinks">${L.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(q))}">${esc(l)}</a>`).join('')}</div>`:''}`;
+  const e=rqLatest(m);if(e)h+=`<div class="muted">いちばん新しい比べた結果（${esc(e.at.slice(5,16).replace('T',' '))}）</div>`+compareView(e.item)}
+ else h+=`<div class="row"><button data-rqself="${m}">比較用のリンクを出す</button></div>${NS==='rq'+m&&q?`<div class="nslinks">${L.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(q))}">${esc(l)}で探す</a>`).join('')}</div><div class="muted">いくつか開いて、送料こみの値段をくらべてください。</div>`:''}`;
+ if(dv)h+=`<div class="muted">出前館・menu はトップを開きます（検索リンクがないため）。</div>`;return h+'</div>'}
+function rqGo(m){rqKeep();const r=RQ[m];if(!r.what){alert(m==='delivery'?'食べたいものを書いてください':'ほしいものを書いてください');return}
+ const b=+r.budget,budget=Number.isFinite(b)&&b>0?b:null;
+ if(m==='delivery'){const n=+r.people,people=Number.isInteger(n)&&n>0&&n<100?n:4;
+  goConsult('compare',`${r.what}\n（出前・${people}人分${budget?'・予算'+budget+'円':''}${r.time?'・'+r.time:''}${r.note?'・'+r.note:''}）\n安い・ベター・豪華の3つで比べて。配達料こみの実質価格と届く目安も。`,{compare:{mode:'delivery',name:r.what,amount:people+'人分',people,time:r.time||'',conditions:r.note||'',budget,area:'兵庫県尼崎市 武庫之荘',known:[]}})}
+ else goConsult('compare',`${r.what}${r.qty?'（'+r.qty+'）':''}${r.cond?'\n条件：'+r.cond:''}${r.note?'\nメモ：'+r.note:''}${budget?'\n予算：'+budget+'円':''}\n安い・ベター・豪華の3つで比べて。送料こみの実質価格も。`,{compare:{mode:'goods',name:r.what,amount:r.qty||'',conditions:[r.cond,r.note].filter(Boolean).join('／'),budget,area:'兵庫県尼崎市 武庫之荘',known:knownPrices(r.what).map(x=>({source:x.src,store:x.store,price:x.price||null,text:x.text||'',date:x.date||''}))}})}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-rq],[data-rqgo],[data-rqself]');if(!t)return;e.preventDefault();const y=scrollY;rqKeep();
+ if(t.dataset.rq){REQ=REQ===t.dataset.rq?null:t.dataset.rq;render();scrollTo(0,y);return}
+ if(t.dataset.rqgo)return rqGo(t.dataset.rqgo);
+ if(t.dataset.rqself){const m=t.dataset.rqself;if(!RQ[m].what){alert('先に何を探すか書いてください');return}NS=NS==='rq'+m?null:'rq'+m;render();scrollTo(0,y)}});
+{const f=V.list;V.list=function(){return reqHtml()+f.apply(this,arguments)}}
+{const f=V.fridge;V.fridge=function(){const s=f.apply(this,arguments);return s.replace('<h2>今週の献立</h2>',reqHtml()+'<h2>今週の献立</h2>')}}

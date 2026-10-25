@@ -87,6 +87,7 @@ const QUICK=[['menu','🍳 冷蔵庫で今夜の献立','冷蔵庫にあるも�
  ['money','💰 今週の出費どう？','今週と今月の出費を見て、使いすぎていないか、来週どうすればいいか教えて。'],
  ['hacks','💡 節約ワザ','最近買ったものや冷蔵庫のもので使える、節約のこつ・ライフハックを教えて。'],
  ['receipt','🧾 レシート読み取り','']];
+function myAsk(){const q=val('my_q');if(!q)return alert('聞きたいことを書いてください');if(IS_DEMO)return alert('見本モードでは相談を送りません');CON.open=true;CON.from=location.hash||'#ai';CON.type='advise';CON.q=q;CON.extra=null;CON.inc={fridge:true,list:true,spend:'sum',memo:false};CON.incType='advise';CON.status='';CON.stage='confirm';render();scrollTo(0,0)}
 function quickAsk(i){const [t,,q]=QUICK[i];
  if(IS_DEMO){if(t==='receipt')return alert('見本モードではレシートを送りません');AI.mode=t;return aiAsk().then(()=>{if(AI.res){AT.open='demo';render()}})}
  CON.open=true;CON.from=location.hash||'#ai';CON.type=t;CON.q=q;CON.status='';
@@ -133,7 +134,7 @@ V.ai=function(){
   h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" data-x="hdel" data-k="${esc(AT.open)}">🗑 消す</button>`:''}</div>`;
   h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${(r.ingredients||[]).map(x=>`<li>${esc(typeof x==='string'?x:(x&&x.name)||'')}</li>`).join('')}</ul><div class="row"><button class="sub" onclick="aiIngToList()">材料を買い物リストに入れる</button></div></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
   if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div>`;return h}AT.open=null}
- h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div>
+ h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div><div class="card myq"><label for="my_q"><b>✏️ 自分で書く</b></label><textarea id="my_q" rows="3" style="width:100%" placeholder="アキラちゃんに聞きたいことを自由に書いてね"></textarea><div class="row"><button onclick="myAsk()">送る内容を確認する</button></div><div class="muted">ワンタップ相談も、送る前の確認画面でメッセージを書きかえられます。</div></div>
  <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
  const all=hist(),kinds=[...new Set(all.map(e=>e.item.kind))],list=all.filter(e=>!AT.filter||e.item.kind===AT.filter);
  h+=`<h2>返事の保管庫 <span class="muted">${all.length}件</span></h2>`;
