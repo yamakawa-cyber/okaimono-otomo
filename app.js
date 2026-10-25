@@ -27,7 +27,7 @@ function validate(data){if(!isObj(data))throw new Error('データの形が違�
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])||data[k].length>MAXITEMS)bad(k);out[k]=data[k]}
  out.list.forEach(i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.cart)||(i.price!==undefined&&!okAmt1(i.price))||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip))||(i.uses!==undefined&&!(isArr(i.uses)&&i.uses.length<=14&&i.uses.every(u=>isObj(u)&&okWd(u.d)&&okS(u.dish,100)))))bad('list')});
  out.spend.forEach(r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,300))bad('spend');if(!r.id)r.id=uid()});
- out.fridge.forEach(f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until)))bad('fridge');if(!f.id)f.id=uid()});
+ out.fridge.forEach(f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores.forEach(s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
   if(s.region!==undefined&&BASE.regions.length&&!BASE.regions.some(r=>r.id===s.region))bad('userStores');
@@ -116,8 +116,7 @@ money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=tru
  <div class="row"><select id="sp_cat">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" placeholder="金額（円）"></div>
  <input id="sp_memo" placeholder="メモ" style="width:100%"><div class="row"><button onclick="addSpend()">記録する</button><button class="sub" onclick="csv()">CSVで書き出す</button></div></div>
  ${S.spend.slice().reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">まだ記録がありません</div>'}`},
-fridge(){return `<h2>冷蔵庫の在庫（${WD[S.settings.fridgeDay]}曜に点検）</h2><div class="card"><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_until" type="date" lang="ja"></div><div class="row"><button onclick="addFr()">追加</button></div>
- <ul class="chk">${S.fridge.slice().sort((a,b)=>String(a.until||'9').localeCompare(String(b.until||'9'))).map(f=>`<li><span style="flex:1">${esc(f.name)} <span class="muted">${isDate(f.until)?'期限 '+md(f.until):''}${isDate(f.until)&&f.until<=ymd(today())?' ⚠️':''}</span></span><button class="sub" data-act="toList" data-id="${esc(f.id)}">→リスト</button><button class="sub" data-act="delFr" data-id="${esc(f.id)}">✕</button></li>`).join('')}</ul></div>
+fridge(){return `${frView()}
  <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)" onchange="render()"></div>${dishChips(w)}`).join('')}</div>
  <h2>作り置き</h2><textarea id="prep" rows="5" style="width:100%" placeholder="作るもの・いつ作るか・食べきる目安" oninput="S.prep=this.value;save()">${esc(S.prep)}</textarea>`},
 settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 見本データで表示中です（本データには保存されません）</div>':''}<h2>地域</h2>${regionSeg()}
@@ -161,14 +160,14 @@ function oftSet(L){S.often=L;save();const y=scrollY;render();scrollTo(0,y)}
 function oftAdd(){const n=val('of_name').trim().slice(0,100);if(!n)return toast('品名を入れてね');const o={name:n,cat:val('of_cat')||'食材・米'};const q=val('of_qty').trim().slice(0,50);if(q)o.qty=q;const p=+val('of_price');if(okAmt(p)&&p>0)o.price=p;oftSet(oft().concat([o]))}
 function oftMove(k,d){const L=oft().slice();const j=k+d;if(j<0||j>=L.length)return;[L[k],L[j]]=[L[j],L[k]];oftSet(L)}
 function oftDel(k){const L=oft().slice();const [g]=L.splice(k,1);if(!g)return;oftSet(L);undoToast(`「${g.name.slice(0,14)}」を消しました`,()=>{const M=oft().slice();M.splice(Math.min(k,M.length),0,g);oftSet(M)})}
-function oftReset(){const prev=oft().slice();delete S.often;save();const y=scrollY;render();scrollTo(0,y);undoToast('はじめの品ぞろえに戻しました',()=>oftSet(prev))}
+function oftReset(){const prev=oft().slice();delete S.often;save();const y=scrollY;render();scrollTo(0,y);undo1('はじめの品ぞろえに戻しました',()=>oftSet(prev))}
 document.addEventListener('change',e=>{const f=e.target.dataset&&e.target.dataset.of;if(!f)return;const row=e.target.closest('[data-ok]');if(!row)return;const k=+row.dataset.ok;const L=oft().map(o=>Object.assign({},o));const o=L[k];if(!o)return;let v=e.target.value;
  if(f==='name'){v=v.trim().slice(0,100);if(!v){toast('品名は空にできません');return render()}o.name=v}else if(f==='price'){const p=+v;if(okAmt(p)&&p>0)o.price=p;else delete o.price}else{v=v.trim().slice(0,50);if(v)o[f]=v;else delete o[f]}S.often=L;save()});
-function cartToBought(){const its=S.list.filter(i=>i.cart&&!i.done);if(!its.length)return;its.forEach(i=>{i.done=true;delete i.cart});const y=scrollY;save();render();scrollTo(0,y);undoToast(`カゴの中の${its.length}品を「買った」にしました`,()=>{its.forEach(i=>{i.done=false;i.cart=true});save();render()},its.length)}
+function cartToBought(){const its=S.list.filter(i=>i.cart&&!i.done);if(!its.length)return;its.forEach(i=>{i.done=true;delete i.cart});const y=scrollY;save();render();scrollTo(0,y);undo1(`カゴの中の${its.length}品を「買った」にしました`,()=>{its.forEach(i=>{i.done=false;i.cart=true});save();render()},its.length)}
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-tm]');if(!c)return;togMany(c.dataset.tm.split(',').map(Number).filter(Number.isInteger),c.closest('li'))});
 function delMany(ns){const gone=ns.map(k=>[k,S.list[k]]).filter(x=>x[1]);if(!gone.length)return;S.list=S.list.filter((_,k)=>!ns.includes(k));save();render();
  undoToast(`「${gone[0][1].name.slice(0,14)}」${gone.length>1?`ほか${gone.length-1}件`:''}を消しました`,()=>{gone.sort((a,b)=>a[0]-b[0]).forEach(([k,i])=>S.list.splice(Math.min(k,S.list.length),0,i));save();render()},gone.length)}
-let UND={fns:[],n:0,el:null,h:0};
+let UND={fns:[],n:0,el:null,h:0};function undo1(m,f,c){UND.fns=[];UND.n=0;undoToast(m,f,c)}
 function undoToast(msg,fn,cnt){UND.fns.push(fn);UND.n+=cnt||1;let t=UND.el;if(!t||!t.isConnected){t=UND.el=document.createElement('div');t.id='undos';t.className='undo';t.setAttribute('role','status');t.innerHTML='<span></span><button>元に戻す</button>';document.body.appendChild(t);
   t.querySelector('button').onclick=()=>{const f=UND.fns.slice().reverse();UND.fns=[];UND.n=0;t.remove();clearTimeout(UND.h);f.forEach(x=>x())}}
  t.querySelector('span').textContent=UND.fns.length>1?`${UND.n}品を消しました`:msg;clearTimeout(UND.h);UND.h=setTimeout(()=>{UND.fns=[];UND.n=0;t.remove()},6000)}
@@ -227,7 +226,6 @@ function clearDone(){S.list=S.list.filter(i=>!i.done);save();render()}
 function addSpend(){const a=+val('sp_amt');if(!okAmt(a)||a<=0)return alert('金額は1円以上の数字で入れてください（マイナスは使えません）');const dt=val('sp_date');if(!isDate(dt))return alert('日付を入れてください');S.spend.push({id:uid(),date:dt,store:val('sp_store'),cat:val('sp_cat'),amount:a,memo:val('sp_memo')});save();render()}
 function csv(){const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';const t='\ufeff日付,店,費目,金額,メモ\r\n'+S.spend.map(r=>[r.date,r.store,r.cat,r.amount,r.memo].map(q).join(',')).join('\r\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='家計_'+ymd(today())+'.csv';a.click()}
-function addFr(){const n=val('fr_name');if(!n)return;S.fridge.push({id:uid(),name:n,until:val('fr_until')});save();render()}
 function togDay(i){const a=S.settings.shopDays;S.settings.shopDays=a.includes(i)?a.filter(x=>x!==i):a.concat(i).sort();save();render()}
 function clearSamples(){if(!confirm('メモが「サンプル」の記録や、見本の品物を消します。よろしいですか？'))return;S.spend=S.spend.filter(r=>!/サンプル/.test(r.memo||''));S.list=S.list.filter(i=>!i.sample);S.fridge=S.fridge.filter(f=>!f.sample);S.menu=menuArr().map(x=>/サンプル/.test(x)?'':x);if(isArr(S.sampleKeys)&&S.sampleKeys.includes('prep'))S.prep='';delete S.sampleKeys;save();render()}
 // data属性のボタン（onclickに値を埋め込まない）

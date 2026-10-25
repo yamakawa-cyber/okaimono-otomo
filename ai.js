@@ -69,7 +69,7 @@ const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep
  advise:r=>isStr(r.summary)&&isArr(r.needs)&&isArr(r.steps),chat:r=>isStr(r.reply)};
 function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='AIの答え';return r}
 function aiImport(ev){const inp=ev.target,f=inp.files[0];if(!f)return;f.text().then(t=>{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
- const hid=histAdd(r,'file');if(r.kind==='receipt')return rcImport([r]);AT.open=hid;AT.lesson=null;location.hash='#ai';render()})
+ const hid=histAdd(r,'file');if(r.kind==='receipt'||r.kind==='fridge')return rcImport([r]);AT.open=hid;AT.lesson=null;location.hash='#ai';render()})
  .catch(e=>alert('読めませんでした：'+e.message)).finally(()=>{inp.value=''})}
 // ===== v14：AIタブ（ワンタップ相談・返事の保管庫・料理レッスン）。見本は ?demo=1 のときだけ =====
 AISHAPE.recipe=r=>isStr(r.name)&&isArr(r.ingredients)&&r.ingredients.every(isStr)&&isArr(r.steps)&&r.steps.length>0&&r.steps.every(x=>isObj(x)&&isStr(x.t)&&isStr(x.d));

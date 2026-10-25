@@ -17,7 +17,7 @@ async function rcPick(inp){const q=document.getElementById('c_q'),t=document.get
  const fs=[...inp.files].filter(f=>/^image\//.test(f.type));inp.value='';if(!fs.length)return;
  const room=RC_MAX_IMGS-RC.imgs.length;if(fs.length>room)alert(`写真は${RC_MAX_IMGS}枚までです（${Math.max(0,room)}枚だけ追加します）`);
  RC.busy=true;render();try{for(const f of fs.slice(0,Math.max(0,room)))RC.imgs.push(rcShrink(await rcLoad(f),Math.floor(RC_MAXBYTES/RC_MAX_IMGS)-2000))}catch(e){alert(e.message)}
- RC.busy=false;if(RC.imgs.length&&CON.type!=='receipt'&&confirm('レシートの読み取り（家計簿に入れる）として送りますか？'))CON.type='receipt';render()}
+ RC.busy=false;if(RC.imgs.length&&CON.type!=='receipt'&&CON.type!=='fridge'&&confirm('レシートの読み取り（家計簿に入れる）として送りますか？'))CON.type='receipt';render()}
 // --- 送った相談の番号（返事を受け取るため。7日で忘れる）---
 function pending(){try{const a=JSON.parse(localStorage.getItem(PK)||'[]');return isArr(a)?a.filter(x=>isObj(x)&&/^c[a-z0-9]{4,40}$/.test(x.id)&&Date.now()-x.at<7*864e5):[]}catch(e){return []}}
 function savePending(a){localStorage.setItem(PK,JSON.stringify(a.slice(-30)))}
