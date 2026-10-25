@@ -32,7 +32,7 @@ function consultPanel(){const s=secret();
  <div class="row"><button onclick="toConfirm()" ${CON.sending?'disabled':''}>送る</button><button class="sub" onclick="CON.code=!CON.code;render()">取り込みコードを貼る</button></div>
  ${CON.code?`<textarea id="c_code" rows="4" style="width:100%" placeholder="アキラちゃんから届いた取り込みコード（JSON）"></textarea><div class="row"><button class="sub" onclick="importCode()">取り込む</button></div>`:''}
  ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${pending().length&&relayBase()?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる（待ち${pending().length}件）</button></div>`:''}</div>`}
-function toConfirm(){let q=val('c_q');CON.type=val('c_type')||CON.type;if(!q&&RC.imgs.length)q=CON.type==='receipt'?'レシートの写真です。読み取って receipt の形で返してください。':CON.type==='fridge'?'冷蔵庫の写真です。中身を読み取って fridge の形で返してください。':'写真を見て相談にのってください。';if(!q){alert('相談したいことを書いてください');return}if(CON.type==='receipt'&&!RC.imgs.length){alert('レシートの写真を選んでください');return}if(CON.type==='fridge'&&!RC.imgs.length){alert('冷蔵庫の写真を選んでください');return}if(CON.incType!==CON.type){CON.inc=CON.type==='receipt'?{fridge:false,list:false,spend:'off',memo:false}:{fridge:true,list:true,spend:'sum',memo:false};CON.incType=CON.type}CON.q=q;CON.stage='confirm';CON.status='';render()}
+function toConfirm(){let q=val('c_q');CON.type=val('c_type')||CON.type;if(!q&&RC.imgs.length)q=CON.type==='receipt'?'レシートの写真です。読み取って receipt の形で返してください。':CON.type==='fridge'?'冷蔵庫の写真です。中身を読み取って fridge の形で返してください。':'写真を見て相談にのってください。';if(!q){alert('相談したいことを書いてください');return}if(CON.type==='receipt'&&!RC.imgs.length){alert('レシートの写真を選んでください');return}if(CON.type==='fridge'&&!RC.imgs.length){alert('冷蔵庫の写真を選んでください');return}if(CON.incType!==CON.type){CON.inc=CON.type==='receipt'?{fridge:false,list:false,spend:'off',memo:false}:{fridge:true,list:true,spend:'sum',memo:false};CON.incType=CON.type}if(!['compare','order'].includes(CON.type))CON.extra=null;CON.q=q;CON.stage='confirm';CON.status='';render()}
 function setInc(k,v){CON.inc[k]=v;render()}
 function confirmPanel(){let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){pl=null;CON.status=e.message;CON.ok=false}
  const d=pl?JSON.parse(pl.body).data:{},i=CON.inc,cb=(k,l)=>`<label class="chk1"><input type="checkbox" ${i[k]?'checked':''} onchange="setInc('${k}',this.checked)"> ${l}</label>`;
@@ -54,6 +54,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(i.list)data.list=S.list.map(x=>strip({name:x.name,qty:x.qty,store:x.store,done:!!x.done,memo:x.memo}));
  if(i.spend!=='off'){const by={};month.forEach(r=>by[r.cat||'その他']=(by[r.cat||'その他']||0)+Number(r.amount||0));data.spendingByCat=by;data.spendingCount=month.length}
  if(i.spend==='detail')data.spending=month.map(r=>strip({date:r.date,store:r.store,cat:r.cat,amount:r.amount,memo:r.memo}));
+ if(isObj(CON.extra)&&(CON.type==='compare'||CON.type==='order'))Object.assign(data,CON.extra);
  const p={app:'okaimono',id:CON.reqId||'',type,question:q,sentAt:new Date().toISOString(),data};
  if(CON.type==='receipt')data.categories=CATS.map(c=>c[0]);if(CON.type==='fridge')data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室'];
  let body=JSON.stringify(p),dropped=0;const size=t=>new Blob([t]).size;
@@ -70,7 +71,7 @@ async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;if(
  try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),RC.imgs.length?40000:15000);
   const r=await fetch(s.url,{method:'POST',headers:h,body:pl.body,signal:ctl.signal});clearTimeout(tm);
   if(!r.ok){let m='';try{const jj=await r.json();if(jj&&typeof jj.message==='string')m=jj.message.slice(0,200)}catch(_){}throw new Error(r.status===429?(m||'きょうの相談の上限に達しました。日本時間の0時を過ぎたら、また送れます。'):'受け取り側のエラー（'+r.status+'）'+(m?'：'+m:''))}
-  addPending(CON.reqId,CON.type);RC.imgs=[];CON.status='送りました！（番号 '+CON.reqId+'）返事が届くと、この画面の上に「📩 返事」が出ます。'+(pl.dropped?`（古い家計記録${pl.dropped}件は省きました）`:'');CON.ok=true;CON.q='';CON.stage='form'}
+  addPending(CON.reqId,CON.type);if(typeof onSent==='function')onSent(CON.type,CON.extra);CON.extra=null;RC.imgs=[];CON.status='送りました！（番号 '+CON.reqId+'）返事が届くと、この画面の上に「📩 返事」が出ます。'+(pl.dropped?`（古い家計記録${pl.dropped}件は省きました）`:'');CON.ok=true;CON.q='';CON.stage='form'}
  catch(e){CON.ok=false;CON.status=e.name==='AbortError'?'時間切れになりました（番号 '+CON.reqId+'）。受け取り側には届いている可能性があります。続けて送り直す前に、届いたか確かめてください。'
   :/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'送れませんでした：受け取り先につながりませんでした。URLの間違い、受け取り側が止まっている、または受け取り側がブラウザからの送信を許可していない（CORSの設定）可能性があります。CORSの場合は、設定の「中継サーバー」の方法を使ってください。':'送れませんでした：'+e.message}
  finally{CON.sending=false;render()}}

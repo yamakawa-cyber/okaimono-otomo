@@ -67,3 +67,8 @@ ul.chk li select{width:auto!important;min-width:9.5em;max-width:100%;flex:0 1 au
 .fdoor .frchip{font-size:12px;padding:4px 6px}
 .frsel{border:2px solid #1f3a8a}.frmv{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}.frmv button{min-height:44px}
 ul.frrev li select{min-width:7em}
+.nsb{min-width:40px}.nsbox{border-left:5px solid #2e7d32;margin:6px 0}.nslinks{display:flex;flex-wrap:wrap}.nslinks a.chip{text-decoration:none;display:inline-flex;align-items:center}
+.cmp3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.cmpc{margin:0}.cmpr{font-weight:bold;font-size:15px}.cmpc.cheap{border-top:5px solid #2e7d32}.cmpc.better{border-top:5px solid #1f3a8a}.cmpc.luxury{border-top:5px solid #b8860b}
+.ord .tag{font-weight:bold}.ord.cart{border-left:5px solid #f9a825}.ord.done{opacity:.7}a.btnlink{display:inline-block;background:#c62828;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:bold}
+.nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:40px;color:#1f3a8a;font-weight:bold}
+.maplink{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
