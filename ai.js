@@ -43,10 +43,10 @@ function badge(){return aiProvider()===MockProvider?'<span class="tag sampletag"
 function aiView(r){
  if(r.kind==='menu'){if(AI.lesson)return lessonView(r.recipe);
   return `<div class="card">${badge()}<b>${esc(r.title)}</b><ul>${r.plan.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><b>作り置き</b><ul>${r.prep.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
-  <div class="row"><button class="sub" onclick="AI.res.plan.forEach(l=>{const m=l.match(/^([日月火水木金土])：(.*)$/);if(m)setMenu(WD.indexOf(m[1]),m[2])});S.prep=AI.res.prep.join('\\n');save();alert('献立タブに入れました')">献立タブに入れる</button></div></div>
+  <div class="row"><button class="sub" onclick="aiToMenu()">献立と買い物をまとめて入れる</button></div></div>
   <div class="card">${badge()}<b>🍳 ${esc(r.recipe.name)}</b> <span class="muted">${esc(r.recipe.serves)}・${esc(r.recipe.time)}</span><div class="row"><button onclick="AI.lesson=true;AI.step=0;render()">レッスンを始める（${r.recipe.steps.length}ステップ）</button></div></div>`}
  if(r.kind==='shop'){const t=r.items.reduce((a,i)=>a+i.yen,0);return `<div class="card">${badge()}<b>${esc(r.title)}</b><div class="muted">${esc(r.note)}</div><table>${r.items.map(i=>`<tr><td>${esc(i.name)}<div class="muted">${esc(i.store)}・${esc(i.why)}</div></td><td>${yen(i.yen)}</td></tr>`).join('')}</table>
-  <div>合計の目安 ${yen(t)} / 予算 ${yen(r.budget)} ${t<=r.budget?'✅':'⚠️'}</div><div class="row"><button onclick="AI.res.items.forEach(i=>S.list.push({name:i.name,store:i.store,done:false}));save();alert('買い物リストに入れました')">買い物リストに入れる</button></div></div>`}
+  <div>合計の目安 ${yen(t)} / 予算 ${yen(r.budget)} ${t<=r.budget?'✅':'⚠️'}</div><div class="row"><button onclick="aiToList()">買い物リストに入れる</button></div></div>`}
  if(r.kind==='money')return `<div class="card">${badge()}<b>${esc(r.title)}</b><div>合計 ${yen(r.total)} / ${yen(r.monthly)}</div>${bar(r.total,r.monthly)}<table>${Object.entries(r.byCat).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${yen(v)}</td></tr>`).join('')}</table><b>節約のアドバイス</b><ol>${r.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`;
  if(r.kind==='hacks')return `<div class="card">${badge()}<b>${esc(r.title)}</b>${r.items.map(i=>`<div class="hack"><span class="tag">${esc(i.about)}</span> ${esc(i.tip)}</div>`).join('')}</div>`;
  if(r.kind==='advise')return `<div class="card">${badge()}<b>${esc(r.title)}</b><p>${esc(r.summary)}</p><b>必要なこと</b><ul>${r.needs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><b>進め方</b><ol>${r.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><div class="muted">費用：${esc(r.cost)}</div></div>`;
@@ -131,7 +131,7 @@ V.ai=function(){
  if(IS_DEMO)h+=`<div class="card sample">🧪 見本モード：ここに出る答えは見本です（保管庫は本データと別）。</div>`;
  if(AT.open){const r=curItem();if(r){const rc=recipeOf(r);
   h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" data-x="hdel" data-k="${esc(AT.open)}">🗑 消す</button>`:''}</div>`;
-  h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${r.ingredients.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
+  h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${(r.ingredients||[]).map(x=>`<li>${esc(typeof x==='string'?x:(x&&x.name)||'')}</li>`).join('')}</ul><div class="row"><button class="sub" onclick="aiIngToList()">材料を買い物リストに入れる</button></div></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
   if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div>`;return h}AT.open=null}
  h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div>
  <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
@@ -142,3 +142,28 @@ V.ai=function(){
   :`<div class="card muted">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
  h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
  return h};
+
+// v16: 開いている答え（保管庫・返事・見本）に対して動くボタン
+function aiCur(){return (typeof AT!=='undefined'&&AT.open&&curItem())||AI.res||null}
+function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');t.style.cssText='position:fixed;left:50%;bottom:72px;transform:translateX(-50%);background:#333;color:#fff;padding:10px 16px;border-radius:20px;z-index:9999;font-size:15px;max-width:90%;text-align:center';document.body.appendChild(t)}t.textContent=msg;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+function usesOf(i){const out=[];const add=(d,dish)=>{if(typeof d==='string')d=WD.indexOf(d.replace(/曜日?$/,''));if(okWd(d)&&!out.some(u=>u.d===d&&u.dish===dish))out.push({d,dish:String(dish||'').slice(0,100)})};
+ const L=i.uses||i.for||i.days;if(isArr(L))L.forEach(u=>isObj(u)?add(u.d!==undefined?u.d:u.day,u.dish||u.name):add(u,i.dish||''));
+ if(!out.length&&isStr(i.why))i.why.split(/[・、,]/).forEach(p=>{const m=p.trim().match(/^([日月火水木金土])(?:曜日?)?\s*[：:]\s*(.*)$/);if(m)add(WD.indexOf(m[1]),m[2])});
+ return out.slice(0,14)}
+function tripForDay(d){const sd=(S.settings.shopDays.length?S.settings.shopDays:[1]).slice().sort((a,b)=>((a+6)%7)-((b+6)%7));const k=(d+6)%7;let t=sd[sd.length-1];sd.forEach(x=>{if((x+6)%7<=k)t=x});return((t+6)%7)<=k?t:sd[sd.length-1]}
+function listItemsOf(r){if(!r)return[];let a=r.items||r.list||r.shopping||r.ingredients||[];if(isObj(a))a=Object.values(a).flat();if(!isArr(a))return[];
+ return a.map(i=>typeof i==='string'?{name:i}:isObj(i)?i:null).filter(Boolean).map(i=>{const name=String(i.name||i.item||i.title||'').trim().slice(0,200);const uses=usesOf(i);
+  return {name,qty:isStr(i.qty)?i.qty.slice(0,50):'',store:String(i.store||i.shop||'').trim().slice(0,100),uses,trip:okWd(i.trip)?i.trip:uses.length?tripForDay(Math.min(...uses.map(u=>u.d),9)===9?uses[0].d:uses.slice().sort((x,y)=>(x.d+6)%7-(y.d+6)%7)[0].d):undefined}}).filter(i=>i.name).map((i,_,all)=>{if(i.trip===undefined){const c={};all.forEach(x=>{if(x.trip!==undefined)c[x.trip]=(c[x.trip]||0)+1});const k=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];if(k!==undefined)i.trip=+k}return i})}
+function pushList(items){let ct;try{ct=curTrip(today()).wd}catch(e){}let n=0,sk=0;
+ items.forEach(i=>{const trip=i.trip!==undefined?i.trip:ct;const ex=S.list.find(x=>!x.done&&x.name===i.name&&x.trip===trip);
+  if(ex){const u=ex.uses||[];let add=0;(i.uses||[]).forEach(v=>{if(!u.some(w=>w.d===v.d&&w.dish===v.dish)&&u.length<14){u.push(v);add++}});if(u.length)ex.uses=u;sk++;return}
+  const o={name:i.name,store:i.store||'',done:false};if(i.qty)o.qty=i.qty;if(trip!==undefined)o.trip=trip;if(i.uses&&i.uses.length)o.uses=i.uses;S.list.push(o);n++});save();return[n,sk]}
+function aiToList(){try{const it=listItemsOf(aiCur());if(!it.length)return toast('入れられる品物が見つかりませんでした');const[n,sk]=pushList(it);toast(`買い物リストに${n}品入れました`+(sk?`（すでにある${sk}品は除外）`:''));render()}catch(e){alert('リストに入れられませんでした：'+e.message)}}
+function aiIngToList(){try{const r=aiCur(),rc=r&&(r.kind==='recipe'?r:r.recipe);const it=listItemsOf(rc&&{items:rc.ingredients});const ds=[];menuArr().forEach((m,d)=>{if(rc&&findRecipe&&String(m).split(/[・、,]/).some(x=>findRecipe(x.trim())&&x.includes(rc.name.replace(/[（(].*$/,''))))ds.push(d)});if(ds.length)it.forEach(i=>{i.uses=ds.map(d=>({d,dish:rc.name.slice(0,100)}));i.trip=tripForDay(ds[0])});if(!it.length)return toast('材料が見つかりませんでした');const[n,sk]=pushList(it);toast(`材料を${n}品リストに入れました`+(sk?`（すでにある${sk}品は除外）`:''));render()}catch(e){alert('リストに入れられませんでした：'+e.message)}}
+function aiToMenu(){try{const r=aiCur();if(!r||!isArr(r.plan))return toast('献立が見つかりませんでした');let n=0;r.plan.forEach(l=>{const m=String(l).match(/^\s*([日月火水木金土])(?:曜日?)?\s*[：:]\s*(.*)$/);if(m){setMenu(WD.indexOf(m[1]),m[2]);n++}});
+ if(isArr(r.days))r.days.forEach(x=>{if(isObj(x)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;if(okWd(d)&&isArr(x.dishes)){setMenu(d,x.dishes.map(y=>isObj(y)?y.name:y).filter(isStr).join('・'));n++}}});
+ if(isArr(r.prep))S.prep=r.prep.join('\n');
+ let items=[];const sh=r.shop||r.items;(isArr(sh)?sh:[sh]).forEach(x=>{if(isObj(x)&&!x.name)items=items.concat(listItemsOf(x));else if(x)items=items.concat(listItemsOf({items:[x]}))});
+ if(isArr(r.days))r.days.forEach(x=>isObj(x)&&isArr(x.dishes)&&x.dishes.forEach(y=>{if(isObj(y)&&isArr(y.buy)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;items=items.concat(listItemsOf({items:y.buy.map(b=>Object.assign(isObj(b)?b:{name:b},{uses:[{d,dish:y.name}]}))}))}}));
+ if(!items.length&&AT.open&&AT.open!=='demo'){const me=hist().find(e=>e.id===AT.open);if(me){const t0=Date.parse(me.at);hist().filter(e=>e.item.kind==='shop'&&Math.abs(Date.parse(e.at)-t0)<600000).reverse().forEach(e=>items=items.concat(listItemsOf(e.item)))}}
+ save();let msg=`献立タブに${n}日分入れました`;if(items.length){const[k,sk]=pushList(items);msg+=`・買い物リストに${k}品`+(sk?`（${sk}品は既存にまとめ）`:'')}toast(msg);render()}catch(e){alert('献立に入れられませんでした：'+e.message)}}

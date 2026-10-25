@@ -35,3 +35,7 @@ ul.chk li input[type=checkbox],.chk1 input[type=checkbox]{width:28px;height:28px
 a.link{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
 input[type=checkbox]{width:28px;height:28px;margin:8px}
 input[type=number],input[inputmode=numeric],input[id^=yen],#sp_amt{min-height:44px;font-size:16px}
+
+label.lrow{display:flex;align-items:center;flex:1;min-height:44px;gap:4px;cursor:pointer}.badges{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px}.badge{min-height:44px;background:#fff3e8;color:#a04a14;border:1px solid #f3c9a8;font-size:13px;padding:4px 10px}ul.chk li{flex-wrap:wrap}.dishes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}.dish{min-height:44px;background:#fff;color:#333;border:1px solid #e8743b}.dish0{display:inline-flex;align-items:center;min-height:44px;padding:0 8px}.seg.lv{display:flex;gap:6px;margin-bottom:8px}.seg.lv button{flex:1}.tabs a{min-height:44px}
+nav a{min-height:48px;box-sizing:border-box}
+ul.chk li label.lrow{flex:1 1 58%;min-width:58%}

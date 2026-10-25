@@ -25,7 +25,7 @@ const okWd=x=>Number.isInteger(x)&&x>=0&&x<=6;
 function validate(data){if(!isObj(data))throw new Error('データの形が違います');
  const out=structuredClone(def);const bad=k=>{throw new Error('「'+k+'」の形が違います')};
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])||data[k].length>MAXITEMS)bad(k);out[k]=data[k]}
- out.list.forEach(i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip)))bad('list')});
+ out.list.forEach(i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip))||(i.uses!==undefined&&!(isArr(i.uses)&&i.uses.length<=14&&i.uses.every(u=>isObj(u)&&okWd(u.d)&&okS(u.dish,100)))))bad('list')});
  out.spend.forEach(r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,300))bad('spend');if(!r.id)r.id=uid()});
  out.fridge.forEach(f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until)))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores.forEach(s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
@@ -93,12 +93,18 @@ stores(){const d=today();const grp=(t,l)=>{const a=regStores().filter(s=>(s.type
  <input id="ns_url" placeholder="公式ページやチラシのURL（https://…）" style="width:100%"><div class="row"><button onclick="addStore()">追加</button></div></div>`},
 list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>`<option>${esc(s.name)}</option>`).join('');
  const tOf=i=>tr.some(t=>t.wd===i.trip)?i.trip:cur.wd;
- const block=t=>{const g={};S.list.forEach((i,n)=>{if(tOf(i)!==t.wd)return;const k=i.store||'お店未定';(g[k]=g[k]||[]).push([i,n])});const keys=Object.keys(g);
-  return `<h2>🗓 ${t.label}（${md(t.from)}の買い物）${t.wd===cur.wd?' <span class="tag">いまの回</span>':''}</h2>`+(keys.length?keys.map(st=>`<h3>🏪 ${esc(st)}</h3><ul class="chk card">${g[st].map(([i,n])=>`<li class="${i.done?'done':''}"><input type="checkbox" ${i.done?'checked':''} onchange="tog(${n})"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span>${i.done?'':`<input type="number" inputmode="numeric" id="yen${n}" placeholder="金額" style="width:80px"><select id="cat${n}" style="width:96px">${catOpts('食材・米')}</select>`}<button class="sub" onclick="delItem(${n})">✕</button></li>`).join('')}</ul>`).join(''):'<div class="card muted">まだありません</div>')};
- return `<div class="card"><div class="row"><input id="li_name" placeholder="品名（例：玉子）"><input id="li_qty" placeholder="数量" style="flex:0 0 80px"></div>
+ const seg=`<div class="seg lv"><button class="${lvNow()==='day'?'on':''}" onclick="LV='day';render()">🍽 曜日ごと</button><button class="${lvNow()!=='day'?'on':''}" onclick="LV='trip';render()">🛒 まとめて買う</button></div>`;
+ const form=`<div class="card"><div class="row"><input id="li_name" placeholder="品名（例：玉子）"><input id="li_qty" placeholder="数量" style="flex:0 0 80px"></div>
  <div class="row"><select id="li_store"><option value="">お店</option>${opts}</select><select id="li_trip">${tr.map(t=>`<option value="${t.wd}"${t.wd===cur.wd?' selected':''}>${t.label}</option>`).join('')}</select></div>
  <div class="row"><button onclick="addItem()">リストに追加</button></div>
- <div class="often">よく買う品：${OFTEN.map(o=>`<button class="chip" data-act="often" data-name="${esc(o)}">＋${esc(o)}</button>`).join('')}</div></div>
+ <div class="often">よく買う品：${OFTEN.map(o=>`<button class="chip" data-act="often" data-name="${esc(o)}">＋${esc(o)}</button>`).join('')}</div></div>`;
+ if(lvNow()==='day')return seg+dayView()+form;
+ const block=t=>{const g={};S.list.forEach((i,n)=>{if(tOf(i)!==t.wd)return;const k=i.store||'お店未定';const m=(g[k]=g[k]||{});const nk=baseName(i.name);(m[nk]=m[nk]||[]).push([i,n])});const keys=Object.keys(g);
+  return `<h2>🗓 ${t.label}（${md(t.from)}の買い物）${t.wd===cur.wd?' <span class="tag">いまの回</span>':''}</h2>`+(keys.length?keys.map(st=>`<h3>🏪 ${esc(st)}</h3><ul class="chk card">${Object.values(g[st]).map(rows=>{const ns=rows.map(r=>r[1]),i=rows[0][0],n=ns[0],done=rows.every(r=>r[0].done);
+   const qty=rows.map(r=>r[0].qty||qtyOf(r[0].name)).filter(Boolean),nm=rows.length>1?baseName(i.name):i.name;
+   const uses=[];rows.forEach(r=>(r[0].uses||[]).forEach(u=>{if(!uses.some(x=>x.d===u.d&&x.dish===u.dish))uses.push(u)}));
+   return `<li class="${done?'done':''}"><label class="lrow"><input type="checkbox" ${done?'checked':''} onchange="togMany([${ns}])"><span style="flex:1">${esc(nm)}${qty.length?` <span class="muted">${esc(qty.join('＋'))}</span>`:''}${rows.length>1?` <span class="tag">${rows.length}件まとめ</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span></label>${done?'':`<input type="number" inputmode="numeric" id="yen${n}" placeholder="金額" style="width:80px"><select id="cat${n}" style="width:96px">${catOpts('食材・米')}</select>`}<button class="sub" onclick="delMany([${ns}])" aria-label="消す">✕</button>${uses.length?`<div class="badges">${uses.sort((a,b)=>(a.d+6)%7-(b.d+6)%7).map(u=>`<button class="badge" onclick="jumpDay(${u.d})">${WD[u.d]}${u.dish?'・'+esc(u.dish.slice(0,12)):''}</button>`).join('')}</div>`:''}</li>`}).join('')}</ul>`).join(''):'<div class="card muted">まだありません</div>')};
+ return seg+form+`
  ${tr.map(block).join('')}
  <p class="muted">チェックするときに金額と費目を入れると、家計に「日付・店・費目・金額・メモ（品名）」で記録されます。✕で品物を消しても、家計の記録は残ります（家計タブで消せます）。</p>
  <div class="row"><button class="sub" onclick="clearDone()">買ったものを消す</button></div>`},
@@ -138,6 +144,23 @@ function addStore(){const n=val('ns_name');if(!n)return alert('店名を入れ�
 function addItem(name){const n=name||val('li_name');if(!n)return;const t=val('li_trip');S.list.push({name:n,qty:name?'':val('li_qty'),store:val('li_store'),trip:t!==''?+t:curTrip(today()).wd,done:false});save();render()}
 function tog(n){const i=S.list[n];if(!i)return;i.done=!i.done;if(i.done){const a=+val('yen'+n);if(okAmt(a)&&a>0){i.yen=a;i.cat=val('cat'+n)||'食材・米';i.spendId=uid();S.spend.push({id:i.spendId,date:ymd(today()),store:i.store,cat:i.cat,amount:a,memo:i.name})}}
  else if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId;delete i.yen;delete i.cat}save();render()}
+let LV=null;const lvNow=()=>LV||(S.list.some(i=>i.uses&&i.uses.length)?'day':'trip');
+const baseName=n=>String(n).replace(/[\s　]+[0-9０-９０-９\/½¼].*$/,'').replace(/[\s　]+(少々|適量|1袋|1箱|1本|1個|1房|1丁|1束)$/,'').trim()||String(n);
+const qtyOf=n=>{const m=String(n).match(/[\s　]+([0-9０-９].*)$/);return m?m[1]:''};
+function togMany(ns){const f=S.list[ns[0]];if(!f)return;const nd=!ns.every(n=>S.list[n]&&S.list[n].done);
+ ns.forEach((n,k)=>{const i=S.list[n];if(!i)return;i.done=nd;if(nd&&k===0){const a=+val('yen'+n);if(okAmt(a)&&a>0){i.yen=a;i.cat=val('cat'+n)||'食材・米';i.spendId=uid();S.spend.push({id:i.spendId,date:ymd(today()),store:i.store,cat:i.cat,amount:a,memo:i.name})}}});save();render()}
+function delMany(ns){S.list=S.list.filter((_,k)=>!ns.includes(k));save();render()}
+function jumpDay(d){LV='day';render();const e=document.getElementById('day'+d);if(e)e.scrollIntoView({block:'start'})}
+function dishesOf(d){return String(menuArr()[d]||'').split(/[・、,]/).map(x=>x.trim()).filter(Boolean)}
+function findRecipe(dish){if(typeof hist!=='function'||!dish)return null;const k=baseName(dish).replace(/[（(].*$/,'');for(const e of hist()){const r=e.item.kind==='recipe'?e.item:e.item.kind==='menu'?e.item.recipe:null;if(!r||!r.name)continue;const nm=r.name.replace(/[（(].*$/,'');if(nm&&(k.includes(nm)||nm.includes(k)))return e.id}return null}
+function openRecipe(id){if(typeof histOpen!=='function')return;location.hash='#ai';histOpen(id)}
+function dayView(){const order=[1,2,3,4,5,6,0];let h='';const used=new Set();
+ order.forEach(d=>{const dishes=dishesOf(d);const its=[];S.list.forEach((i,n)=>{if((i.uses||[]).some(u=>u.d===d)){its.push([i,n]);used.add(n)}});if(!dishes.length&&!its.length)return;
+  h+=`<div class="card" id="day${d}"><h2>${WD[d]}曜</h2><div class="dishes">${dishes.map(x=>{const id=findRecipe(x);return id?`<button class="dish" onclick="openRecipe('${esc(id)}')">🍳 ${esc(x)} ›</button>`:`<span class="dish0">🍽 ${esc(x)}</span>`}).join('')}</div>
+  ${its.length?`<ul class="chk">${its.map(([i,n])=>`<li class="${i.done?'done':''}"><label class="lrow"><input type="checkbox" ${i.done?'checked':''} onchange="togMany([${n}])"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}<span class="muted">${(i.uses||[]).filter(u=>u.d===d&&u.dish).map(u=>'・'+esc(u.dish)).join('')}</span></span></label></li>`).join('')}</ul>`:'<div class="muted">この日に買うものはありません</div>'}</div>`});
+ const rest=S.list.map((i,n)=>[i,n]).filter(([i,n])=>!used.has(n));
+ if(rest.length)h+=`<div class="card" id="dayx"><h2>曜日なし</h2><ul class="chk">${rest.map(([i,n])=>`<li class="${i.done?'done':''}"><label class="lrow"><input type="checkbox" ${i.done?'checked':''} onchange="togMany([${n}])"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}</span></label></li>`).join('')}</ul></div>`;
+ return h||'<div class="card muted">献立も買い物もまだありません。アキラちゃんの献立の返事から「まとめて入れる」で入ります。</div>'}
 function delItem(n){S.list.splice(n,1);save();render()}
 function clearDone(){S.list=S.list.filter(i=>!i.done);save();render()}
 function addSpend(){const a=+val('sp_amt');if(!okAmt(a)||a<=0)return alert('金額は1円以上の数字で入れてください（マイナスは使えません）');const dt=val('sp_date');if(!isDate(dt))return alert('日付を入れてください');S.spend.push({id:uid(),date:dt,store:val('sp_store'),cat:val('sp_cat'),amount:a,memo:val('sp_memo')});save();render()}
