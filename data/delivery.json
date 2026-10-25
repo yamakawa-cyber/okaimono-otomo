@@ -1,0 +1,311 @@
+{
+ "source": "宅配・ネットスーパー情報（武庫之荘駅の近く基準）。docs/宅配情報.json から作成。週1回のお店情報の見直しで、このファイル（app/data/delivery.json）も確認・更新する。確認できない項目は「不明」。",
+ "checked_at": "2026-10-25",
+ "area": "兵庫県尼崎市武庫之荘（参考: 尼崎・西宮・伊丹）",
+ "note": "公式ページで確認できた内容のみ。確認できない項目は「不明」。料金は改定されることがあるので、注文画面で再確認すること。",
+ "assumed_address": "兵庫県尼崎市武庫之荘駅の近く（、郵便番号は zipcloud で確認）",
+ "services": [
+  {
+   "id": "fresco-netsuper",
+   "name": "FRESCOネットスーパー",
+   "related_stores": [
+    "フレスコ 武庫之荘店（受取はフレスコ立花店）"
+   ],
+   "covers_mukonoso": "○（公式発表: 2025-10-17から尼崎市を配送エリアに追加）",
+   "covers_home": "○の見込み（市単位の公式発表。丁目単位の確認はスマホの郵便番号検索のみ）",
+   "fee": "税抜1,500〜4,999円は330円、5,000円以上は無料",
+   "free_threshold": "税抜5,000円以上",
+   "cutoff_to_delivery": "注文時間で指定可能な時間が変わる、注文日を含め1週間先まで指定",
+   "min_order": "税抜1,500円",
+   "payment": "クレジットカードのみ",
+   "membership": "会員登録",
+   "other_fees": "置き配不可、注文後のキャンセル不可、フレスコカードのポイントは付かない",
+   "urls": [
+    "https://www.super-fresco.co.jp/netsuper_lp/",
+    "https://super-fresco.online/law-delivery",
+    "https://www.super-fresco.co.jp/wp/wp-content/uploads/2025/10/11c0a0af7dac7cff83b4668a7e00bac6.pdf"
+   ],
+   "rank": 1,
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "coop-kobe-kohai",
+   "name": "コープこうべ コープのたくはい（個人宅配「こはい」）",
+   "related_stores": [
+    "コープ武庫之荘",
+    "コープ塚口",
+    "コープ立花",
+    "コープ園田",
+    "コープミニ西武庫"
+   ],
+   "covers_mukonoso": "対応（公式: お届けエリア 兵庫県全域）",
+   "fee": "個配利用料 231円（税込）/週。注文がない週も115円。協同購入グループ・めーむひろば（店舗受取）は無料",
+   "free_threshold": "なし（育児サポートで無料/114円、65サポート等で114円）",
+   "cutoff_to_delivery": "週1回、地域ごとに決まった曜日・時間帯に配達（締切は不明）",
+   "min_order": "不明",
+   "payment": "月まとめ請求、口座振替（毎月5日引落し）",
+   "membership": "組合員加入が必要（出資金あり）",
+   "other_fees": "注文なし週115円",
+   "urls": [
+    "https://www.coop-kobe.net/guide/takuhai/detail.html",
+    "https://www.coop-kobe.net/guide/takuhai/merit.html",
+    "https://faq.coop-kobe.net/faq_detail.html?id=165"
+   ],
+   "covers_home": "○（兵庫県全域）",
+   "rank": 2,
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "life-netsuper",
+   "name": "ライフネットスーパー（ライフ直営）",
+   "related_stores": [
+    "ライフ 尼崎大西店",
+    "ライフ 西宮北口店",
+    "ライフ 武庫川店 ほか"
+   ],
+   "covers_mukonoso": "不明（尼崎大西店の公式お届け先一覧に武庫之荘は無し。西宮北口店は未確認）",
+   "fee": "不明（公式ページで未確認。非公式記事では税抜2,000円以上440円〜8,000円以上無料）",
+   "free_threshold": "不明",
+   "cutoff_to_delivery": "当日〜（最短3時間）、1日4回配達",
+   "min_order": "不明",
+   "payment": "クレジットカード、代金引換",
+   "membership": "無料会員登録",
+   "other_fees": "不明",
+   "urls": [
+    "https://www3.lifecorp.jp/netsuper/introduction/index.html",
+    "https://www.life-netsuper.jp/s/areas/",
+    "https://www.life-netsuper.jp/s/areas/28/"
+   ],
+   "covers_home": "○（公式の兵庫県配達エリア一覧に「武庫之荘駅の近く」あり。担当店舗名はページから特定できず）",
+   "rank": 3,
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "aeon-netsuper",
+   "name": "おうちでイオン イオンネットスーパー",
+   "related_stores": [
+    "イオンスタイル尼崎",
+    "イオンスタイル伊丹昆陽",
+    "マックスバリュ 武庫元町店"
+   ],
+   "covers_mukonoso": "不明（郵便番号で担当店舗を要確認）",
+   "fee": "担当店舗により異なる。FAQ例: 税抜3,999円以下550円／4,000〜6,999円330円／7,000〜9,999円220円／10,000円以上165円。店舗受取PickUp!は無料",
+   "free_threshold": "配送はなし（PickUp!なら無料）",
+   "cutoff_to_delivery": "不明（店舗ごと）",
+   "min_order": "不明（店舗ごと）",
+   "payment": "クレジットカード、代金引換、玄関先WAON（店舗受取・置き楽はカードのみ）",
+   "membership": "無料会員登録",
+   "other_fees": "代引手数料110〜330円、置き楽110円",
+   "campaign": "2026/9/1〜11/30新規登録で配送料220円引きクーポン4回分ほか",
+   "urls": [
+    "https://netsuperguide.aeon.com/kb/article/%E9%85%8D%E9%80%81%E6%96%99%E3%82%92%E7%A2%BA%E8%AA%8D%E3%81%97%E3%81%9F%E3%81%84/",
+    "https://shop.aeon.com/netsuper/store/legalinfo/",
+    "https://shop.aeon.com/netsuper/new_member",
+    "https://shop.aeon.com/netsuper/store/shipping/area/website_id/298"
+   ],
+   "covers_home": "○（イオン伊丹昆陽店の公式配送エリアに  武庫之荘あり。この店の送料はログイン後でないと表示されず不明）",
+   "rank": 4,
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "heiwado-netsuper",
+   "name": "平和堂ネットスーパー",
+   "related_stores": [],
+   "covers_mukonoso": "○",
+   "covers_home": "○（公式の兵庫県配達エリア一覧に武庫之荘駅の近くあり）",
+   "fee": "不明",
+   "free_threshold": "不明",
+   "cutoff_to_delivery": "不明",
+   "min_order": "不明",
+   "payment": "不明",
+   "membership": "不明",
+   "other_fees": "不明",
+   "urls": [
+    "https://netsuper.heiwado.jp/s/areas/28/"
+   ],
+   "rank": 5,
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "amazon-life",
+   "name": "Amazon上のライフネットスーパー",
+   "related_stores": [
+    "ライフ各店"
+   ],
+   "covers_mukonoso": "不明（兵庫県は対象、一部エリア除く。住所で要確認）",
+   "fee": "プライム会員: 3,000円未満590円／3,000〜8,000円未満290円／8,000円以上無料。非会員は各+200円",
+   "free_threshold": "8,000円以上（プライム会員）",
+   "cutoff_to_delivery": "当日〜翌日、12〜22時（一部12〜20時）の2時間枠。1時間指定は+300円",
+   "min_order": "なし",
+   "payment": "不明（Amazonの支払方法）",
+   "membership": "Amazonアカウント（プライムで割安）",
+   "other_fees": "不在時はキャンセル・置き配不可",
+   "urls": [
+    "https://www.aboutamazon.jp/news/guide/how-to-use-amazon-online-grocery",
+    "https://www.amazon.co.jp/life"
+   ],
+   "covers_home": "不明（兵庫県は対象。住所での確認はAmazonログインが必要）",
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "mandai-net",
+   "name": "万代ネット宅配",
+   "related_stores": [
+    "万代 尼崎西店"
+   ],
+   "covers_mukonoso": "不明（尼崎西店がネット宅配対応、配送は尼崎市内の一部。郵便番号で要確認）",
+   "fee": "配達料無料・月会費制: 戸建ロッカー550円/月、置き配880円/月",
+   "free_threshold": "配達料は常に無料（1回税抜1,500円未満はサービス料110円）",
+   "cutoff_to_delivery": "前日〜当日9時注文→17時頃までに配達（毎月1日・毎週火曜は7時締切）",
+   "min_order": "なし（1,500円未満は+110円）",
+   "payment": "クレジットカードのみ（1回払い、デビット・プリペイド不可）",
+   "membership": "会員登録＋月会費、万代ポイント付与なし",
+   "other_fees": "月会費",
+   "urls": [
+    "https://www.mandai-net.co.jp/faq/",
+    "https://mandai.netmarket.jp/go/062/",
+    "https://www.mandai-net.co.jp/store/181.html"
+   ],
+   "covers_home": "不明（郵便番号検索ページが応答なし）",
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "kohyo-daiei",
+   "name": "KOHYO／ダイエー（イオン系）のネット配送",
+   "related_stores": [
+    "KOHYO 武庫之荘店"
+   ],
+   "covers_mukonoso": "不明",
+   "fee": "不明",
+   "free_threshold": "不明",
+   "cutoff_to_delivery": "不明",
+   "min_order": "不明",
+   "payment": "不明",
+   "membership": "不明",
+   "other_fees": "不明",
+   "note": "ダイエーネットスーパー公式: 緊急メンテナンスでサービス停止中、再開日未定。KOHYO 武庫之荘店は Uber Eats に出店（公式Uber Eatsページ）",
+   "urls": [
+    "https://www.kohyo.co.jp/trans-law-onlinedelivery/",
+    "https://www.daiei.co.jp/stores/8528/",
+    "https://netsuper.daiei.co.jp/static.php?p=tenpo",
+    "https://www.ubereats.com/jp/store/kohyo-%E6%AD%A6%E5%BA%AB%E4%B9%8B%E8%8D%98%E5%BA%97/z8rA9SVNQ1y4eIp0C5GRIQ"
+   ],
+   "covers_home": "不明（ダイエーネットスーパーは2026-10-25時点で緊急メンテナンス中、サービス停止）",
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "ubereats-grocery",
+   "name": "Uber Eats（スーパー・コンビニ）",
+   "related_stores": [
+    "KOHYO 武庫之荘店",
+    "マックスバリュ 武庫元町店",
+    "グルメシティ尼崎大庄店",
+    "トライアル 武庫川店",
+    "A-プライス今津店"
+   ],
+   "covers_mukonoso": "○（尼崎市のスーパー一覧に掲載。注文時に住所で確認）",
+   "covers_home": "不明（住所で要確認）",
+   "fee": "不明（店・距離・時間で変動、公式ページで金額未確認）",
+   "free_threshold": "不明",
+   "cutoff_to_delivery": "即時配達（時間は店による）",
+   "min_order": "不明",
+   "payment": "不明",
+   "membership": "Uberアカウント",
+   "other_fees": "不明",
+   "urls": [
+    "https://www.ubereats.com/jp/category/amagasaki-hyogo/grocery"
+   ],
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "net-kansai-super",
+   "name": "ネット関西スーパー",
+   "related_stores": [
+    "関西スーパー各店"
+   ],
+   "covers_mukonoso": "対応（公式配送先: 尼崎市武庫之荘1〜5丁目、南武庫之荘1〜12丁目、武庫之荘本町1〜3、武庫之荘東1〜2、武庫之荘西2丁目、塚口町1〜6丁目 など。武庫之荘6丁目以降・武庫之荘西1丁目は一覧に無し）",
+   "fee": "金額・重さに関係なく1回 330円（税込）",
+   "free_threshold": "なし",
+   "cutoff_to_delivery": "1便 9:00締切→12〜15時／2便 12:00締切→15〜18時／3便 12:00締切→18〜20時（最長2日先まで選択）",
+   "min_order": "不明",
+   "payment": "クレジットカード、代金引換（商品券等不可、デビット非推奨）",
+   "membership": "無料会員登録（入会金・年会費なし）",
+   "other_fees": "代引手数料は不明",
+   "urls": [
+    "https://www.kansaisuper.co.jp/kansainetsuper",
+    "https://www.kansaisuper.jp/guide/",
+    "https://www.kansaisuper.jp/guide/area.php"
+   ],
+   "covers_home": "×（公式配送先一覧は武庫之荘1〜5丁目のみ。家の近くは載っていない）",
+   "checked_at": "2026-10-25"
+  },
+  {
+   "id": "seiyu-rakuten",
+   "name": "西友ネットスーパー（楽天全国スーパー）",
+   "related_stores": [],
+   "covers_mukonoso": "不明（エリア限定、公式で要確認）",
+   "fee": "不明（公式ページで金額を確認できず）",
+   "free_threshold": "不明",
+   "cutoff_to_delivery": "購入日を含む4日間から選択、最短当日",
+   "min_order": "不明",
+   "payment": "クレジットカード（1回払い）、楽天ポイント、後払い（手数料330円）",
+   "membership": "楽天会員",
+   "other_fees": "後払い330円",
+   "urls": [
+    "https://netsuper.rakuten.co.jp/seiyu/info/guide/",
+    "https://netsuper.rakuten.co.jp/seiyu/info/area28/"
+   ],
+   "covers_home": "×（公式の兵庫県配送エリア一覧に尼崎市なし）",
+   "checked_at": "2026-10-25"
+  }
+ ],
+ "not_available": [
+  {
+   "name": "業務スーパー オンラインショップ",
+   "reason": "公式: 配送は関東・甲信の一部の都県のみ",
+   "url": "https://www.gyomusuper.jp/onlineshop/user_data/itguide"
+  },
+  {
+   "name": "西友ネットスーパー",
+   "reason": "尼崎市はエリア外"
+  },
+  {
+   "name": "ネット関西スーパー",
+   "reason": "武庫之荘駅の近くはエリア外（1〜5丁目のみ）"
+  }
+ ],
+ "no_official_info": [
+  {
+   "name": "スーパーマルハチ",
+   "note": "公式サイトに宅配・配達の記載なし",
+   "url": "https://www.supermaruhachi.co.jp/shop/"
+  },
+  {
+   "name": "スーパーオオジ",
+   "note": "公式サイトに宅配の記載なし（武庫之荘北店 尼崎市武庫之荘7-7-2 が2026-03-01開店）",
+   "url": "https://www.superoog.com/"
+  },
+  {
+   "name": "サンディ",
+   "note": "公式サイトで宅配サービスを確認できず",
+   "url": "https://www.sundi.co.jp/index.html"
+  },
+  {
+   "name": "ラ・ムー（大黒天物産）",
+   "note": "公式サイトで宅配サービスを確認できず",
+   "url": "https://www.e-dkt.co.jp/"
+  },
+  {
+   "name": "ハーベス／マルアイ／アミカ／オーケー",
+   "note": "今回は公式ページで確認できず（未調査に近い）"
+  },
+  {
+   "name": "Wolt",
+   "note": "2026年3月に日本でのサービスを終了したという非公式記事があるだけで、公式には未確認"
+  },
+  {
+   "name": "店頭購入品の配達（買った物を届けるサービス）",
+   "note": "どの店も公式ページで確認できず。店頭で直接聞く必要あり"
+  }
+ ]
+}
