@@ -71,7 +71,7 @@ async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;if(
   :/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'送れませんでした：受け取り先につながりませんでした。URLの間違い、受け取り側が止まっている、または受け取り側がブラウザからの送信を許可していない（CORSの設定）可能性があります。CORSの場合は、設定の「中継サーバー」の方法を使ってください。':'送れませんでした：'+e.message}
  finally{CON.sending=false;render()}}
 function importCode(){const t=val('c_code');if(!t)return;try{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
- if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}CON.open=false;location.hash='#ai';render()}
+ if(r.kind==='receipt'){CON.code=false;return rcImport(r)}if(r.kind==='chat'){AI.mode='chat';AI.chat.push({t:r.reply})}else{AI.res=r;AI.mode=r.kind;AI.lesson=false;AI.started=false;AI.step=0}CON.open=false;location.hash='#ai';render()}
  catch(e){CON.status='取り込めませんでした：'+e.message;CON.ok=false;render()}}
 // 各タブに相談ボタンを差し込む
 for(const [tab,t] of [['home','menu'],['fridge','menu'],['list','shop'],['money','money'],['ai','advise']]){const f=V[tab];V[tab]=function(){return consultBtn(t)+f.apply(this,arguments)}}

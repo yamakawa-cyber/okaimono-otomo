@@ -26,7 +26,7 @@ function validate(data){if(!isObj(data))throw new Error('データの形が違�
  const out=structuredClone(def);const bad=k=>{throw new Error('「'+k+'」の形が違います')};
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])||data[k].length>MAXITEMS)bad(k);out[k]=data[k]}
  out.list.forEach(i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip)))bad('list')});
- out.spend.forEach(r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100))bad('spend');if(!r.id)r.id=uid()});
+ out.spend.forEach(r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,300))bad('spend');if(!r.id)r.id=uid()});
  out.fridge.forEach(f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until)))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores.forEach(s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');

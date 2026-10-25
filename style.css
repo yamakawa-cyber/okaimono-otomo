@@ -26,3 +26,5 @@ label.chk1{display:flex;align-items:center;gap:6px}
 ul.chk li{min-height:44px;display:flex;align-items:center}
 input[type=checkbox]{width:28px;height:28px;margin:8px}
 ul.chk li input[type=checkbox],.chk1 input[type=checkbox]{width:28px;height:28px;margin:8px;flex:none}
+.btnlike{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;border-radius:10px;background:#e8743b;color:#fff;font-weight:bold;cursor:pointer}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.th{position:relative}.th img{width:96px;height:128px;object-fit:cover;border:1px solid #ccc;border-radius:6px}.th button{position:absolute;top:-6px;right:-6px;min-width:44px;min-height:44px;padding:0}
