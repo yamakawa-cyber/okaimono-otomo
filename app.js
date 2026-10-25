@@ -161,15 +161,29 @@ document.addEventListener('touchmove',e=>{if(!SW)return;const dx=e.touches[0].cl
 document.addEventListener('touchend',e=>{if(!SW)return;const li=SW.li,dx=e.changedTouches[0].clientX-SW.x;SW=null;li.style.transform='';if(dx<-90)delMany(li.dataset.del.split(',').map(Number))});
 function jumpDay(d){LV='day';render();const e=document.getElementById('day'+d);if(e)e.scrollIntoView({block:'start'})}
 function dishesOf(d){return String(menuArr()[d]||'').split(/[・、,]/).map(x=>x.trim()).filter(Boolean)}
-const normDish=x=>String(x||'').replace(/[（(][^）)]*[）)]/g,'').replace(/[\s　・、]/g,'').replace(/お肉|肉|の|と/g,'').replace(/作り置き|作りおき/g,'');
-function findRecipe(dish){if(typeof hist!=='function'||!dish)return null;const k=normDish(dish);if(!k)return null;for(const e of hist()){const r=e.item.kind==='recipe'?e.item:e.item.kind==='menu'?e.item.recipe:null;if(!r||!r.name)continue;const nm=normDish(r.name);if(nm&&(k.includes(nm)||nm.includes(k)))return e.id}return null}
+const normDish=x=>String(x||'').normalize('NFKC').replace(/[（(\[【][^）)\]】]*[）)\]】]/g,'').replace(/[0-9０-９]+(人分|日分|個|枚|g|ml|本)/g,'').replace(/[\s　・、,。!！?？~〜]/g,'').replace(/作り置き|作りおき|つくりおき|多め|多めに|大盛り|簡単|かんたん|定番|お肉|肉|の|と|風/g,'');
+const LK='okaimono_links';
+function recipeList(){const out=[],seen=new Set();const walk=(o,eid,dep)=>{if(!o||typeof o!=='object'||dep>6)return;if(isArr(o)){o.forEach(x=>walk(x,eid,dep+1));return}
+  if(isStr(o.name)&&isArr(o.steps)&&o.steps.length&&isArr(o.ingredients)){const k=eid+'|'+o.name;if(!seen.has(k)){seen.add(k);out.push({eid,rc:o})}}
+  Object.values(o).forEach(v=>{if(v&&typeof v==='object')walk(v,eid,dep+1)})};
+ let raw=[];try{raw=JSON.parse(localStorage.getItem(typeof HK!=='undefined'?HK:'okaimono_hist')||'[]')}catch(e){}if(!isArr(raw))raw=[];
+ raw.forEach(e=>isObj(e)&&walk(e.item,String(e.id||''),0));if(typeof INBOX!=='undefined')INBOX.forEach(e=>walk(e.item,'inbox:'+e.key,0));return out}
+const bigr=s=>{const a=new Set();for(let i=0;i<s.length-1;i++)a.add(s.slice(i,i+2));return a};
+function matchScore(dish,name){const k=normDish(dish),n=normDish(name);if(!k||!n)return 0;if(k===n)return 3;if(k.includes(n)||n.includes(k))return 2;const A=bigr(k),B=bigr(n);if(!A.size||!B.size)return 0;let c=0;A.forEach(x=>B.has(x)&&c++);const j=c/Math.min(A.size,B.size);return j>=0.6?1+j/2:0}
+function getLinks(){try{const o=JSON.parse(localStorage.getItem(LK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
+function findRecipeObj(dish){if(!dish)return null;const all=recipeList();const L=getLinks();const nk=normDish(dish);
+ if(L[nk]){const hit=all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(hit)return hit}
+ let best=null,bs=0;all.forEach(r=>{const sc=matchScore(dish,r.rc.name);if(sc>bs){bs=sc;best=r}});return best}
+function findRecipe(dish){const r=findRecipeObj(dish);return r?r.eid+'|'+r.rc.name:null}
+function recipeById(id){return recipeList().find(r=>r.eid+'|'+r.rc.name===id)||null}
+function linkMenu(){const L=getLinks();let ch=false;const all=recipeList();menuArr().forEach((m,d)=>dishesOf(d).forEach(x=>{const nk=normDish(x);if(!nk)return;const cur=L[nk]&&all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(cur)return;let best=null,bs=0;all.forEach(r=>{const sc=matchScore(x,r.rc.name);if(sc>bs){bs=sc;best=r}});if(best){L[nk]=best.eid+'|'+best.rc.name;ch=true}}));if(ch)try{localStorage.setItem(LK,JSON.stringify(L))}catch(e){}return ch}
 let DO=null;
 function dishChips(w){const ds=dishesOf(w);if(!ds.length)return '';return `<div class="dishes">${ds.map((x,j)=>{const k=w+'|'+j,op=DO===k;return `<button class="dish${op?' on':''}" aria-expanded="${op}" onclick="togDish('${k}')">${findRecipe(x)?'🍳':'🍽'} ${esc(x)} ${op?'▲':'▼'}</button>`}).join('')}</div>${DO&&DO.split('|')[0]==w?dishPanel(w,ds[+DO.split('|')[1]]):''}`}
-function togDish(k){const y=scrollY;DO=DO===k?null:k;render();scrollTo(0,y)}
+function togDish(k){const y=scrollY;DO=DO===k?null:k;if(DO)linkMenu();render();scrollTo(0,y)}
 const ingName=x=>normDish(baseName(typeof x==='string'?x:(x&&x.name)||'')).replace(/チューブ$/,'');
 function ingState(x){const n=ingName(x);const hit=S.list.filter(i=>{const m=normDish(baseName(i.name));return m&&(m===n||m.includes(n)||n.includes(m))});return hit.some(i=>i.done)?'bought':hit.length?'listed':''}
 const PANTRY=/^(塩|こしょう|しょうゆ|醤油|みりん|酒|砂糖|酢|サラダ油|油|水|顆粒だし|だし|片栗粉|小麦粉|味噌|みそ|アルミホイル|ごま油|バター)/;
-function dishPanel(w,dish){const id=findRecipe(dish);const e=id&&hist().find(x=>x.id===id);const rc=e&&(e.item.kind==='recipe'?e.item:e.item.recipe);
+function dishPanel(w,dish){const f=findRecipeObj(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
  if(rc){const ing=(rc.ingredients||[]);const miss=ing.filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
   return `<div class="card dpanel"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}・${esc(rc.time||'')}</span>
   <h3>材料</h3><ul class="ing">${ing.map(x=>{const st=ingState(x);const t=typeof x==='string'?x:(x.name||'')+(x.qty?' '+x.qty:'');return `<li><span>${esc(t)}</span>${st==='bought'?'<span class="tag ok">買った</span>':st==='listed'?'<span class="tag">リスト済み</span>':PANTRY.test(ingName(x))?'<span class="tag muted">家にある?</span>':''}</li>`}).join('')}</ul>
@@ -179,11 +193,11 @@ function dishPanel(w,dish){const id=findRecipe(dish);const e=id&&hist().find(x=>
  const buys=S.list.filter(i=>(i.uses||[]).some(u=>u.d===w&&(!u.dish||normDish(dish).includes(normDish(u.dish))||normDish(u.dish).includes(normDish(dish)))));
  return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">レシピはまだ保管庫にありません</div>${buys.length?`<h3>この料理で買うもの</h3><ul class="ing">${buys.map(i=>`<li><span>${esc(i.name)}</span>${i.done?'<span class="tag ok">買った</span>':'<span class="tag">リスト済み</span>'}</li>`).join('')}</ul>`:''}
  <div class="row"><button onclick="askRecipe(${w},this.dataset.d)" data-d="${esc(dish)}">💬 アキラちゃんにレシピを聞く</button></div></div>`}
-function missingToList(w,id){const e=hist().find(x=>x.id===id);if(!e)return;const rc=e.item.kind==='recipe'?e.item:e.item.recipe;const miss=(rc.ingredients||[]).filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
+function missingToList(w,id){const f=recipeById(id);if(!f)return;const rc=f.rc;const miss=(rc.ingredients||[]).filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
  const y=scrollY;const [n]=pushList(listItemsOf({items:miss}).map(i=>Object.assign(i,{uses:[{d:w,dish:rc.name.slice(0,100)}],trip:tripForDay(w)})));render();scrollTo(0,y);toast(`足りない材料を${n}品リストに入れました`)}
-function dishLesson(id){AT.open=id;location.hash='#ai';startLesson()}
+function dishLesson(id){const f=recipeById(id);if(!f)return;CON.open=false;AT.open=null;AT.lesson=Object.assign({},f.rc,{ingredients:(f.rc.ingredients||[]).map(x=>typeof x==='string'?x:[x&&x.name,x&&(x.qty||x.amount)].filter(Boolean).join(' ')),steps:(f.rc.steps||[]).map(x=>Object.assign({t:'',d:'',tip:''},x))});AT.step=-1;AT.checked={};if(typeof timerStop==='function')timerStop();if(typeof wakeOn==='function')wakeOn();location.hash='#ai';render();scrollTo(0,0)}
 function askRecipe(w,dish){CON.open=true;CON.from=location.hash;CON.type='recipe';CON.stage='form';CON.q=`${WD[w]}曜の「${dish}」のレシピを教えて。材料（4人分・分量つき）と手順、料理レッスン用のステップでお願い。`;CON.status='';render();const c=document.querySelector('.consultbox,#c_q');if(c)c.scrollIntoView({block:'center'})}
-function openRecipe(id){if(typeof histOpen!=='function')return;location.hash='#ai';histOpen(id)}
+function openRecipe(id){CON.open=false;DO=null;const f=recipeById(id);if(!f)return;const w=menuArr().findIndex((m,d)=>dishesOf(d).some(x=>findRecipe(x)===id));if(w>=0){const j=dishesOf(w).findIndex(x=>findRecipe(x)===id);DO=w+'|'+j;location.hash='#fridge';render();const el=document.querySelector('.dpanel');if(el)el.scrollIntoView({block:'start'});return}dishLesson(id)}
 function dayView(){const order=[1,2,3,4,5,6,0];let h='';const used=new Set();
  order.forEach(d=>{const dishes=dishesOf(d);const its=[];S.list.forEach((i,n)=>{if((i.uses||[]).some(u=>u.d===d)){its.push([i,n]);used.add(n)}});if(!dishes.length&&!its.length)return;
   h+=`<div class="card" id="day${d}"><h2>${WD[d]}曜</h2><div class="dishes">${dishes.map(x=>{const id=findRecipe(x);return id?`<button class="dish" onclick="openRecipe('${esc(id)}')">🍳 ${esc(x)} ›</button>`:`<span class="dish0">🍽 ${esc(x)}</span>`}).join('')}</div>

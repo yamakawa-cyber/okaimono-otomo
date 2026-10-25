@@ -65,3 +65,4 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(
  switch(b.dataset.x){case 'drop':return dropInbox([k]);case 'open':return openReply(k);case 'apply':return rcApply([k]);
   case 'applyall':return rcApply(INBOX.filter(e=>!e.err&&e.item.kind==='receipt'&&!rcDup(e.item)).map(e=>e.key));
   case 'hdel':return histDel(k);case 'hopen':return histOpen(k);case 'hfilter':AT.filter=k;return render()}});
+setTimeout(()=>{try{if(linkMenu()&&location.hash==='#fridge')render()}catch(e){}},400);

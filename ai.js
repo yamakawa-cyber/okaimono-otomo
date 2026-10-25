@@ -79,7 +79,7 @@ function hist(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return is
 function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));localStorage.setItem(HK,JSON.stringify(a))}}
 function histTitle(r){return r.kind==='receipt'?`${r.store}（${yen(r.total)}）`:r.kind==='recipe'?r.name:r.kind==='chat'?String(r.reply).slice(0,40):(r.title||KLABEL[r.kind])}
 function histAdd(item,src){if(!isObj(item)||!AISHAPE[item.kind])return null;const sig=JSON.stringify(item);const a=hist();const old=a.find(e=>e.sig===sig);if(old)return old.id;
- const e={id:'h'+uid(),at:new Date().toISOString(),src:src||'',sig,item};a.unshift(e);saveHist(a);return e.id}
+ const e={id:'h'+uid(),at:new Date().toISOString(),src:src||'',sig,item};a.unshift(e);saveHist(a);try{if(typeof linkMenu==='function')setTimeout(linkMenu,0)}catch(x){}return e.id}
 let AT={filter:'',open:null,lesson:null,step:0,checked:{},timer:null};
 const QUICK=[['menu','🍳 冷蔵庫で今夜の献立','冷蔵庫にあるもので、今夜の献立を考えて。作り方（レシピ）も1品つけてね。'],
  ['menu','🥡 作り置きプラン','今週の作り置きプランを考えて。日持ちの目安と、1品は作り方（レシピ）もつけてね。'],
@@ -167,4 +167,4 @@ function aiToMenu(){try{const r=aiCur();if(!r||!isArr(r.plan))return toast('献�
  if(isArr(r.days))r.days.forEach(x=>isObj(x)&&isArr(x.dishes)&&x.dishes.forEach(y=>{if(isObj(y)&&isArr(y.buy)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;items=items.concat(listItemsOf({items:y.buy.map(b=>Object.assign(isObj(b)?b:{name:b},{uses:[{d,dish:y.name}]}))}))}}));
  if(!items.length&&AT.open&&AT.open!=='demo'){const me=hist().find(e=>e.id===AT.open);if(me){const t0=Date.parse(me.at);hist().filter(e=>e.item.kind==='shop'&&Math.abs(Date.parse(e.at)-t0)<600000).reverse().forEach(e=>items=items.concat(listItemsOf(e.item)))}}
  if(!items.length&&typeof INBOX!=='undefined'){const ks=[];INBOX.forEach(e=>{if(!e.err&&isObj(e.item)&&e.item.kind==='shop'){items=items.concat(listItemsOf(e.item));histAdd(e.item,'reply');ks.push(e.key)}});if(ks.length&&typeof dropInbox==='function')setTimeout(()=>dropInbox(ks),0)}
- save();let msg=`献立タブに${n}日分入れました`;if(items.length){const[k,sk]=pushList(items);msg+=`・買い物リストに${k}品`+(sk?`（${sk}品は既存にまとめ）`:'')}toast(msg);render()}catch(e){alert('献立に入れられませんでした：'+e.message)}}
+ try{linkMenu()}catch(x){}save();let msg=`献立タブに${n}日分入れました`;if(items.length){const[k,sk]=pushList(items);msg+=`・買い物リストに${k}品`+(sk?`（${sk}品は既存にまとめ）`:'')}toast(msg);render()}catch(e){alert('献立に入れられませんでした：'+e.message)}}
