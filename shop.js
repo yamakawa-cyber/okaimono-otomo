@@ -1,6 +1,6 @@
 'use strict';
-// v27 ネットで探す・出前・3つ比べる（安い／豪華／ベター）・アキラちゃんに注文を頼む。
-// 支払いはかならず浩二さんが自分の手で。アキラちゃんはカートに入れて決済の直前まで進めるだけ。形は docs/比較と注文の形.md
+// v27 ネットで探す・出前・3つ比べる（安い／豪華／ベター）・アキラちゃんにカート入れを頼む。
+// 注文の確定と支払いはかならず浩二さんが自分の手で。アキラちゃんはカートに入れるところまで。形は docs/比較と注文の形.md
 const SHOP_AI=true,ORDER_OK=true; // ライフハック！では port.py が false にする
 const OK_='okaimono_orders';
 const enc=encodeURIComponent;
@@ -26,28 +26,28 @@ function netMenu(name,qty){const q=baseName(name)||name;return `<div class="card
  <div class="nslinks">${NETS.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(q))}">${esc(l)}</a>`).join('')}</div>${knownHtml(q)}
  ${SHOP_AI?`<div class="row"><input id="cp_amt" placeholder="量（例：1L×2）" value="${esc(qty||'')}"><input id="cp_cond" placeholder="条件（銘柄など）"></div><div class="row"><input id="cp_bud" type="number" inputmode="numeric" placeholder="予算（円・なくてもOK）"></div>
  <div class="row"><button data-cmp="goods" data-n="${esc(q)}">⚖️ 安い・ベター・豪華の3つを比べてもらう</button></div>`:`<div class="muted">上のリンクを1つずつ開いて、送料こみの値段をくらべてください。</div>`}
- ${ORDER_OK?`<div class="row"><button class="sub" data-ord="${esc(q)}">🛍 アキラちゃんに注文を頼む</button></div>`:''}${ORDER_OK?payNote():''}</div>`}
-const payNote=()=>`<div class="muted">※アキラちゃんはカートに入れて決済の直前まで進めるだけです。支払いは浩二さんご自身でお願いします。</div>`;
+ ${ORDER_OK?`<div class="row"><button class="sub" data-ord="${esc(q)}">🛒 アキラちゃんにカート入れを頼む</button></div>`:''}${ORDER_OK?payNote():''}</div>`}
+const payNote=()=>`<div class="muted">※アキラちゃんはカートに入れるところまでです。注文の確定と支払いは浩二さんご自身でお願いします。</div>`;
 function deliRow(dish){return `<div class="row"><button class="sub" data-deli="${esc(dish)}">🛵 出前にする</button></div>${NS==='🛵'+dish?deliMenu(dish):''}`}
 function deliMenu(dish){return `<div class="card nsbox"><b>🛵 出前：${esc(dish)}</b><div class="nslinks">${DELIS.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(dish))}">${esc(l)}</a>`).join('')}</div><div class="muted">出前館・menu はトップを開きます（料理名での検索リンクがないため）。</div>
  ${SHOP_AI?`<div class="row"><input id="cp_bud" type="number" inputmode="numeric" placeholder="予算（円・なくてもOK）"><button data-cmp="delivery" data-n="${esc(dish)}">⚖️ 3つ比べてもらう</button></div>`:`<div class="muted">上のリンクを1つずつ開いて、配達料こみの値段をくらべてください。</div>`}
- ${ORDER_OK?`<div class="row"><button class="sub" data-ord="${esc(dish)}" data-mode="delivery">🛍 アキラちゃんに注文を頼む</button></div>${payNote()}`:''}</div>`}
+ ${ORDER_OK?`<div class="row"><button class="sub" data-ord="${esc(dish)}" data-mode="delivery">🛒 アキラちゃんにカート入れを頼む</button></div>${payNote()}`:''}</div>`}
 function goConsult(type,q,extra){CON.open=true;CON.from=location.hash;CON.type=type;CON.q=q;CON.extra=extra;CON.inc={fridge:false,list:false,spend:'off',memo:false};CON.incType=type;CON.stage='confirm';CON.status='';render();scrollTo(0,0)}
 function askCompare(mode,name){const amount=val('cp_amt'),conditions=val('cp_cond'),b=+val('cp_bud');const budget=Number.isFinite(b)&&b>0?b:null;
  goConsult('compare',mode==='delivery'?`「${name}」の出前を、安い・ベター・豪華の3つで比べて。配達料と届く目安も。`:`「${name}」${amount?'（'+amount+'）':''}を、安い・ベター・豪華の3つで比べて。送料こみの実質価格も。`,
   {compare:{mode,name,amount,conditions,budget,people:mode==='delivery'?4:null,time:'',area:'兵庫県尼崎市 武庫之荘',known:knownPrices(name).map(x=>({source:x.src,store:x.store,price:x.price||null,text:x.text||'',date:x.date||''}))}})}
 function askOrder(items,mode){if(!ORDER_OK)return;const id='o'+uid();items=items.slice(0,30);
  const nk=x=>normDish(baseName(x||''));const dup=items.filter(i=>orders().some(o=>{const r=orderState(o.id);return !(r&&(r.status==='ng'||r.status==='done'&&Date.now()-Date.parse(o.at)>3*864e5))&&o.items.some(x=>nk(x.name)===nk(i.name))}));
- if(dup.length&&!confirm('「'+dup.map(i=>i.name).join('、')+'」は、すでに注文を頼んでいます（依頼中・決済待ち・最近完了）。もう一度頼みますか？'))return;
- goConsult('order',`注文の準備をお願い：${items.map(i=>i.name+(i.qty?' '+i.qty:'')).join('、')}。カートに入れて決済の直前まで。支払いは自分でします。`,{order:{orderId:id,mode,items,payment:'self'}})}
+ if(dup.length&&!confirm('「'+dup.map(i=>i.name).join('、')+'」は、すでにカート入れを頼んでいます（依頼中・カートに入れた・最近完了）。もう一度頼みますか？'))return;
+ goConsult('order',`カート入れをお願い：${items.map(i=>i.name+(i.qty?' '+i.qty:'')).join('、')}。カートに入れるところまでお願い。注文と支払いは自分でします。`,{order:{orderId:id,mode,items,payment:'self',stopAt:'cart'}})}
 function onSent(type,extra){if(type==='order'&&extra&&extra.order){const a=orders();a.push({id:extra.order.orderId,at:new Date().toISOString(),items:extra.order.items,mode:extra.order.mode});saveOrders(a)}}
 // 返事 kind:"order"（状況）を探す
 function orderState(id){let s=null;try{hist().forEach(e=>{if(e.item.kind==='order'&&e.item.orderId===id){if(!s||e.at>=s.at)s={at:e.at,r:e.item}}})}catch(e){}return s&&s.r}
-const OST={requested:'依頼中',cart:'カート投入済み・決済待ち',done:'完了',ng:'できませんでした'};
+const OST={requested:'依頼中',cart:'カートに入れました（注文はご自身で）',done:'完了',ng:'できませんでした'};
 function ordersHtml(){if(!ORDER_OK)return '';const a=orders().filter(o=>{const r=orderState(o.id);return !(r&&r.status==='done'&&Date.now()-Date.parse(o.at)>7*864e5)});if(!a.length)return '';
  return `<h2>🛍 注文の依頼</h2>${a.slice().reverse().map(o=>{const r=orderState(o.id),st=r?r.status:'requested',u=r&&shopUrl(r.checkoutUrl);return `<div class="card ord ${esc(st)}"><div><span class="tag">${esc(OST[st]||st)}</span> <span class="muted">${esc(o.at.slice(5,16).replace('T',' '))}</span></div>
  <b>${esc(o.items.map(i=>i.name+(i.price?'（'+yen(i.price)+'）':'')).join('、'))}</b>${r&&r.note?`<div class="muted">${esc(r.note)}</div>`:''}${r&&Number.isFinite(r.total)?`<div>合計 ${yen(r.total)}</div>`:''}
- ${st==='cart'&&u?`<div class="row"><a class="btnlink" target="_blank" rel="noopener" href="${esc(u)}">💳 決済画面へ（支払いはご自身で）</a></div>`:''}
+ ${st==='cart'&&u?`<div class="row"><a class="btnlink" target="_blank" rel="noopener" href="${esc(u)}">🛒 カートを開く（注文と支払いはご自身で）</a></div>`:''}
  ${st==='done'&&!o.logged?`<div class="tip">💴 家計に記録する？<div class="row"><input type="number" inputmode="numeric" id="olog_${esc(o.id)}" value="${Number.isFinite(r&&r.total)?r.total:(o.items.reduce((a,i)=>a+(+i.total||+i.price||0),0)||'')}" placeholder="金額" style="width:110px"><select id="ocat_${esc(o.id)}" aria-label="費目">${catOpts(o.mode==='delivery'?'惣菜':'食材・米')}</select><button data-olog="${esc(o.id)}">記録する</button><button class="sub" data-onolog="${esc(o.id)}">しない</button></div></div>`:o.logged==='yes'?'<div class="muted">💴 家計に記録ずみ</div>':''}
  <div class="row"><button class="sub" data-odel="${esc(o.id)}">一覧から消す</button></div></div>`}).join('')}`}
 // 比較の返事 kind:"compare"
@@ -64,10 +64,10 @@ function compareView(r){CMP_SHOWN=r;const opts=RANKS.map(([k])=>r.options.find(o
   ${o.reason?`<div>${esc(o.reason)}</div>`:''}<div class="muted">出典：${esc(o.source||'不明')}${o.checkedAt?'・'+esc(String(o.checkedAt).slice(5,16).replace('T',' '))+'確認':''}</div>
   <div class="row">${u?`<a class="chip" target="_blank" rel="noopener" href="${esc(u)}">ページを開く</a>`:''}${ORDER_OK?`<button data-pick="${i}">これにする</button>`:''}</div></div>`}).join('')}</div>
  ${ORDER_OK?payNote():''}<div class="muted">値段はAIが調べた時点のものです。買う前にページで確かめてください。</div>`}
-{const f=aiView;aiView=function(r){return r.kind==='compare'?compareView(r):r.kind==='order'?`<div class="card"><b>🛍 ${esc(OST[r.status]||r.status)}</b>${r.note?`<div>${esc(r.note)}</div>`:''}${r.status==='cart'&&shopUrl(r.checkoutUrl)?`<div class="row"><a class="btnlink" target="_blank" rel="noopener" href="${esc(shopUrl(r.checkoutUrl))}">💳 決済画面へ</a></div>`:r.checkoutUrl?'<div class="muted">⚠️ 決済画面のURLが許可したお店のものではないため、ボタンにしていません。</div>':''}</div>`:f(r)}}
+{const f=aiView;aiView=function(r){return r.kind==='compare'?compareView(r):r.kind==='order'?`<div class="card"><b>🛍 ${esc(OST[r.status]||r.status)}</b>${r.note?`<div>${esc(r.note)}</div>`:''}${r.status==='cart'&&shopUrl(r.checkoutUrl)?`<div class="row"><a class="btnlink" target="_blank" rel="noopener" href="${esc(shopUrl(r.checkoutUrl))}">🛒 カートを開く</a></div>`:r.checkoutUrl?'<div class="muted">⚠️ カートのURLが許可したお店のものではないため、ボタンにしていません。</div>':''}</div>`:f(r)}}
 {const f=dishPanel;dishPanel=function(w,dish){return f(w,dish).replace(/<\/div>$/,deliRow(dish)+'</div>')}}
 {const f=V.list;V.list=function(){return ordersHtml()+f.apply(this,arguments)}}
-if(SHOP_AI)CTYPES.push(['compare','くらべる（安い・ベター・豪華）']);if(ORDER_OK)CTYPES.push(['order','注文の準備']);
+if(SHOP_AI)CTYPES.push(['compare','くらべる（安い・ベター・豪華）']);if(ORDER_OK)CTYPES.push(['order','カート入れ']);
 QUICK.push(['money','🏪 スーパーとネット、どっちが安い？','買い物リストの品を、近くのスーパー（特売）とネット通販でくらべて、どっちで買うのが安いか教えて。送料も考えてね。']);
 QUICK.push(['menu','🛵 今夜は作る？出前？','冷蔵庫の中身と今月の家計を見て、今夜は作るのと出前にするのと、どっちがいいか教えて。作るなら献立、出前なら料理の案も。']);
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-ns],[data-deli],[data-cmp],[data-ord],[data-openall],[data-pick],[data-odel],[data-olog],[data-onolog]');if(!t)return;const d=t.dataset,y=scrollY;
@@ -90,7 +90,7 @@ function rqLatest(m){let best=null;try{hist().forEach(e=>{if(e.item.kind==='comp
 function reqHtml(){const tab=(m,l)=>`<button class="${REQ===m?'on':''}" data-rq="${m}">${l}</button>`;let h=`<div class="seg req2">${tab('delivery','🛵 出前を頼む')}${tab('goods','📦 通販で頼む')}</div>`;if(!REQ)return h;const m=REQ,dv=m==='delivery';
  h+=`<div class="card nsbox reqbox">${RQF[m].map(([k,l,ph,t])=>`<label class="rql" for="rq_${k}">${l}</label>`+(t==='ta'?`<textarea id="rq_${k}" rows="2" style="width:100%" placeholder="${esc(ph)}">${esc(rqVal(m,k))}</textarea>`:`<input id="rq_${k}" ${t==='num'?'type="number" inputmode="numeric"':''} value="${esc(rqVal(m,k))}" placeholder="${esc(ph)}" style="width:100%">`)).join('')}`;
  const q=RQ[m].what||'';const L=dv?DELIS:NETS;
- if(SHOP_AI){h+=`<div class="row"><button data-rqgo="${m}">頼む（自動で値段を比べる）</button></div><div class="muted">安い・ベター・豪華の3つが届いたら「これにする」で注文の準備へ。${ORDER_OK?'支払いはご自身で。':''}</div>
+ if(SHOP_AI){h+=`<div class="row"><button data-rqgo="${m}">頼む（自動で値段を比べる）</button></div><div class="muted">安い・ベター・豪華の3つが届いたら「これにする」でカート入れの依頼へ。${ORDER_OK?'注文と支払いはご自身で。':''}</div>
   <div class="rqself"><a class="link" href="#" data-rqself="${m}">自分で探す（リンク）</a></div>${NS==='rq'+m&&q?`<div class="nslinks">${L.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(q))}">${esc(l)}</a>`).join('')}</div>`:''}`;
   const e=rqLatest(m);if(e)h+=`<div class="muted">いちばん新しい比べた結果（${esc(e.at.slice(5,16).replace('T',' '))}）</div>`+compareView(e.item)}
  else h+=`<div class="row"><button data-rqself="${m}">比較用のリンクを出す</button></div>${NS==='rq'+m&&q?`<div class="nslinks">${L.map(([l,f])=>`<a class="chip" target="_blank" rel="noopener" href="${esc(f(q))}">${esc(l)}で探す</a>`).join('')}</div><div class="muted">いくつか開いて、送料こみの値段をくらべてください。</div>`:''}`;

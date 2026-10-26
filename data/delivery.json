@@ -3,7 +3,7 @@
  "checked_at": "2026-10-25",
  "area": "兵庫県尼崎市武庫之荘（参考: 尼崎・西宮・伊丹）",
  "note": "公式ページで確認できた内容のみ。確認できない項目は「不明」。料金は改定されることがあるので、注文画面で再確認すること。",
- "assumed_address": "兵庫県尼崎市武庫之荘駅の近く（、郵便番号は zipcloud で確認）",
+ "assumed_address": "兵庫県尼崎市 武庫之荘駅の近く",
  "services": [
   {
    "id": "fresco-netsuper",
@@ -12,7 +12,7 @@
     "フレスコ 武庫之荘店（受取はフレスコ立花店）"
    ],
    "covers_mukonoso": "○（公式発表: 2025-10-17から尼崎市を配送エリアに追加）",
-   "covers_home": "○の見込み（市単位の公式発表。丁目単位の確認はスマホの郵便番号検索のみ）",
+   "covers_home": "○の見込み（市単位の公式発表。地域ごとの確認はスマホの郵便番号検索のみ）",
    "fee": "税抜1,500〜4,999円は330円、5,000円以上は無料",
    "free_threshold": "税抜5,000円以上",
    "cutoff_to_delivery": "注文時間で指定可能な時間が変わる、注文日を含め1週間先まで指定",
@@ -76,7 +76,7 @@
     "https://www.life-netsuper.jp/s/areas/",
     "https://www.life-netsuper.jp/s/areas/28/"
    ],
-   "covers_home": "○（公式の兵庫県配達エリア一覧に「武庫之荘駅の近く」あり。担当店舗名はページから特定できず）",
+   "covers_home": "○（公式の兵庫県配達エリア一覧に武庫之荘の該当地域あり。担当店舗名はページから特定できず）",
    "rank": 3,
    "checked_at": "2026-10-25"
   },
@@ -103,7 +103,7 @@
     "https://shop.aeon.com/netsuper/new_member",
     "https://shop.aeon.com/netsuper/store/shipping/area/website_id/298"
    ],
-   "covers_home": "○（イオン伊丹昆陽店の公式配送エリアに  武庫之荘あり。この店の送料はログイン後でないと表示されず不明）",
+   "covers_home": "○（イオン伊丹昆陽店の公式配送エリアに 武庫之荘あり。この店の送料はログイン後でないと表示されず不明）",
    "rank": 4,
    "checked_at": "2026-10-25"
   },
@@ -236,7 +236,7 @@
     "https://www.kansaisuper.jp/guide/",
     "https://www.kansaisuper.jp/guide/area.php"
    ],
-   "covers_home": "×（公式配送先一覧は武庫之荘1〜5丁目のみ。家の近くは載っていない）",
+   "covers_home": "×（公式配送先一覧は武庫之荘1〜5丁目のみ。武庫之荘駅の近くの地域は載っていない）",
    "checked_at": "2026-10-25"
   },
   {
