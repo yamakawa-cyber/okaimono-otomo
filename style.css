@@ -52,7 +52,7 @@ nav a.on{color:#1f3a8a;box-shadow:inset 0 3px 0 #c62828}
 #undos{position:fixed;left:8px;right:8px;bottom:64px;z-index:9998}.undo{display:flex;align-items:center;gap:8px;background:#222;color:#fff;border-radius:12px;padding:4px 4px 4px 14px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.25)}.undo span{flex:1}.undo button{background:#fff;color:#1f3a8a;font-weight:bold}li[data-del]{transition:transform .15s;touch-action:pan-y}
 .dpanel{border-left:5px solid #1f3a8a;margin:4px 0 10px}.dpanel ul.ing{list-style:none;padding:0;margin:4px 0}.dpanel ul.ing li{display:flex;justify-content:space-between;align-items:center;min-height:36px;border-bottom:1px dashed #e3e8f2;gap:6px}.tag.ok{background:#e3f4e6;color:#1b5e20}.dish.on{background:#1f3a8a;color:#fff}ol.steps{padding-left:22px;margin:4px 0}
 
-ul.chk{display:flex;flex-direction:column}ul.chk li.incart{order:1;background:#f2f2f2;opacity:.75}ul.chk li.incart .lrow span{color:#666}.cartb{min-height:48px;min-width:72px;flex:none;background:#fff;color:#1f3a8a;border:2px solid #1f3a8a;border-radius:12px;font-size:15px;font-weight:bold;padding:4px 8px}.cartb.on{background:#2e7d32;color:#fff;border-color:#2e7d32}.cartbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;justify-content:space-between;background:#e8f5e9;border:1px solid #2e7d32;border-radius:12px;padding:8px;margin-bottom:8px}.cartbar span{white-space:nowrap}.cartbar button{min-height:48px;flex:1;background:#2e7d32;color:#fff}
+ul.chk{display:flex;flex-direction:column}ul.chk li.incart{order:1;background:#f2f2f2}ul.chk li.incart .lrow span{color:#444}.cartb{min-height:48px;min-width:72px;flex:none;background:#fff;color:#1f3a8a;border:2px solid #1f3a8a;border-radius:12px;font-size:15px;font-weight:bold;padding:4px 8px}.cartb.on{background:#2e7d32;color:#fff;border-color:#2e7d32}.cartbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;justify-content:space-between;background:#e8f5e9;border:1px solid #2e7d32;border-radius:12px;padding:8px;margin-bottom:8px}.cartbar span{white-space:nowrap}.cartbar button{min-height:48px;flex:1;background:#2e7d32;color:#fff}
 ul.chk li select{width:auto!important;min-width:9.5em;max-width:100%;flex:0 1 auto;text-overflow:clip}ul.chk li input[type=number]{flex:0 0 80px}ul.chk li .lrow span{overflow-wrap:anywhere;word-break:break-word;white-space:normal}ul.chk li.incart select,ul.chk li.incart input{opacity:1;color:#333}
 
 .oedit{background:#fff;border:1px dashed #1f3a8a;color:#1f3a8a}.oftbox{margin-top:10px;border-top:1px solid #eee;padding-top:8px}.oftrow{display:flex;flex-wrap:wrap;gap:6px;padding:8px 0;border-bottom:1px solid #eee}.oftrow input,.oftrow select{flex:1 1 40%;min-width:0;min-height:44px}.oftrow select{width:auto;min-width:9.5em}.oftbtn{display:flex;gap:6px;flex:1 1 100%;justify-content:flex-end}.oftbtn button{min-width:52px;min-height:48px;font-size:18px}
@@ -78,9 +78,11 @@ ul.frrev li select{min-width:7em}
 
 .consultbox{overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%}.consultbox>.muted,.consultbox>div{overflow-wrap:anywhere}.consultbox>.muted{max-height:6.5em;overflow:auto}.consultbox textarea{max-width:100%}
 /* v32：長い英数字の折り返し（全体）・iPhoneのホームバー（safe-area）・保存エラー・元に戻すの閉じる */
-body{overflow-wrap:anywhere;word-break:normal;padding-bottom:calc(76px + env(safe-area-inset-bottom))}html,body{max-width:100%;overflow-x:hidden}
+body{overflow-wrap:anywhere;word-break:normal;padding-bottom:calc(76px + env(safe-area-inset-bottom))}html,body{max-width:100%;overflow-x:clip} /* hidden だと sticky（ヘッダー・カゴのバー・保存エラー）が効かなくなる */
 header{padding-top:calc(12px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right))}
 nav{padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 #undos{bottom:calc(64px + env(safe-area-inset-bottom))}.undo .undox{background:transparent;color:#fff;min-width:44px}
 .saveerr{position:sticky;top:0;z-index:9999;margin:0;border-radius:0}
 .card,.tag,td,th,.muted,a{overflow-wrap:anywhere}img,table{max-width:100%}
+
+.dropped{margin:6px 0 0;padding-left:1.2em;font-size:14px}.dropped li{margin:2px 0}.ver{text-align:center}

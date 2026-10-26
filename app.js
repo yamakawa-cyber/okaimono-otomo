@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;
+const DATA_VERSION=2;const APP_VER='okaimono-v33'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材・米',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['予備',10000]];
@@ -22,13 +22,15 @@ const okAmt=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=MAXN;
 const okAmt1=v=>okAmt(v)&&v>=1;const okB=v=>v===undefined||typeof v==='boolean';const TYPES=['super','big','drug','yen100','daily','car'];const SCATS=[['all','すべて'],['super','スーパー'],['drug','ドラッグストア'],['yen100','100均']];let SC='all',SMORE={};const stCat=s=>{const t=s.type||'super';return t==='big'?'super':['super','drug','yen100'].includes(t)?t:'other'};
 function dedupe(a,pfx){const seen=new Set();a.forEach(x=>{if(!x.id||seen.has(x.id))x.id=pfx+uid();seen.add(x.id)})}
 const okWd=x=>Number.isInteger(x)&&x>=0&&x<=6;
-function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0;if(!isObj(data))throw new Error('データの形が違います');
+function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0;validate.samples=[];if(!isObj(data))throw new Error('データの形が違います');
  const out=structuredClone(def);const bad=k=>{throw new Error('「'+k+'」の形が違います')};
  // 寛容モード：1件ずつ確かめ、だめな行だけ捨てる（捨てた数は validate.dropped）
- const each=(a,f)=>a.filter(x=>{try{f(x);return true}catch(e){if(!LEN)throw e;validate.dropped++;return false}});const soft=f=>{try{f()}catch(e){if(!LEN)throw e;validate.dropped++}};
+ const pv=x=>{if(!isObj(x))return String(x).slice(0,40);const t=[x.date,x.name,x.store,x.memo,Number.isFinite(x.amount)?x.amount+'円':''].filter(v=>v!==undefined&&v!==''&&v!==null).map(v=>String(v));return t.join('・').slice(0,60)+(t.join('・').length>60?'…':'')};
+ const note=(e,x)=>{validate.dropped++;if(validate.samples.length<30)validate.samples.push({what:String(e.message||'').slice(0,60),text:x===undefined?'':pv(x)})};
+ const each=(a,f)=>a.filter(x=>{try{f(x);return true}catch(e){if(!LEN)throw e;note(e,x);return false}});const soft=f=>{try{f()}catch(e){if(!LEN)throw e;note(e)}};
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])){if(!LEN)bad(k);validate.dropped++;continue}if(data[k].length>MAXITEMS){if(!LEN)bad(k);validate.dropped+=data[k].length-MAXITEMS}out[k]=data[k].slice(0,MAXITEMS)}
  out.list=each(out.list,i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.cart)||(i.price!==undefined&&!okAmt1(i.price))||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip))||(i.uses!==undefined&&!(isArr(i.uses)&&i.uses.length<=14&&i.uses.every(u=>isObj(u)&&okWd(u.d)&&okS(u.dish,100)))))bad('list')});
- out.spend=each(out.spend,r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,300))bad('spend');if(!r.id)r.id=uid()});
+ out.spend=each(out.spend,r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,400))bad('spend');if(!r.id)r.id=uid()});
  out.fridge=each(out.fridge,f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores=each(out.userStores,s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
@@ -49,21 +51,24 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
  out.version=DATA_VERSION;return out}
 let BASE={regions:[],stores:[]};
 // 読めなかった生データの退避先（上書きで消さない）。LOAD_ERR があるあいだは保存しない
-const RK=K+'_rescue';let LOAD_ERR='',LOAD_DROP=0,SAVE_ERR='';
-function rescues(){try{const a=JSON.parse(localStorage.getItem(RK)||'[]');return isArr(a)?a.filter(x=>isObj(x)&&isStr(x.raw)):[]}catch(e){return []}}
-function stash(raw,why){try{const a=rescues();if(a.some(x=>x.raw===raw))return true;a.push({at:new Date().toISOString(),why:String(why||'').slice(0,200),raw});while(a.length>3)a.shift();localStorage.setItem(RK,JSON.stringify(a));return true}catch(e){return false}}
+const RSK=K+'_rescue';let LOAD_ERR='',LOAD_DROP=0,SAVE_ERR='',LOAD_RAW=null,RESCUE_OK=true,LOAD_SAMPLES=[],RAW_SAVED=false;
+function rescues(){try{const a=JSON.parse(localStorage.getItem(RSK)||'[]');return isArr(a)?a.filter(x=>isObj(x)&&isStr(x.raw)):[]}catch(e){return []}}
+function stash(raw,why){try{const a=rescues();if(a.some(x=>x.raw===raw))return true;localStorage.setItem(RSK,JSON.stringify([{at:new Date().toISOString(),why:String(why||'').slice(0,200),raw}]));return true}catch(e){return false}}
 let S=load();
 function load(){let t=null;try{t=localStorage.getItem(K)}catch(e){LOAD_ERR='保存データを開けませんでした';return structuredClone(def)}if(!t)return structuredClone(def);
- try{const d=validate(JSON.parse(t));if(validate.dropped){LOAD_DROP=validate.dropped;if(!stash(t,'読めない行'+LOAD_DROP+'件')){LOAD_ERR='読めない行がありましたが、元のデータを退避できませんでした';}}return d}
- catch(e){LOAD_ERR=e.message||'読めませんでした';stash(t,LOAD_ERR);console.log('load: 保存を止めて開始',LOAD_ERR);return structuredClone(def)}}
-function save(){if(LOAD_ERR){SAVE_ERR='データを読めなかったため、いまは保存を止めています（元のデータを守るため）。上の案内から退避データを書き出してください。';showSaveErr();return false}
+ try{const d=validate(JSON.parse(t));if(validate.dropped){LOAD_DROP=validate.dropped;LOAD_SAMPLES=validate.samples;if(!stash(t,'読めない行'+LOAD_DROP+'件')){RESCUE_OK=false;LOAD_RAW=t;LOAD_ERR='読めない行がありましたが、元のデータを退避できませんでした（保存領域が足りません）';}}return d}
+ catch(e){LOAD_ERR=e.message||'読めませんでした';LOAD_RAW=t;RESCUE_OK=stash(t,LOAD_ERR);console.log('load: 保存を止めて開始',LOAD_ERR);return structuredClone(def)}}
+function save(){closeUndo();if(LOAD_ERR){SAVE_ERR='データを読めなかったため、いまは保存を止めています（元のデータを守るため）。上の案内から退避データを書き出してください。';showSaveErr();return false}
  try{localStorage.setItem(K,JSON.stringify(S));if(SAVE_ERR){SAVE_ERR='';showSaveErr()}return true}catch(e){noteSaveErr(e);return false}}
 function noteSaveErr(e){SAVE_ERR='保存できませんでした（スマホの保存領域がいっぱいの可能性があります）。いまの変更はアプリを閉じると消えます。不要な写真やデータを減らして、バックアップを書き出してください。';console.log('save failed',e&&e.name);showSaveErr()}
 function showSaveErr(){let b=document.getElementById('saveerr');if(!SAVE_ERR){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='saveerr';b.className='err saveerr';b.setAttribute('role','alert');document.body.insertBefore(b,document.body.firstChild)}b.textContent='⚠️ '+SAVE_ERR}
 function setLS(k,v){try{localStorage.setItem(k,v);return true}catch(e){noteSaveErr(e);return false}}
-function rescueHtml(){const a=rescues();if(LOAD_ERR)return `<div class="card err" role="alert"><b>⚠️ 保存データを読めませんでした</b><div>元のデータは消さずに退避しました。いまは上書きしないよう保存を止めています。</div><div class="muted">理由：${esc(LOAD_ERR)}</div><div class="row"><button data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rgo">空の状態で使い始める（退避データは残す）</button></div></div>`;
- if(LOAD_DROP)return `<div class="card tip" role="status">⚠️ 読めない記録が${LOAD_DROP}件あったので、それだけ外して開きました。元のデータは退避してあります。<div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rok">わかった</button></div></div>`;return ''}
-function exportRescue(){const a=rescues();if(!a.length)return toast('退避データはありません');const blob=new Blob([JSON.stringify({app:'okaimono',rescue:true,exported:new Date().toISOString(),items:a.map(x=>({at:x.at,why:x.why,data:(()=>{try{return JSON.parse(x.raw)}catch(e){return x.raw}})()}))},null,1)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='おかいもの_退避データ_'+ymd(today())+'.json';l.click()}
+const KJ={list:'買い物リスト',spend:'家計',fridge:'冷蔵庫',userStores:'お店',menu:'献立',prep:'作り置き',settings:'設定'};
+function droppedHtml(){if(!LOAD_SAMPLES.length)return '';return `<details><summary>外した記録を見る</summary><ul class="dropped">${LOAD_SAMPLES.map(x=>{const m=x.what.match(/「(\w+)/);return `<li>${esc((m&&KJ[m[1]])||x.what)}：${esc(x.text||'（中身なし）')}</li>`}).join('')}</ul><div class="muted">元の内容は退避データ（書き出したファイル）に全部入っています。</div></details>`}
+function rescueHtml(){const canGo=RESCUE_OK||RAW_SAVED;
+ if(LOAD_ERR)return `<div class="card err" role="alert"><b>⚠️ 保存データを読めませんでした</b><div>${RESCUE_OK?'元のデータは消さずに退避しました。':'<b>保存領域が足りず、元のデータを退避できませんでした。</b>まず「元のデータを書き出す」でファイルに保存してください。'}いまは上書きしないよう保存を止めています。</div><div class="muted">理由：${esc(LOAD_ERR)}</div>${droppedHtml()}<div class="row"><button data-act="rxp">${RESCUE_OK?'退避データを書き出す':'元のデータを書き出す'}</button>${canGo?`<button class="sub" data-act="rgo">${RESCUE_OK?'空の状態で使い始める（退避データは残す）':'書き出したので使い始める'}</button>`:''}</div></div>`;
+ if(LOAD_DROP)return `<div class="card tip" role="status">⚠️ 読めない記録が${LOAD_DROP}件あったので、それだけ外して開きました。元のデータは退避してあります。${droppedHtml()}<div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rok">わかった</button></div></div>`;return ''}
+function exportRescue(){const a=rescues();if(LOAD_RAW&&!a.some(x=>x.raw===LOAD_RAW))a.push({at:new Date().toISOString(),why:'退避できなかった元のデータ',raw:LOAD_RAW});if(!a.length)return toast('退避データはありません');RAW_SAVED=true;setTimeout(render,0);const blob=new Blob([JSON.stringify({app:'okaimono',rescue:true,exported:new Date().toISOString(),items:a.map(x=>({at:x.at,why:x.why,data:(()=>{try{return JSON.parse(x.raw)}catch(e){return x.raw}})()}))},null,1)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='おかいもの_退避データ_'+ymd(today())+'.json';l.click()}
 const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
 const today=()=>{const p=new URLSearchParams(location.search).get('today');return p&&isDate(p)?new Date(p+'T12:00'):new Date()};
@@ -148,8 +153,8 @@ settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 
  <h2>バックアップ</h2><div class="card">${bkDue()?'<div class="tip">⚠️ 最後のバックアップから1週間たちました。書き出しておきましょう。</div>':''}<div class="muted">最後のバックアップ：${S.lastBackup?md(S.lastBackup):'まだ'}</div>
  <div class="row"><button onclick="backup()">全部を書き出す</button><label class="btnlike">読み込んで戻す<input type="file" accept=".json" hidden onchange="restore(event)"></label></div>
  <div class="muted">お店（追加した店）・買い物リスト・冷蔵庫・献立・家計・設定に加えて、献立とレシピのつながり（リンク）・AIの答えの保管庫・注文の一覧もまとめて1つのファイルにします。</div></div>
- ${rescues().length?`<h2>退避データ</h2><div class="card"><div class="muted">読めなかったときに残した元のデータが${rescues().length}件あります。</div><div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button></div></div>`:''}<h2>見本データ</h2><div class="card"><button class="sub" onclick="clearSamples()">見本（サンプル）のデータをまとめて消す</button></div>
- <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p>`}
+ ${rescues().length?`<h2>退避データ</h2><div class="card"><div class="muted">読めなかったときに残した元のデータが${rescues().length}件あります。書き出したあとは消してかまいません。</div><div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rdel">退避データを消す</button></div></div>`:''}<h2>見本データ</h2><div class="card"><button class="sub" onclick="clearSamples()">見本（サンプル）のデータをまとめて消す</button></div>
+ <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p><p class="muted ver">版：${esc(APP_VER)}</p>`}
 };
 function regName(){return (BASE.regions.find(r=>r.id===S.settings.region)||{}).name||''}
 function regionSeg(){return `<div class="seg wrap">${BASE.regions.map(r=>`<button class="${r.id===S.settings.region?'on':''}" data-act="region" data-id="${esc(r.id)}">${esc(r.name)}</button>`).join('')}</div>`}
@@ -191,7 +196,7 @@ function cartToBought(){const its=S.list.filter(i=>i.cart&&!i.done);if(!its.leng
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-tm]');if(!c)return;togMany(c.dataset.tm.split(',').map(Number).filter(Number.isInteger),c.closest('li'))});
 function delMany(ns){const gone=ns.map(k=>[k,S.list[k]]).filter(x=>x[1]);if(!gone.length)return;S.list=S.list.filter((_,k)=>!ns.includes(k));save();render();
  undoToast(`「${gone[0][1].name.slice(0,14)}」${gone.length>1?`ほか${gone.length-1}件`:''}を消しました`,()=>{gone.sort((a,b)=>a[0]-b[0]).forEach(([k,i])=>S.list.splice(Math.min(k,S.list.length),0,i));save();render()},gone.length)}
-let UND={fns:[],n:0,el:null,h:0};function undo1(m,f,c){UND.fns=[];UND.n=0;undoToast(m,f,c)}
+let UND={fns:[],n:0,el:null,h:0};function closeUndo(){if(UND.el&&UND.el.isConnected)UND.el.remove();UND.fns=[];UND.n=0}window.addEventListener('hashchange',closeUndo);function undo1(m,f,c){UND.fns=[];UND.n=0;undoToast(m,f,c)}
 function undoToast(msg,fn,cnt){UND.fns.push(fn);UND.n+=cnt||1;let t=UND.el;if(!t||!t.isConnected){t=UND.el=document.createElement('div');t.id='undos';t.className='undo';t.setAttribute('role','status');t.innerHTML='<span></span><button class="undob">元に戻す</button><button class="sub undox" aria-label="閉じる">✕</button>';document.body.appendChild(t);
   t.querySelector('.undox').onclick=()=>{UND.fns=[];UND.n=0;t.remove()};t.querySelector('.undob').onclick=()=>{const f=UND.fns.slice().reverse();UND.fns=[];UND.n=0;t.remove();clearTimeout(UND.h);f.forEach(x=>x())}}
  t.querySelector('span').textContent=UND.fns.length>1?`${UND.n}品を消しました`:msg;clearTimeout(UND.h)}
@@ -256,7 +261,8 @@ function clearSamples(){if(!confirm('メモが「サンプル」の記録や、�
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const id=b.dataset.id;
  switch(b.dataset.act){
   case 'rxp':exportRescue();break;
-  case 'rgo':if(confirm('退避データは残したまま、空の状態で使い始めます。よろしいですか？')){LOAD_ERR='';SAVE_ERR='';save();render()}break;
+  case 'rdel':if(confirm('退避データを消します。書き出したファイルがあれば、そちらから戻せます。よろしいですか？')){try{localStorage.removeItem(RSK)}catch(e){}toast('退避データを消しました');render()}break;
+  case 'rgo':if(!(RESCUE_OK||RAW_SAVED))break;if(confirm('退避データは残したまま、空の状態で使い始めます。よろしいですか？')){LOAD_ERR='';SAVE_ERR='';save();render()}break;
   case 'rok':LOAD_DROP=0;render();break;
   case 'del':delMany(String(id).split(',').map(Number).filter(Number.isInteger));break;
   case 'jump':jumpDay(+id);break;

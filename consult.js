@@ -4,7 +4,7 @@ const SK='okaimono_secret';
 const CTYPES=[['menu','献立・作り置き'],['lesson','レシピレッスン'],['shop','買い物リスト'],['money','節約アドバイス'],['hacks','ライフハック'],['advise','やりたいこと相談'],['recipe','レシピ'],['receipt','レシート読み取り'],['fridge','冷蔵庫の写真読み取り'],['chat','雑談']];
 const MAXBYTES=100000;
 function secret(){try{const j=JSON.parse(localStorage.getItem(SK)||'{}');return {url:isStr(j.url)?j.url:'',key:isStr(j.key)?j.key:'',header:isStr(j.header)?j.header:'Authorization'}}catch(e){return {url:'',key:'',header:'Authorization'}}}
-function saveSecret(x){setLS(SK,JSON.stringify(x))}
+function saveSecret(x){setLS(SK,JSON.stringify(x));try{localStorage.removeItem(PK+'_authng')}catch(_){}}
 function okConsultUrl(u){try{const x=new URL(u);if(x.protocol==='https:')return true;return x.protocol==='http:'&&/^(localhost|127\.0\.0\.1)$/.test(x.hostname)}catch(e){return false}} // 試験用にlocalhostのみhttp可
 function setConsult(field,v,el){const s=secret();v=String(v).trim();
  if(field==='url'){if(v&&!okConsultUrl(v)){if(el)el.value=s.url;alert('受け取りURLは https:// で始まるものだけ使えます');return}s.url=v}
@@ -42,7 +42,7 @@ function confirmPanel(){let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){pl
  <div class="muted">種類：${esc((CTYPES.find(x=>x[0]===CON.type)||[])[1]||'')}${CON.type==='compare'&&isObj(CON.extra)&&CON.extra.compare&&CON.extra.compare.area?'／地域：'+esc(CON.extra.compare.area):''}</div><label class="muted" for="c_qe">送るメッセージ（テンプレのまま送っても、書き足しても、全部書きかえてもOK）</label><textarea id="c_qe" class="qedit" rows="4" maxlength="4000" style="width:100%" oninput="CON.q=this.value">${esc(CON.q)}</textarea>${CON.type==='order'&&typeof payNote==='function'?payNote():''}${RC.imgs.length?`<div>📷 写真 ${RC.imgs.length}枚</div>${rcThumbs(false)}`:''}
  ${cb('fridge',`冷蔵庫（${i.fridge?S.fridge.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.fridge?ex(d.fridge,f=>f.name):'送らない')}</div>
  ${cb('list',`買い物リスト（${i.list?S.list.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.list?ex(d.list,x=>x.name):'送らない')}</div>
- <div>家計（今月${i.spend==='off'?'・送らない':i.spend==='sum'?'・'+(d.spendingCount||0)+'件を集計':'・'+((d.spending||[]).length)+'件'}）：<select onchange="setInc('spend',this.value)">${[['sum','費目別の集計だけ'],['detail','明細も送る'],['off','送らない']].map(([k,l])=>`<option value="${k}"${i.spend===k?' selected':''}>${l}</option>`).join('')}</select></div>
+ <div>家計（今月${i.spend==='off'?'・送らない':i.spend==='sum'?'・'+(d.spendingCount||0)+'件を集計':'・'+((d.spending||[]).length)+'件'}）：<select aria-label="家計の送り方" onchange="setInc('spend',this.value)">${[['sum','費目別の集計だけ'],['detail','明細も送る'],['off','送らない']].map(([k,l])=>`<option value="${k}"${i.spend===k?' selected':''}>${l}</option>`).join('')}</select></div>
  <div class="muted">見本：${i.spend==='sum'?ex(Object.entries(d.spendingByCat||{}),([k,v])=>k+' '+yen(v)):i.spend==='detail'?ex(d.spending,r=>md(r.date)+' '+yen(r.amount)+(r.memo?' '+r.memo:'')):'送らない'}</div>
  ${cb('memo','メモ（品名以外の書き込み）も含める')}
  <div class="muted">設定（地域・買い物日・予算）は毎回送ります。約${pl?Math.ceil(new Blob([pl.body]).size/1024):'?'}KB${pl&&pl.dropped?`（古い家計記録${pl.dropped}件は省きます）`:''}</div>

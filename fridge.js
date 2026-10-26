@@ -19,7 +19,7 @@ function frView(){const L=frItems();if(FR.rev)return frReviewHtml();
  <div class="fridge"><div class="fbody"><div class="fmain">${frZone('冷蔵室',L)}${frZone('チルド',L)}</div><div class="fdoor">${frZone('ドアポケット',L)}</div></div>${frZone('野菜室',L)}${frZone('冷凍室',L)}</div>
  <div class="muted">品物をタップすると、場所の移動・量・リストへ・消すができます。⚠️は期限が近いもの。</div>${frSelHtml()}
  <div class="card"><b>手で入れる</b><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_amt2" placeholder="量" style="flex:0 0 80px"></div>
- <div class="row"><select id="fr_zone">${ZONES.map(z=>`<option>${z}</option>`).join('')}</select><input id="fr_until" type="date" lang="ja" aria-label="期限"></div><div class="row"><button onclick="addFr()">冷蔵庫に入れる</button></div></div>
+ <div class="row"><select id="fr_zone" aria-label="冷蔵庫の場所">${ZONES.map(z=>`<option>${z}</option>`).join('')}</select><input id="fr_until" type="date" lang="ja" aria-label="期限"></div><div class="row"><button onclick="addFr()">冷蔵庫に入れる</button></div></div>
  <div class="card"><div class="row"><button onclick="frPhoto()">📷 冷蔵庫の写真をアキラちゃんに読んでもらう</button></div>
  <div class="row"><button class="sub" onclick="frMenu()">🍳 この中身で献立を相談</button><button class="sub" onclick="frMissing()">🛒 足りない物をリストに</button></div>
  <div class="muted">「足りない物」は、よく買う品のうち冷蔵庫にも買い物リストにも無いものです。</div></div>`}

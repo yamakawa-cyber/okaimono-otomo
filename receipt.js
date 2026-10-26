@@ -24,19 +24,23 @@ function savePending(a){setLS(PK,JSON.stringify(a.slice(-30)))}
 function addPending(id,type){const a=pending();if(a.some(x=>x.id===id))return;a.push({id,type,at:Date.now()});savePending(a);[20,60,180].forEach(s=>setTimeout(fetchReplies,s*1000))}
 function relayBase(){const s=secret();if(s.header!=='X-App-Pass'||!s.url||!s.key)return null;try{return new URL(s.url).origin}catch(e){return null}}
 let fetching=false;
-async function fetchReplies(manual){const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
+// 合言葉がちがう（401）・止められた（429）ときは、自動の確認をやめる（家のWi‑Fiごと締め出されないように）
+const NGK=PK+'_authng';const authNg=()=>{try{return !!localStorage.getItem(NGK)}catch(e){return false}};
+async function fetchReplies(manual){const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!manual&&authNg())return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
  if(!p.length){if(manual){INBOX_ST='待っている返事はありません';render()}return}
- fetching=true;try{const r=await fetch(b+'/replies?ids='+p.map(x=>x.id).join(','),{headers:{'X-App-Pass':secret().key}});if(!r.ok)throw new Error('受け取りエラー（'+r.status+'）');
-  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
+ fetching=true;try{const r=await fetch(b+'/replies?ids='+p.map(x=>x.id).join(','),{headers:{'X-App-Pass':secret().key}});if(r.status===401||r.status===429){setLS(NGK,'1');throw new Error(r.status===401?'合言葉がちがいます。自動の確認を止めました。設定で合言葉を確かめてください':'合言葉のまちがいが続いたため止められています。自動の確認を止めました。しばらくしてから設定の合言葉を確かめてください')}if(!r.ok)throw new Error('受け取りエラー（'+r.status+'）');try{localStorage.removeItem(NGK)}catch(_){}
+  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||(isArr(pe.done)&&pe.done.includes(k))||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
   INBOX_ST=n?'':(manual?'まだ返事は届いていません':INBOX_ST)}
- catch(e){if(manual)INBOX_ST='返事を確かめられませんでした：'+e.message}finally{fetching=false;render()}}
+ catch(e){if(manual||authNg())INBOX_ST='返事を確かめられませんでした：'+e.message}finally{fetching=false;render()}}
 // 受取済み：取り込んだ番号(#k)までを知らせる。後から届いた分は消さない
-async function ackId(id,upto){if(!id||INBOX.some(e=>e.id===id))return;const a=pending(),pe=a.find(x=>x.id===id);if(pe){pe.taken=Math.max(pe.taken||0,upto||0);pe.tk=Date.now();savePending(a)}const b=relayBase();if(!b)return;
+// 端末で「片づけた番号」を覚え、0件目から切れ目なく片づいたところまで（taken）を中継に送る。順番に関係なく、消した返事はもう出ない
+function markDone(id,ks){const a=pending(),pe=a.find(x=>x.id===id);if(!pe)return 0;const old=pe.taken||0;const d=new Set((isArr(pe.done)?pe.done:[]).filter(Number.isInteger));ks.forEach(k=>{if(k>=old)d.add(k)});let t=old;while(d.has(t)){d.delete(t);t++}pe.taken=t;pe.done=[...d].slice(0,40);pe.tk=Date.now();savePending(a);return t>old?t:0}
+async function ackId(id,upto){if(!id||!upto)return;const b=relayBase();if(!b)return;
  try{await fetch(b+'/ack',{method:'POST',headers:{'Content-Type':'application/json','X-App-Pass':secret().key},body:JSON.stringify({ids:[id],upto:{[id]:upto||0}})})}catch(e){}}
-function dropInbox(keys){const up={};INBOX=INBOX.filter(e=>{if(keys.includes(e.key)){if(e.id){const k=+String(e.key).split('#')[1]||0;up[e.id]=Math.max(up[e.id]||0,k+1)}return false}return true});Object.entries(up).forEach(([id,n])=>ackId(id,n));render()}
+function dropInbox(keys){const by={};INBOX=INBOX.filter(e=>{if(keys.includes(e.key)){if(e.id){const k=+String(e.key).split('#')[1]||0;(by[e.id]=by[e.id]||[]).push(k)}return false}return true});Object.entries(by).forEach(([id,ks])=>{const t=markDone(id,ks);if(t)ackId(id,t)});render()}
 // --- レシート ---
 function rcCat(c){return CATS.some(x=>x[0]===c)?c:'予備'}
-function rcKey(r){const k=[r.store,r.date,Math.round(r.total)];if(r.no||r.time)k.push(String(r.no||'')+'@'+String(r.time||''));return k.join('|')}
+function rcKey(r){const k=[String(r.store).slice(0,200),r.date,Math.round(r.total)];if(r.no||r.time)k.push(String(r.no||'').slice(0,60)+'@'+String(r.time||'').slice(0,20));return k.join('|').slice(0,400)}
 const rcSure=r=>!!(r.no||r.time); // 番号か時刻があれば同じレシートと言い切れる
 function rcGroups(r){const by={};r.items.forEach(i=>{const c=rcCat(i.category);by[c]=(by[c]||0)+Math.round(i.price)});let g=Object.entries(by).filter(([,v])=>v>=1);
  // レシートの合計（税込）との差は「消費税・調整」で記録。品目の方が多い（値引き）ときは大きい費目から引く
@@ -44,7 +48,7 @@ function rcGroups(r){const by={};r.items.forEach(i=>{const c=rcCat(i.category);b
  if(diff>=1)g.push(['消費税・調整',diff]);else if(diff<0){let rest=-diff;g=g.sort((a,b)=>b[1]-a[1]).map(([c,v])=>{const t=Math.min(rest,v-1);rest-=t;return [c,v-t]})}
  return g}
 const rcDup=r=>S.spend.some(x=>x.rc===rcKey(r));
-const rcTaxNote=r=>{const s0=r.items.reduce((a,i)=>a+Math.round(i.price),0),d=Math.round(r.total)-s0;return d>=1?`<div class="muted">品目の合計 ${yen(s0)} とレシートの合計の差 ${yen(d)} は「消費税・調整」で記録します。</div>`:d<0?`<div class="muted">品目の合計 ${yen(s0)} がレシートの合計より多いので、差（値引き）${yen(-d)} を費目から引いて記録します。</div>`:''};
+const rcTaxNote=r=>{const s0=r.items.reduce((a,i)=>a+Math.round(i.price),0),d=Math.round(r.total)-s0;if(Math.abs(d)>Math.round(r.total)*0.1)return `<div class="err">品目の合計 ${yen(s0)} とレシートの合計 ${yen(r.total)} の差（${yen(Math.abs(d))}）が1割を超えています。読み取りまちがいかもしれないので、写真と見比べてください。差は「${d>0?'消費税・調整':'値引き'}」として記録されます。</div>`;return d>=1?`<div class="muted">品目の合計 ${yen(s0)} とレシートの合計の差 ${yen(d)} は「消費税・調整」で記録します。</div>`:d<0?`<div class="muted">品目の合計 ${yen(s0)} がレシートの合計より多いので、差（値引き）${yen(-d)} を費目から引いて記録します。</div>`:''};
 function rcApply(keys,force){let n=0,sk=0;INBOX.filter(e=>keys.includes(e.key)&&!e.err&&e.item.kind==='receipt').forEach(e=>{const r=e.item,k=rcKey(r);if(!force&&S.spend.some(x=>x.rc===k)){sk++;return}
   rcGroups(r).forEach(([c,v])=>S.spend.push({id:uid(),date:r.date,store:r.store.slice(0,200),cat:c,amount:v,memo:'レシート',rc:k}));n++});
  save();dropInbox(keys);alert(`家計簿に${n}枚分を入れました`+(sk?`（同じレシート${sk}枚は入れませんでした）`:''))}
