@@ -12,7 +12,7 @@ const DELIS=[['Uber Eats',q=>'https://www.ubereats.com/jp/search?q='+enc(q)],['�
 const RANKS=[['cheap','安い','💴'],['better','ベター','👍'],['luxury','豪華','✨']];
 let NS=null,NSF=false; // 開いている「ネットで探す」の品名
 function orders(){try{const a=JSON.parse(localStorage.getItem(OK_)||'[]');return isArr(a)?a.filter(o=>isObj(o)&&isStr(o.id)):[]}catch(e){return []}}
-function saveOrders(a){localStorage.setItem(OK_,JSON.stringify(a.slice(-30)))}
+function saveOrders(a){setLS(OK_,JSON.stringify(a.slice(-30)))}
 // アプリが持っている値段（特売・レシート・リストの金額）
 function knownPrices(name){const n=normDish(baseName(name));if(!n)return [];const hit=x=>{const m=normDish(baseName(String(x||'')));return m&&(m===n||m.includes(n)||n.includes(m))};const out=[];
  try{hist().forEach(e=>{const r=e.item;if(r.kind==='receipt')(r.items||[]).forEach(i=>{if(hit(i.name)&&Number.isFinite(i.price))out.push({src:'レシート',store:r.store,price:i.price,date:r.date})})})}catch(e){}
@@ -77,7 +77,7 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
  if(d.openall)return openAll(d.openall==='delivery'?DELIS:NETS,d.n);
  if(d.ord!==undefined){const it=S.list.filter(i=>!i.done&&baseName(i.name)===d.ord).map(i=>({name:i.name,qty:i.qty||''}));return askOrder(it.length?it:[{name:d.ord}],d.mode||'goods')}
  if(d.pick!==undefined){const r=CMP_SHOWN,o=r&&r.options[+d.pick];if(!o)return;return askOrder([{name:o.name,qty:r.target.amount||'',store:o.store||'',price:Number.isFinite(o.price)?o.price:null,total:Number.isFinite(o.total)?o.total:null,url:shopUrl(o.url),rank:o.rank}],r.target.mode==='delivery'?'delivery':'goods')}
- if(d.olog||d.onolog){const id=d.olog||d.onolog,a=orders(),o=a.find(x=>x.id===id);if(!o)return;if(d.olog){const v=+val('olog_'+id);if(!(okAmt(v)&&v>0))return alert('金額を入れてください');const r=orderState(id),st=o.items.map(i=>i.store).filter(Boolean)[0]||(o.mode==='delivery'?'出前':'通販');S.spend.push({id:uid(),date:ymd(today()),store:st.slice(0,200),cat:val('ocat_'+id)||'食材・米',amount:v,memo:('注文：'+o.items.map(i=>i.name).join('、')).slice(0,500)});save();o.logged='yes';toast('家計に記録しました')}else o.logged='no';saveOrders(a);render();scrollTo(0,y);return}
+ if(d.olog||d.onolog){const id=d.olog||d.onolog,a=orders(),o=a.find(x=>x.id===id);if(!o)return;if(d.olog){const v=+val('olog_'+id);if(!(okAmt1(v)))return alert('金額を入れてください');const r=orderState(id),st=o.items.map(i=>i.store).filter(Boolean)[0]||(o.mode==='delivery'?'出前':'通販');S.spend.push({id:uid(),date:ymd(today()),store:st.slice(0,200),cat:val('ocat_'+id)||'食材・米',amount:v,memo:('注文：'+o.items.map(i=>i.name).join('、')).slice(0,500)});save();o.logged='yes';toast('家計に記録しました')}else o.logged='no';saveOrders(a);render();scrollTo(0,y);return}
  if(d.odel){saveOrders(orders().filter(o=>o.id!==d.odel));render();scrollTo(0,y)}});
 // ---- 🛵 出前を頼む ／ 📦 通販で頼む（リストにない物も自由に。頼む＝かならず3つの値段比べ → 「これにする」で注文へ）----
 let REQ=null;const RQ={delivery:{},goods:{}};
@@ -107,4 +107,4 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
 {const f=V.list;V.list=function(){return reqHtml()+f.apply(this,arguments)}}
 {const f=V.fridge;V.fridge=function(){const s=f.apply(this,arguments);return s.replace('<h2>今週の献立</h2>',reqHtml()+'<h2>今週の献立</h2>')}}
 
-BKX.orders={get:()=>orders(),set:v=>{if(isArr(v))saveOrders(v.filter(o=>isObj(o)&&isStr(o.id)&&/^o[a-z0-9]{4,40}$/.test(o.id)&&isArr(o.items)&&isStr(o.at)).map(o=>({id:o.id,at:o.at.slice(0,40),mode:o.mode==='delivery'?'delivery':'goods',logged:o.logged==='yes'||o.logged==='no'?o.logged:undefined,items:o.items.filter(isObj).slice(0,30).map(i=>({name:String(i.name||'').slice(0,200),qty:String(i.qty||'').slice(0,50),store:String(i.store||'').slice(0,200),price:Number.isFinite(i.price)?i.price:null,total:Number.isFinite(i.total)?i.total:null,url:shopUrl(i.url),rank:String(i.rank||'').slice(0,10)}))})))}};
+BKX.orders={get:()=>orders(),check:v=>isArr(v),set:v=>{if(isArr(v))saveOrders(v.filter(o=>isObj(o)&&isStr(o.id)&&/^o[a-z0-9]{4,40}$/.test(o.id)&&isArr(o.items)&&isStr(o.at)).map(o=>({id:o.id,at:o.at.slice(0,40),mode:o.mode==='delivery'?'delivery':'goods',logged:o.logged==='yes'||o.logged==='no'?o.logged:undefined,items:o.items.filter(isObj).slice(0,30).map(i=>({name:String(i.name||'').slice(0,200),qty:String(i.qty||'').slice(0,50),store:String(i.store||'').slice(0,200),price:Number.isFinite(i.price)?i.price:null,total:Number.isFinite(i.total)?i.total:null,url:shopUrl(i.url),rank:String(i.rank||'').slice(0,10)}))})))}};

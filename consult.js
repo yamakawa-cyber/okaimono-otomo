@@ -4,7 +4,7 @@ const SK='okaimono_secret';
 const CTYPES=[['menu','献立・作り置き'],['lesson','レシピレッスン'],['shop','買い物リスト'],['money','節約アドバイス'],['hacks','ライフハック'],['advise','やりたいこと相談'],['recipe','レシピ'],['receipt','レシート読み取り'],['fridge','冷蔵庫の写真読み取り'],['chat','雑談']];
 const MAXBYTES=100000;
 function secret(){try{const j=JSON.parse(localStorage.getItem(SK)||'{}');return {url:isStr(j.url)?j.url:'',key:isStr(j.key)?j.key:'',header:isStr(j.header)?j.header:'Authorization'}}catch(e){return {url:'',key:'',header:'Authorization'}}}
-function saveSecret(x){localStorage.setItem(SK,JSON.stringify(x))}
+function saveSecret(x){setLS(SK,JSON.stringify(x))}
 function okConsultUrl(u){try{const x=new URL(u);if(x.protocol==='https:')return true;return x.protocol==='http:'&&/^(localhost|127\.0\.0\.1)$/.test(x.hostname)}catch(e){return false}} // 試験用にlocalhostのみhttp可
 function setConsult(field,v,el){const s=secret();v=String(v).trim();
  if(field==='url'){if(v&&!okConsultUrl(v)){if(el)el.value=s.url;alert('受け取りURLは https:// で始まるものだけ使えます');return}s.url=v}
@@ -15,7 +15,7 @@ const mask=k=>k?'●'.repeat(Math.min(8,k.length))+k.slice(-4):'未設定';
 function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃんに相談</h2><div class="card">
  相談の受け取りURL（https）<input id="c_url" value="${esc(s.url)}" placeholder="https://…" style="width:100%" onchange="setConsult('url',this.value,this)">
  送信キー（いま：${esc(mask(s.key))}）<input id="c_key" type="password" autocomplete="off" placeholder="貼り付けると上書き" style="width:100%" onchange="setConsult('key',this.value,this)">
- キーを付けるヘッダ<select id="c_hdr" onchange="setConsult('header',this.value)">${['Authorization','X-Api-Key','X-Webhook-Secret','X-App-Pass'].map(h=>`<option${h===s.header?' selected':''}>${h}</option>`).join('')}</select>
+ キーを付けるヘッダ<select id="c_hdr" aria-label="キーを付けるヘッダ" onchange="setConsult('header',this.value)">${['Authorization','X-Api-Key','X-Webhook-Secret','X-App-Pass'].map(h=>`<option${h===s.header?' selected':''}>${h}</option>`).join('')}</select>
  <div class="muted">Authorization の場合は「Bearer キー」の形で送ります。中継サーバー（Cloudflare Workers）を使うときは X-App-Pass を選び、キーの欄には中継用の合言葉を入れます。キーはこのスマホの中だけに保存し、バックアップには入れません。</div>
  <div class="row"><button class="sub" onclick="if(confirm('受け取りURLと送信キーを消しますか？')){localStorage.removeItem(SK);render()}">消す</button></div></div>`}
 let CON={open:false,type:'menu',status:'',stage:'form',inc:{fridge:true,list:true,spend:'sum',memo:false}};
@@ -26,8 +26,8 @@ function consultPanel(){const s=secret();
  if(IS_DEMO)return `<div class="card sample">🧪 見本モードでは相談を送りません。</div>`;
  if(!s.url||!s.key)return `<div class="card tip">送信先がまだ設定されていません。<a class="link" href="#settings">設定で「相談の受け取りURL」と「送信キー」を入れる →</a></div>`;
  if(CON.stage==='confirm')return confirmPanel();
- return `<div class="card consultbox"><select id="c_type">${CTYPES.map(([k,l])=>`<option value="${k}"${k===CON.type?' selected':''}>${l}</option>`).join('')}</select>
- <textarea id="c_q" rows="3" style="width:100%" placeholder="相談したいこと">${esc(CON.q||'')}</textarea>
+ return `<div class="card consultbox"><select id="c_type" aria-label="相談の種類">${CTYPES.map(([k,l])=>`<option value="${k}"${k===CON.type?' selected':''}>${l}</option>`).join('')}</select>
+ <textarea id="c_q" rows="3" maxlength="4000" aria-label="相談したいこと" style="width:100%" placeholder="相談したいこと">${esc(CON.q||'')}</textarea>
  ${rcPickHtml()}
  <div class="row"><button onclick="toConfirm()" ${CON.sending?'disabled':''}>送る</button><button class="sub" onclick="CON.code=!CON.code;render()">取り込みコードを貼る</button></div>
  ${CON.code?`<textarea id="c_code" rows="4" style="width:100%" placeholder="アキラちゃんから届いた取り込みコード（JSON）"></textarea><div class="row"><button class="sub" onclick="importCode()">取り込む</button></div>`:''}
@@ -39,7 +39,7 @@ function confirmPanel(){let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){pl
  const d=pl?JSON.parse(pl.body).data:{},i=CON.inc,cb=(k,l)=>`<label class="chk1"><input type="checkbox" ${i[k]?'checked':''} onchange="setInc('${k}',this.checked)"> ${l}</label>`;
  const ex=(a,f)=>a&&a.length?a.slice(0,3).map(f).map(esc).join('、')+(a.length>3?' ほか':''):'なし';
  return `<div class="card consultbox"><b>送る内容の確認</b>
- <div class="muted">種類：${esc((CTYPES.find(x=>x[0]===CON.type)||[])[1]||'')}${CON.type==='compare'&&isObj(CON.extra)&&CON.extra.compare&&CON.extra.compare.area?'／地域：'+esc(CON.extra.compare.area):''}</div><label class="muted" for="c_qe">送るメッセージ（テンプレのまま送っても、書き足しても、全部書きかえてもOK）</label><textarea id="c_qe" class="qedit" rows="4" style="width:100%" oninput="CON.q=this.value">${esc(CON.q)}</textarea>${CON.type==='order'&&typeof payNote==='function'?payNote():''}${RC.imgs.length?`<div>📷 写真 ${RC.imgs.length}枚</div>${rcThumbs(false)}`:''}
+ <div class="muted">種類：${esc((CTYPES.find(x=>x[0]===CON.type)||[])[1]||'')}${CON.type==='compare'&&isObj(CON.extra)&&CON.extra.compare&&CON.extra.compare.area?'／地域：'+esc(CON.extra.compare.area):''}</div><label class="muted" for="c_qe">送るメッセージ（テンプレのまま送っても、書き足しても、全部書きかえてもOK）</label><textarea id="c_qe" class="qedit" rows="4" maxlength="4000" style="width:100%" oninput="CON.q=this.value">${esc(CON.q)}</textarea>${CON.type==='order'&&typeof payNote==='function'?payNote():''}${RC.imgs.length?`<div>📷 写真 ${RC.imgs.length}枚</div>${rcThumbs(false)}`:''}
  ${cb('fridge',`冷蔵庫（${i.fridge?S.fridge.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.fridge?ex(d.fridge,f=>f.name):'送らない')}</div>
  ${cb('list',`買い物リスト（${i.list?S.list.length+'件':'送らない'}）`)}<div class="muted">見本：${(i.list?ex(d.list,x=>x.name):'送らない')}</div>
  <div>家計（今月${i.spend==='off'?'・送らない':i.spend==='sum'?'・'+(d.spendingCount||0)+'件を集計':'・'+((d.spending||[]).length)+'件'}）：<select onchange="setInc('spend',this.value)">${[['sum','費目別の集計だけ'],['detail','明細も送る'],['off','送らない']].map(([k,l])=>`<option value="${k}"${i.spend===k?' selected':''}>${l}</option>`).join('')}</select></div>
@@ -66,14 +66,16 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
 async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;keepQ();CON.q=String(CON.q||'').trim().slice(0,4000);if(!CON.q){CON.status='送るメッセージを書いてください';CON.ok=false;return render()}if(!s.url||!s.key){CON.status='送信先が未設定です';CON.ok=false;return render()}
  if(!CTYPES.some(([k])=>k===CON.type)||!CON.q)return;
  if(!navigator.onLine){CON.status='いまオフラインなので送れません。電波のあるところで、もう一度送ってください。';CON.ok=false;return render()}
- CON.reqId='c'+uid();let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){CON.status=e.message;CON.ok=false;return render()}
+ // 時間切れ・504のあとは同じ番号で送り直す（受け取り側で同じ相談とわかるように）
+ CON.reqId=(CON.retry&&CON.retry.q===CON.q&&CON.retry.type===CON.type)?CON.retry.id:'c'+uid();let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){CON.status=e.message;CON.ok=false;return render()}
  const h={'Content-Type':'application/json'};h[s.header]=s.header==='Authorization'?'Bearer '+s.key:s.key;
  CON.sending=true;CON.status='送信中…（番号 '+CON.reqId+'）';CON.ok=true;render();
  try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),RC.imgs.length?40000:15000);
   const r=await fetch(s.url,{method:'POST',headers:h,body:pl.body,signal:ctl.signal});clearTimeout(tm);
+  if(r.status===504||r.status===409){addPending(CON.reqId,CON.type);CON.retry={id:CON.reqId,q:CON.q,type:CON.type};const e=new Error('maybe');e.maybe=true;throw e}
   if(!r.ok){let m='';try{const jj=await r.json();if(jj&&typeof jj.message==='string')m=jj.message.slice(0,200)}catch(_){}throw new Error(r.status===429?(m||'きょうの相談の上限に達しました。日本時間の0時を過ぎたら、また送れます。'):'受け取り側のエラー（'+r.status+'）'+(m?'：'+m:''))}
-  addPending(CON.reqId,CON.type);if(typeof onSent==='function')onSent(CON.type,CON.extra);CON.extra=null;RC.imgs=[];CON.status='送りました！（番号 '+CON.reqId+'）返事が届くと、この画面の上に「📩 返事」が出ます。'+(pl.dropped?`（古い家計記録${pl.dropped}件は省きました）`:'');CON.ok=true;CON.q='';CON.stage='form'}
- catch(e){CON.ok=false;CON.status=e.name==='AbortError'?'時間切れになりました（番号 '+CON.reqId+'）。受け取り側には届いている可能性があります。続けて送り直す前に、届いたか確かめてください。'
+  CON.retry=null;addPending(CON.reqId,CON.type);if(typeof onSent==='function')onSent(CON.type,CON.extra);CON.extra=null;RC.imgs=[];CON.status='送りました！（番号 '+CON.reqId+'）返事が届くと、この画面の上に「📩 返事」が出ます。'+(pl.dropped?`（古い家計記録${pl.dropped}件は省きました）`:'');CON.ok=true;CON.q='';CON.stage='form'}
+ catch(e){CON.ok=false;if(e.name==='AbortError'){addPending(CON.reqId,CON.type);CON.retry={id:CON.reqId,q:CON.q,type:CON.type}}CON.status=e.maybe?'届いたか確認中です（番号 '+CON.reqId+'）。受け取り側の応答が遅れました。返事が届けば、この画面の上に「📩 返事」が出ます。送り直すときは同じ番号で送ります。':e.name==='AbortError'?'時間切れになりました（番号 '+CON.reqId+'）。受け取り側には届いている可能性があります。続けて送り直す前に、届いたか確かめてください。'
   :/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'送れませんでした：受け取り先につながりませんでした。URLの間違い、受け取り側が止まっている、または受け取り側がブラウザからの送信を許可していない（CORSの設定）可能性があります。CORSの場合は、設定の「中継サーバー」の方法を使ってください。':'送れませんでした：'+e.message}
  finally{CON.sending=false;render()}}
 function importCode(){const t=val('c_code');if(!t)return;try{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);

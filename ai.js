@@ -4,7 +4,7 @@
 // 返す形（JSON）は共通：{kind, title, ...}。Googleドライブ経由の答えファイルも同じ形で読める。
 const MockProvider={name:'見本',async ask(kind,ctx){await new Promise(r=>setTimeout(r,150));return MOCK[kind](ctx)}};
 const RelayProvider=url=>({name:'中継サーバー',async ask(kind,ctx){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,ctx})});if(!r.ok)throw new Error('中継サーバーのエラー '+r.status);return r.json()}});
-function aiProvider(){const u=(S.settings.aiRelay||'').trim();return u?RelayProvider(u):MockProvider}
+function aiProvider(){const u=(S.settings.aiRelay||'').trim();return u&&/^https:\/\//i.test(u)?RelayProvider(u):MockProvider}
 // 機能ごとに送る要約だけを作る（全データは送らない）
 function aiContext(kind){const d=today();
  const sale=regStores().filter(s=>salesOn(s,d).length).map(s=>({store:s.name,items:salesOn(s,d).map(x=>x.text)}));
@@ -65,7 +65,7 @@ const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep
  shop:r=>isArr(r.items)&&r.items.every(i=>isObj(i)&&isStr(i.name)&&Number.isFinite(i.yen))&&Number.isFinite(r.budget),
  money:r=>Number.isFinite(r.total)&&Number.isFinite(r.monthly)&&isObj(r.byCat)&&isArr(r.tips)&&r.tips.every(isStr),
  hacks:r=>isArr(r.items)&&r.items.every(i=>isObj(i)&&isStr(i.about)&&isStr(i.tip)),
- receipt:r=>isStr(r.store)&&r.store.length<=200&&isDate(r.date)&&isArr(r.items)&&r.items.length>0&&r.items.length<=200&&r.items.every(i=>isObj(i)&&isStr(i.name)&&Number.isFinite(i.price)&&Math.abs(i.price)<1e7&&(i.category===undefined||isStr(i.category)))&&Number.isFinite(r.total)&&r.total>=1&&r.total<1e7,
+ receipt:r=>isStr(r.store)&&r.store.length<=200&&isDate(r.date)&&isArr(r.items)&&r.items.length>0&&r.items.length<=200&&r.items.every(i=>isObj(i)&&isStr(i.name)&&Number.isFinite(i.price)&&Math.abs(i.price)<1e7&&(i.category===undefined||isStr(i.category)))&&Number.isFinite(r.total)&&r.total>=1&&r.total<1e7&&(r.no===undefined||(isStr(r.no)&&r.no.length<=60))&&(r.time===undefined||(isStr(r.time)&&r.time.length<=20)),
  advise:r=>isStr(r.summary)&&isArr(r.needs)&&isArr(r.steps),chat:r=>isStr(r.reply)};
 function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='AIの答え';return r}
 function aiImport(ev){const inp=ev.target,f=inp.files[0];if(!f)return;f.text().then(t=>{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
@@ -76,7 +76,7 @@ AISHAPE.recipe=r=>isStr(r.name)&&isArr(r.ingredients)&&r.ingredients.every(isStr
 const HK=IS_DEMO?'okaimono_hist_demo':'okaimono_hist',HIST_MAX=150,HIST_BYTES=1500000;
 const KLABEL={menu:'🍳 献立',recipe:'🥘 レシピ',shop:'🛒 買い物',money:'💰 家計',hacks:'💡 こつ',advise:'🧭 相談',chat:'💬 ひとこと',receipt:'🧾 レシート'};
 function hist(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return isArr(a)?a.filter(e=>isObj(e)&&isStr(e.id)&&isObj(e.item)&&AISHAPE[e.item.kind]):[]}catch(e){return []}}
-function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));localStorage.setItem(HK,JSON.stringify(a))}}
+function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));setLS(HK,JSON.stringify(a))}}
 function histTitle(r){return r.kind==='receipt'?`${r.store}（${yen(r.total)}）`:r.kind==='recipe'?r.name:r.kind==='chat'?String(r.reply).slice(0,40):(r.title||KLABEL[r.kind])}
 function histAdd(item,src){if(!isObj(item)||!AISHAPE[item.kind])return null;const sig=JSON.stringify(item);const a=hist();const old=a.find(e=>e.sig===sig);if(old)return old.id;
  const e={id:'h'+uid(),at:new Date().toISOString(),src:src||'',sig,item};a.unshift(e);saveHist(a);try{if(typeof linkMenu==='function')setTimeout(linkMenu,0)}catch(x){}return e.id}
@@ -163,7 +163,7 @@ function aiToList(){try{const it=listItemsOf(aiCur());if(!it.length)return toast
 function aiIngToList(){try{const r=aiCur(),rc=r&&(r.kind==='recipe'?r:r.recipe);const it=listItemsOf(rc&&{items:rc.ingredients});const ds=[];menuArr().forEach((m,d)=>{if(rc&&findRecipe&&String(m).split(/[・、,]/).some(x=>findRecipe(x.trim())&&x.includes(rc.name.replace(/[（(].*$/,''))))ds.push(d)});if(ds.length)it.forEach(i=>{i.uses=ds.map(d=>({d,dish:rc.name.slice(0,100)}));i.trip=tripForDay(ds[0])});if(!it.length)return toast('材料が見つかりませんでした');const[n,sk]=pushList(it);toast(`材料を${n}品リストに入れました`+(sk?`（すでにある${sk}品は除外）`:''));render()}catch(e){alert('リストに入れられませんでした：'+e.message)}}
 function aiToMenu(){try{const r=aiCur();if(!r||!isArr(r.plan))return toast('献立が見つかりませんでした');let n=0;r.plan.forEach(l=>{const m=String(l).match(/^\s*([日月火水木金土])(?:曜日?)?\s*[：:]\s*(.*)$/);if(m){setMenu(WD.indexOf(m[1]),m[2]);n++}});
  if(isArr(r.days))r.days.forEach(x=>{if(isObj(x)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;if(okWd(d)&&isArr(x.dishes)){setMenu(d,x.dishes.map(y=>isObj(y)?y.name:y).filter(isStr).join('・'));n++}}});
- if(isArr(r.prep))S.prep=r.prep.join('\n');
+ if(isArr(r.prep))S.prep=r.prep.join('\n').slice(0,5000);
  let items=[];const sh=r.shop||r.items;(isArr(sh)?sh:[sh]).forEach(x=>{if(isObj(x)&&!x.name)items=items.concat(listItemsOf(x));else if(x)items=items.concat(listItemsOf({items:[x]}))});
  if(isArr(r.days))r.days.forEach(x=>isObj(x)&&isArr(x.dishes)&&x.dishes.forEach(y=>{if(isObj(y)&&isArr(y.buy)){const d=typeof x.d==='string'?WD.indexOf(x.d):x.d;items=items.concat(listItemsOf({items:y.buy.map(b=>Object.assign(isObj(b)?b:{name:b},{uses:[{d,dish:y.name}]}))}))}}));
  if(!items.length&&AT.open&&AT.open!=='demo'){const me=hist().find(e=>e.id===AT.open);if(me){const t0=Date.parse(me.at);hist().filter(e=>e.item.kind==='shop'&&Math.abs(Date.parse(e.at)-t0)<600000).reverse().forEach(e=>items=items.concat(listItemsOf(e.item)))}}
