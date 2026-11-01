@@ -39,7 +39,7 @@ async function ackId(id,upto){if(!id||!upto)return;const b=relayBase();if(!b)ret
  try{await fetch(b+'/ack',{method:'POST',headers:{'Content-Type':'application/json','X-App-Pass':secret().key},body:JSON.stringify({ids:[id],upto:{[id]:upto||0}})})}catch(e){}}
 function dropInbox(keys){const by={};INBOX=INBOX.filter(e=>{if(keys.includes(e.key)){if(e.id){const k=+String(e.key).split('#')[1]||0;(by[e.id]=by[e.id]||[]).push(k)}return false}return true});Object.entries(by).forEach(([id,ks])=>{const t=markDone(id,ks);if(t)ackId(id,t)});render()}
 // --- レシート ---
-function rcCat(c){return CATS.some(x=>x[0]===c)?c:'予備'}
+function rcCat(c){c=normCat(c);return CATS.some(x=>x[0]===c)?c:'予備'}
 function rcKey(r){const k=[String(r.store).slice(0,200),r.date,Math.round(r.total)];if(r.no||r.time)k.push(String(r.no||'').slice(0,60)+'@'+String(r.time||'').slice(0,20));return k.join('|').slice(0,400)}
 const rcSure=r=>!!(r.no||r.time); // 番号か時刻があれば同じレシートと言い切れる
 function rcGroups(r){const by={};r.items.forEach(i=>{const c=rcCat(i.category);by[c]=(by[c]||0)+Math.round(i.price)});let g=Object.entries(by).filter(([,v])=>v>=1);
