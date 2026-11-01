@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v36'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v37'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材・米',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['予備',10000]];
@@ -45,7 +45,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
   if('shopDays' in st&&!(isArr(st.shopDays)&&st.shopDays.length>=1&&st.shopDays.every(okWd)))bad('settings（買い物の曜日）');
   if('region' in st&&!(isStr(st.region)&&(!BASE.regions.length||BASE.regions.some(r=>r.id===st.region))))bad('settings（地域）');
   for(const k of ['perTrip','monthly'])if(k in st&&!(okAmt(st[k])&&st[k]>0))bad('settings（予算）');
-  if('aiRelay' in st&&!okS(st.aiRelay,500))bad('settings（AI）')}});
+  if('aiRelay' in st&&!okS(st.aiRelay,500))bad('settings（アキラちゃん）')}});
  out.settings=cleanSettings(data.settings);
  for(const k of Object.keys(data)){if(k==='lastBackup'&&isDate(data[k]))out[k]=data[k];if(k==='often'&&isArr(data[k]))out[k]=data[k].filter(o=>isObj(o)&&okS(o.name,100)&&o.name&&okS(o.cat,50)&&okS(o.qty,50)&&(o.price===undefined||okAmt1(o.price))).slice(0,60).map(o=>{const x={name:o.name};if(o.cat)x.cat=o.cat;if(o.qty)x.qty=o.qty;if(o.price)x.price=o.price;return x});if(k==='sampleKeys'&&isArr(data[k]))out[k]=data[k].filter(isStr).slice(0,50)}
  out.version=DATA_VERSION;return out}
@@ -147,12 +147,12 @@ settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 
  <h2>冷蔵庫点検の曜日</h2><div class="seg">${WD.map((w,i)=>`<button class="${st.fridgeDay===i?'on':''}" onclick="S.settings.fridgeDay=${i};save();render()">${w}</button>`).join('')}</div>
  <h2>予算</h2><div class="card"><label>1回の買い物 <input type="number" min="1" aria-label="1回の買い物の予算" value="${st.perTrip}" onchange="S.settings.perTrip=okAmt1(+this.value)?+this.value:9000;save()"> 円</label><br><label>月の予算 <input type="number" min="1" aria-label="月の予算" value="${st.monthly}" onchange="S.settings.monthly=okAmt1(+this.value)?+this.value:100000;save()"> 円</label>
  <div class="muted">費目別の月予算：${CATS.map(([k,b])=>k+' '+yen(b)).join('、')}</div></div>
- <h2>AI</h2><div class="card">（旧方式）AI中継サーバーのURL（ふだんは空のままでOK。相談は下の「アキラちゃんに相談」を使います）<input id="relay" maxlength="500" aria-label="旧方式のAI中継サーバーのURL" placeholder="https://…workers.dev" value="${esc(st.aiRelay||'')}" style="width:100%" onchange="setRelay(this.value)">
+ <h2>アキラちゃん</h2><div class="card">（旧方式）アキラちゃんの中継サーバーのURL（ふだんは空のままでOK。相談は下の「アキラちゃんに相談」を使います）<input id="relay" maxlength="500" aria-label="旧方式のアキラちゃんの中継サーバーのURL" placeholder="https://…workers.dev" value="${esc(st.aiRelay||'')}" style="width:100%" onchange="setRelay(this.value)">
  <div class="muted">APIキーはアプリに入れません。キーは中継サーバーだけが持ちます。</div>
- <div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike">AIの答えを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div></div>
+ <div class="row"><button class="sub" onclick="aiExport()">アキラちゃんに頼む用に書き出す</button><label class="btnlike">アキラちゃんの答えを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div></div>
  <h2>バックアップ</h2><div class="card">${bkDue()?'<div class="tip">⚠️ 最後のバックアップから1週間たちました。書き出しておきましょう。</div>':''}<div class="muted">最後のバックアップ：${S.lastBackup?md(S.lastBackup):'まだ'}</div>
  <div class="row"><button onclick="backup()">全部を書き出す</button><label class="btnlike">読み込んで戻す<input type="file" accept=".json" hidden onchange="restore(event)"></label></div>
- <div class="muted">お店（追加した店）・買い物リスト・冷蔵庫・献立・家計・設定に加えて、献立とレシピのつながり（リンク）・AIの答えの保管庫・注文の一覧もまとめて1つのファイルにします。</div></div>
+ <div class="muted">お店（追加した店）・買い物リスト・冷蔵庫・献立・家計・設定に加えて、献立とレシピのつながり（リンク）・アキラちゃんの答えの保管庫・注文の一覧もまとめて1つのファイルにします。</div></div>
  ${rescues().length?`<h2>退避データ</h2><div class="card"><div class="muted">読めなかったときに残した元のデータが${rescues().length}件あります。書き出したあとは消してかまいません。</div><div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rdel">退避データを消す</button></div></div>`:''}<h2>見本データ</h2><div class="card"><button class="sub" onclick="clearSamples()">見本（サンプル）のデータをまとめて消す</button></div>
  <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p><p class="muted ver">版：${esc(APP_VER)}</p>`}
 };

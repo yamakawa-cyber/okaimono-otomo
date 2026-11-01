@@ -63,7 +63,7 @@ function compareView(r){CMP_SHOWN=r;const opts=RANKS.map(([k])=>r.options.find(o
   ${Number.isFinite(o.total)?`<div><b>実質 ${yen(o.total)}</b> <span class="muted">${dv?'配達料':'送料'}${Number.isFinite(o.shipping)?yen(o.shipping):'こみ'}</span></div>`:''}${o.eta?`<div class="muted">🕒 ${esc(o.eta)}</div>`:''}
   ${o.reason?`<div>${esc(o.reason)}</div>`:''}<div class="muted">出典：${esc(o.source||'不明')}${o.checkedAt?'・'+esc(String(o.checkedAt).slice(5,16).replace('T',' '))+'確認':''}</div>
   <div class="row">${u?`<a class="chip" target="_blank" rel="noopener" href="${esc(u)}">ページを開く</a>`:''}${ORDER_OK?`<button data-pick="${i}">これにする</button>`:''}</div></div>`}).join('')}</div>
- ${ORDER_OK?payNote():''}<div class="muted">値段はAIが調べた時点のものです。買う前にページで確かめてください。</div>`}
+ ${ORDER_OK?payNote():''}<div class="muted">値段はアキラちゃんが調べた時点のものです。買う前にページで確かめてください。</div>`}
 {const f=aiView;aiView=function(r){return r.kind==='compare'?compareView(r):r.kind==='order'?`<div class="card"><b>🛍 ${esc(OST[r.status]||r.status)}</b>${r.note?`<div>${esc(r.note)}</div>`:''}${r.status==='cart'&&shopUrl(r.checkoutUrl)?`<div class="row"><a class="btnlink" target="_blank" rel="noopener" href="${esc(shopUrl(r.checkoutUrl))}">🛒 カートを開く</a></div>`:r.checkoutUrl?'<div class="muted">⚠️ カートのURLが許可したお店のものではないため、ボタンにしていません。</div>':''}</div>`:f(r)}}
 {const f=dishPanel;dishPanel=function(w,dish){return f(w,dish).replace(/<\/div>$/,deliRow(dish)+'</div>')}}
 {const f=V.list;V.list=function(){return ordersHtml()+f.apply(this,arguments)}}

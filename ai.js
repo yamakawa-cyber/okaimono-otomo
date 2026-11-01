@@ -27,12 +27,12 @@ const MOCK={
  money:c=>({kind:'money',title:'今月の出費まとめ',total:c.spendTotal,monthly:c.monthly,byCat:c.byCat,tips:['食料品は週2回の買い物にまとめ、間の買い足しを減らすと月3,000円ほど下がる見込み','日用品は、ツルハの1日・10日・20日やウエルシアの20日など、感謝デーにまとめて買う','米や調味料は、月1回の大容量でまとめ買い（業務スーパーなど）']}),
  hacks:c=>({kind:'hacks',title:'買ったものの節約術・ライフハック',items:[{about:'玉子',tip:'とがった方を下にして冷蔵庫へ。ゆで卵は殻付きで3日が目安。'},{about:'鶏むね肉',tip:'買った日に、そぎ切り＋下味（塩・酒）で冷凍。2週間もち、やわらかく仕上がります。'},{about:'玉ねぎ',tip:'ネットに入れて風通しのよい場所へ。半分残ったらラップして冷蔵で3〜4日。'},{about:'牛乳',tip:'期限が近いものは、シチューやフレンチトーストで使い切る。'}]}),
  advise:c=>({kind:'advise',title:'相談への答え',summary:`「${c.q}」について整理しました。`,needs:['まず、何のために・いつまでに・予算いくらかを決める','いまある物で代わりにならないか確認','買うなら、特売日やポイントデーに合わせる'],steps:['1週間ためしてみて、困った点を書き出す','必要なものを3つまでにしぼる','次の買い物日のリストに入れる'],cost:'目安は、内容が決まってから計算します'}),
- chat:c=>({kind:'chat',reply:`見本の返事です。「${c.q}」ですね。本物のAIにつながると、冷蔵庫や特売、家計のデータをふまえて答えます。`})};
+ chat:c=>({kind:'chat',reply:`見本の返事です。「${c.q}」ですね。本物のアキラちゃんにつながると、冷蔵庫や特売、家計のデータをふまえて答えます。`})};
 // --- 画面 ---
 let AI={mode:'menu',res:null,step:0,chat:[]};
 const AIMODES=[['menu','献立'],['shop','買い物'],['money','家計'],['hacks','こつ'],['advise','相談'],['chat','チャット']];
 V.ai=function(){const p=aiProvider();
- let h=`<div class="card sample">${p===MockProvider?'🧪 <b>見本モード</b>：いまの答えは、AIではなく<b>見本</b>です。設定で中継サーバーのURLを入れると、本物のAIにつながります。':'🔗 中継サーバーにつながります'}</div>
+ let h=`<div class="card sample">${p===MockProvider?'🧪 <b>見本モード</b>：いまの答えは、アキラちゃんではなく<b>見本</b>です。設定で中継サーバーのURLを入れると、本物のアキラちゃんにつながります。':'🔗 中継サーバーにつながります'}</div>
  <div class="seg wrap">${AIMODES.map(([k,l])=>`<button class="${AI.mode===k?'on':''}" onclick="AI.mode='${k}';AI.res=null;AI.step=0;render()">${l}</button>`).join('')}</div>`;
  const m=AI.mode;
  if(m==='advise'||m==='chat'){h+= m==='chat'?`<div class="card">${AI.chat.map(x=>`<div class="bub ${x.me?'me':''}">${esc(x.t)}</div>`).join('')||'<div class="muted">何でも聞いてね（例：あした冷蔵庫の物で何作れる？）</div>'}</div>`:'';
@@ -58,8 +58,8 @@ var lessonView=function(rc){const n=rc.steps.length,i=AI.step;
  return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}（約${esc(s.min)}分）</div><h2>${esc(s.t)}</h2><p class="big">${esc(s.d)}</p><div class="tip">💡 ${esc(s.tip)}</div>
  <div class="row"><button class="sub" onclick="${i===0?'AI.started=false':'AI.step--'};render()">← もどる</button>${i<n-1?`<button onclick="AI.step++;render()">つぎへ →</button>`:`<button onclick="AI.lesson=false;AI.started=false;AI.step=0;alert('できあがり！おつかれさま');render()">できあがり 🎉</button>`}</div></div>`}
 async function aiAsk(){const m=AI.mode;const ctx=aiContext(m);const q=document.getElementById('aiq');if(q){ctx.q=q.value.trim();if(!ctx.q)return}
- try{const r=checkAI(await aiProvider().ask(m,ctx));if(m==='chat'){AI.chat.push({me:true,t:ctx.q},{t:r.reply});}else{AI.res=r;AI.lesson=false;AI.started=false;AI.step=0}render()}catch(e){alert('AIにつながりませんでした：'+e.message)}}
-function aiExport(){const all={};AIMODES.forEach(([k])=>all[k]=aiContext(k));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'okaimono',made:ymd(today()),ctx:all},null,1)],{type:'application/json'}));a.download='AI依頼_'+ymd(today())+'.json';a.click()}
+ try{const r=checkAI(await aiProvider().ask(m,ctx));if(m==='chat'){AI.chat.push({me:true,t:ctx.q},{t:r.reply});}else{AI.res=r;AI.lesson=false;AI.started=false;AI.step=0}render()}catch(e){alert('アキラちゃんにつながりませんでした：'+e.message)}}
+function aiExport(){const all={};AIMODES.forEach(([k])=>all[k]=aiContext(k));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({app:'okaimono',made:ymd(today()),ctx:all},null,1)],{type:'application/json'}));a.download='アキラちゃん依頼_'+ymd(today())+'.json';a.click()}
 // AIの答えファイルの形を確かめる（足りなければ表示しない）
 const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep.every(isStr)&&isObj(r.recipe)&&isStr(r.recipe.name)&&isArr(r.recipe.ingredients)&&isArr(r.recipe.steps)&&r.recipe.steps.length>0&&r.recipe.steps.every(x=>isObj(x)&&isStr(x.t)&&isStr(x.d)),
  shop:r=>isArr(r.items)&&r.items.every(i=>isObj(i)&&isStr(i.name)&&Number.isFinite(i.yen))&&Number.isFinite(r.budget),
@@ -67,7 +67,7 @@ const AISHAPE={menu:r=>isArr(r.plan)&&r.plan.every(isStr)&&isArr(r.prep)&&r.prep
  hacks:r=>isArr(r.items)&&r.items.every(i=>isObj(i)&&isStr(i.about)&&isStr(i.tip)),
  receipt:r=>isStr(r.store)&&r.store.length<=200&&isDate(r.date)&&isArr(r.items)&&r.items.length>0&&r.items.length<=200&&r.items.every(i=>isObj(i)&&isStr(i.name)&&Number.isFinite(i.price)&&Math.abs(i.price)<1e7&&(i.category===undefined||isStr(i.category)))&&Number.isFinite(r.total)&&r.total>=1&&r.total<1e7&&(r.no===undefined||(isStr(r.no)&&r.no.length<=60))&&(r.time===undefined||(isStr(r.time)&&r.time.length<=20)),
  advise:r=>isStr(r.summary)&&isArr(r.needs)&&isArr(r.steps),chat:r=>isStr(r.reply)};
-function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='AIの答え';return r}
+function checkAI(r){if(!isObj(r)||!isStr(r.kind)||!AISHAPE[r.kind])throw new Error('答えの種類（kind）がわかりません');if(!AISHAPE[r.kind](r))throw new Error('「'+r.kind+'」の答えに足りない項目があります');if(!isStr(r.title))r.title='アキラちゃんの答え';return r}
 function aiImport(ev){const inp=ev.target,f=inp.files[0];if(!f)return;f.text().then(t=>{let r;try{r=JSON.parse(t)}catch(e){throw new Error('JSONではありません')}checkAI(r);
  const hid=histAdd(r,'file');if(r.kind==='receipt'||r.kind==='fridge')return rcImport([r]);AT.open=hid;AT.lesson=null;location.hash='#ai';render()})
  .catch(e=>alert('読めませんでした：'+e.message)).finally(()=>{inp.value=''})}
@@ -141,7 +141,7 @@ V.ai=function(){
  if(kinds.length>1)h+=`<div class="seg wrap"><button class="${AT.filter?'':'on'}" onclick="AT.filter='';render()">すべて</button>${kinds.map(k=>`<button class="${AT.filter===k?'on':''}" data-x="hfilter" data-k="${esc(k)}">${esc(KLABEL[k]||k)}</button>`).join('')}</div>`;
  h+=list.length?list.map(e=>`<div class="card hrow"><div style="flex:1" data-x="hopen" data-k="${esc(e.id)}"><div class="muted">${esc(KLABEL[e.item.kind]||'')}・${esc(e.at.slice(5,16).replace('T',' '))}</div><b>${esc(histTitle(e.item))}</b></div><button class="sub" data-x="hopen" data-k="${esc(e.id)}">ひらく</button><button class="sub" data-x="hdel" data-k="${esc(e.id)}" aria-label="消す">🗑</button></div>`).join('')
   :`<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだ返事はありません。上のボタンからアキラちゃんに相談すると、届いた返事がここにたまります。</div>`;
- h+=`<div class="row"><button class="sub" onclick="aiExport()">AIに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
+ h+=`<div class="row"><button class="sub" onclick="aiExport()">アキラちゃんに頼む用に書き出す</button><label class="btnlike sub">答えのファイルを読み込む<input type="file" accept=".json" hidden onchange="aiImport(event)"></label></div>`;
  return h};
 
 // v16: 開いている答え（保管庫・返事・見本）に対して動くボタン
