@@ -1,6 +1,6 @@
 {
  "source": "宅配・ネットスーパー情報（武庫之荘駅の近く基準）。docs/宅配情報.json から作成。週1回のお店情報の見直しで、このファイル（app/data/delivery.json）も確認・更新する。確認できない項目は「不明」。",
- "checked_at": "2026-10-25",
+ "checked_at": "2026-11-01",
  "area": "兵庫県尼崎市武庫之荘（参考: 尼崎・西宮・伊丹）",
  "note": "公式ページで確認できた内容のみ。確認できない項目は「不明」。料金は改定されることがあるので、注文画面で再確認すること。",
  "assumed_address": "兵庫県尼崎市 武庫之荘駅の近く",
@@ -26,7 +26,7 @@
     "https://www.super-fresco.co.jp/wp/wp-content/uploads/2025/10/11c0a0af7dac7cff83b4668a7e00bac6.pdf"
    ],
    "rank": 1,
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "coop-kobe-kohai",
@@ -53,7 +53,7 @@
    ],
    "covers_home": "○（兵庫県全域）",
    "rank": 2,
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "life-netsuper",
@@ -78,7 +78,7 @@
    ],
    "covers_home": "○（公式の兵庫県配達エリア一覧に武庫之荘の該当地域あり。担当店舗名はページから特定できず）",
    "rank": 3,
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "aeon-netsuper",
@@ -105,7 +105,7 @@
    ],
    "covers_home": "○（イオン伊丹昆陽店の公式配送エリアに 武庫之荘あり。この店の送料はログイン後でないと表示されず不明）",
    "rank": 4,
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "heiwado-netsuper",
@@ -124,7 +124,7 @@
     "https://netsuper.heiwado.jp/s/areas/28/"
    ],
    "rank": 5,
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "amazon-life",
@@ -145,7 +145,7 @@
     "https://www.amazon.co.jp/life"
    ],
    "covers_home": "不明（兵庫県は対象。住所での確認はAmazonログインが必要）",
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "mandai-net",
@@ -167,7 +167,7 @@
     "https://www.mandai-net.co.jp/store/181.html"
    ],
    "covers_home": "不明（郵便番号検索ページが応答なし）",
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "kohyo-daiei",
@@ -175,23 +175,25 @@
    "related_stores": [
     "KOHYO 武庫之荘店"
    ],
-   "covers_mukonoso": "不明",
-   "fee": "不明",
+   "covers_mukonoso": "×（ダイエーネットスーパー公式の店舗案内で、担当エリアに尼崎市なし。西宮市・伊丹市は一部の店が担当）",
+   "fee": "配達便ごとに決まった配達料（公式の特商法表示）。2024-04からの公式お知らせでは税抜200円",
    "free_threshold": "不明",
-   "cutoff_to_delivery": "不明",
-   "min_order": "不明",
-   "payment": "不明",
+   "cutoff_to_delivery": "注文の当日〜翌々日の指定した時間帯（担当店舗で違う）",
+   "min_order": "税抜2,000円（2024-04からの公式お知らせ。店頭受取も同じ）",
+   "payment": "クレジットカード、代金引換、PayPay残高",
    "membership": "不明",
    "other_fees": "不明",
-   "note": "ダイエーネットスーパー公式: 緊急メンテナンスでサービス停止中、再開日未定。KOHYO 武庫之荘店は Uber Eats に出店（公式Uber Eatsページ）",
+   "note": "2026-11-01：ダイエーネットスーパーは緊急メンテナンス表示がなくなり、注文できる状態。担当エリアに尼崎市なし。KOHYO 武庫之荘店は Uber Eats に出店",
    "urls": [
+    "https://netsuper.daiei.co.jp/static.php?p=tenpo",
+    "https://netsuper.daiei.co.jp/common/parts/information/tokusho.html",
+    "https://netsuper.daiei.co.jp/news_board_inner.php?newsId=60280",
     "https://www.kohyo.co.jp/trans-law-onlinedelivery/",
     "https://www.daiei.co.jp/stores/8528/",
-    "https://netsuper.daiei.co.jp/static.php?p=tenpo",
     "https://www.ubereats.com/jp/store/kohyo-%E6%AD%A6%E5%BA%AB%E4%B9%8B%E8%8D%98%E5%BA%97/z8rA9SVNQ1y4eIp0C5GRIQ"
    ],
-   "covers_home": "不明（ダイエーネットスーパーは2026-10-25時点で緊急メンテナンス中、サービス停止）",
-   "checked_at": "2026-10-25"
+   "covers_home": "×（ダイエーネットスーパーは再開しているが、担当エリアに尼崎市なし。KOHYO 武庫之荘店はUber Eatsに出店）",
+   "checked_at": "2026-11-01"
   },
   {
    "id": "ubereats-grocery",
@@ -237,7 +239,7 @@
     "https://www.kansaisuper.jp/guide/area.php"
    ],
    "covers_home": "×（公式配送先一覧は武庫之荘1〜5丁目のみ。武庫之荘駅の近くの地域は載っていない）",
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   },
   {
    "id": "seiyu-rakuten",
@@ -256,7 +258,7 @@
     "https://netsuper.rakuten.co.jp/seiyu/info/area28/"
    ],
    "covers_home": "×（公式の兵庫県配送エリア一覧に尼崎市なし）",
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-01"
   }
  ],
  "not_available": [
@@ -305,7 +307,8 @@
   },
   {
    "name": "店頭購入品の配達（買った物を届けるサービス）",
-   "note": "どの店も公式ページで確認できず。店頭で直接聞く必要あり"
+   "note": "万代は公式FAQに「一部店舗でサービスカウンターにて承り」とある（どの店かは店頭で確認）。ほかの店は公式ページで確認できず、店頭で聞く必要あり",
+   "url": "https://www.mandai-net.co.jp/faq/"
   }
  ]
 }
