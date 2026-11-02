@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v41'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v42'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
@@ -64,7 +64,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])){if(!LEN)bad(k);validate.dropped++;continue}if(data[k].length>MAXITEMS){if(!LEN)bad(k);validate.dropped+=data[k].length-MAXITEMS}out[k]=data[k].slice(0,MAXITEMS)}
  out.list=each(out.list,i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.cart)||(i.price!==undefined&&!okAmt1(i.price))||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip))||(i.uses!==undefined&&!(isArr(i.uses)&&i.uses.length<=14&&i.uses.every(u=>isObj(u)&&okWd(u.d)&&okS(u.dish,100)))))bad('list')});
  out.spend=each(out.spend,r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,400))bad('spend');if(!r.id)r.id=uid()});
- out.fridge=each(out.fridge,f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100))bad('fridge');if(!f.id)f.id=uid()});
+ out.fridge=each(out.fridge,f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores=each(out.userStores,s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
   if(s.region!==undefined&&BASE.regions.length&&!BASE.regions.some(r=>r.id===s.region))bad('userStores');
@@ -139,7 +139,7 @@ home(){const d=today(),st=S.settings,mo=ymd(d).slice(0,7);
  const goes=new Set(S.list.filter(i=>!i.done).map(i=>i.store));const sale=regStores().filter(s=>salesOn(s,d).length).sort((a,b)=>goes.has(b.name)-goes.has(a.name));const isShop=st.shopDays.includes(d.getDay()),isFr=st.fridgeDay===d.getDay();
  const tr=trips(d),mUsed=spentBetween(mo+'-01',mo+'-31');
  return `<h2>${md(ymd(d))}</h2>
- <div class="card">${isShop?'🛒 きょうは買い物の日':'買い物の日：'+st.shopDays.map(x=>WD[x]).join('・')+'曜'}<br>${isFr?'<a class="link" href="#fridge">🧊 きょうは冷蔵庫点検と献立の日 → 点検する</a>':'冷蔵庫点検：'+WD[st.fridgeDay]+'曜'}</div>
+ <div class="card">${isShop?'🛒 きょうは買い物の日':'買い物の日：'+st.shopDays.map(x=>WD[x]).join('・')+'曜'}<br>${isFr?'<a class="link" href="#stock">🧊 きょうは冷蔵庫点検と献立の日 → 点検する</a>':'冷蔵庫点検：'+WD[st.fridgeDay]+'曜'}</div>
  <div class="card">${tr.map(t=>{const u=spentBetween(t.from,t.to);return `${t.label}（${md(t.from)}〜${md(t.to)}） ${yen(u)} / ${yen(st.perTrip)}${bar(u,st.perTrip)}<div class="muted">残り ${yen(st.perTrip-u)}</div>`}).join('')}
  今月 ${yen(mUsed)} / ${yen(st.monthly)}${bar(mUsed,st.monthly)}</div>
  <h2>きょう特売のお店（${esc(regName())}）</h2>${sale.length?sale.map(s=>`<div class="card sale">${mapA(s.name,s)}${goes.has(s.name)?' <span class="tag">🛒きょう行く</span>':''}<br>${salesOn(s,d).map(x=>`<span class="tag">${esc(x.text)}</span>`).join('')}<div>${links(s)}</div></div>`).join(''):'<div class="card muted">きょう決まった特売日のお店はありません（特売日が未確認のお店もあります）</div>'}
@@ -175,7 +175,8 @@ money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=tru
  <div class="row"><select id="sp_cat" aria-label="費目">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" min="1" aria-label="金額（円）" placeholder="金額（円）"></div>
  <input id="sp_memo" maxlength="500" aria-label="メモ" placeholder="メモ" style="width:100%"><div class="row"><button onclick="addSpend()">記録する</button><button class="sub" onclick="csv()">CSVで書き出す</button></div></div>
  ${S.spend.slice().reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">まだ記録がありません</div>'}`},
-fridge(){return `${frView()}
+stock(){return frView()},
+fridge(){return `<div class="row"><a class="link" href="#stock">🧊 冷蔵庫と保存棚の中身を見る（${S.fridge.length}品）</a></div>
  <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" maxlength="500" aria-label="${WD[w]}曜の献立" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)" onchange="render()"></div>${dishChips(w)}`).join('')}</div>
  <h2>作り置き</h2><textarea id="prep" rows="5" style="width:100%" placeholder="作るもの・いつ作るか・食べきる目安" maxlength="5000" aria-label="作り置きのメモ" oninput="S.prep=this.value.slice(0,5000);save()">${esc(S.prep)}</textarea>`},
 settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 見本データで表示中です（本データには保存されません）</div>':''}<h2>地域</h2>${regionSeg()}
@@ -317,7 +318,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  case 'often':{const o=oft()[+b.dataset.id];if(o){const t=val('li_trip');const it={name:o.name,qty:o.qty||'',store:val('li_store'),trip:t!==''?+t:curTrip(today()).wd,done:false};if(o.cat)it.cat=o.cat;if(o.price)it.price=o.price;S.list.push(it);save();render();toast('「'+o.name.slice(0,14)+'」を入れました')}break}}});
 function render(){const t=(location.hash||'#home').slice(1);const f=V[t]||V.home;$('#view').innerHTML=rescueHtml()+f();
  document.querySelectorAll('#view input:not([type=checkbox]):not([type=radio]):not([type=file]),#view select,#view textarea').forEach(e=>{if(e.getAttribute('aria-label')||(e.id&&document.querySelector('label[for="'+e.id+'"]'))||e.closest('label'))return;const p=e.getAttribute('placeholder');if(p)e.setAttribute('aria-label',p);if(e.tagName!=='SELECT'&&!e.hasAttribute('maxlength')&&e.type!=='number'&&e.type!=='date')e.setAttribute('maxlength',e.tagName==='TEXTAREA'?'4000':'200')});showSaveErr();
- document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+t));if(render._t!==t){render._t=t;window.scrollTo(0,0)}}
+ document.querySelectorAll('nav a,#hset').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+t));if(render._t!==t){render._t=t;window.scrollTo(0,0)}}
 function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def);
  S.list=[{name:'玉子',store:'スーパーマルハチ 武庫之荘店',trip:w,done:false,sample:true},{name:'牛乳',store:'フレスコ 武庫之荘店',trip:w,done:true,sample:true},{name:'鶏むね肉',qty:'2枚',store:'',trip:w,done:false,sample:true},{name:'冷凍ブロッコリー',store:'業務スーパー 南武庫之荘店',trip:w,done:false,sample:true}];
  S.spend=[{id:'a',date:d,store:'KOHYO 武庫之荘店',cat:'食材',amount:5480,memo:'サンプル'},{id:'b',date:d,store:'ウエルシア 尼崎南武庫之荘店',cat:'日用品',amount:1260,memo:'サンプル'}];

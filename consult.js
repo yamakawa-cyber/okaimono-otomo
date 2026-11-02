@@ -57,7 +57,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(i.spend==='detail')data.spending=month.map(r=>strip({date:r.date,store:r.store,cat:r.cat,amount:r.amount,memo:r.memo}));
  if(isObj(CON.extra)&&(CON.type==='compare'||CON.type==='order'))Object.assign(data,CON.extra);
  const p={app:'okaimono',id:CON.reqId||'',type,question:q,sentAt:new Date().toISOString(),data};
- if(CON.type==='receipt')data.categories=CATS.map(c=>c[0]);if(CON.type==='fridge')data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室'];
+ if(CON.type==='receipt')data.categories=CATS.map(c=>c[0]);if(CON.type==='fridge')data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'];
  let body=JSON.stringify(p),dropped=0;const size=t=>new Blob([t]).size;
  while(size(body)>MAXBYTES&&p.data.spending&&p.data.spending.length){p.data.spending.shift();dropped++;p.data.spendingOmitted=dropped;body=JSON.stringify(p)}
  if(size(body)>MAXBYTES)throw new Error('送るデータが大きすぎます（冷蔵庫や買い物リストを減らすか、送るものを減らしてください）');

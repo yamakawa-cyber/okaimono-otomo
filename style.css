@@ -89,3 +89,11 @@ nav{padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-
 summary{padding:10px 0;cursor:pointer}
 .lmon{border-top:1px solid #eee;padding:6px 0}.lmon summary{display:flex;justify-content:space-between;gap:8px;cursor:pointer;min-height:44px;align-items:center}.lmon .over{color:#e53935;font-weight:bold}
 .crow.zappi{color:#6a5acd}
+
+/* v42：設定はヘッダー右端・ドアポケットは冷蔵庫の下の横長・保存棚は木の箱 */
+#hset{margin-left:auto;font-size:24px;text-decoration:none;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}#hset.on{background:#e8efff}
+.fdoorbar{margin-top:6px;background:linear-gradient(#f4f9ff,#e6f0fb);border:3px solid #9db7d9;border-radius:0 0 22px 22px;padding:8px;box-shadow:inset 0 0 0 3px #fff,0 3px 0 #c9d8ee}
+.fdoorbar .fz{border-style:dashed;background:#eef5ff;min-height:52px}.fdoorbar .fzc{flex-wrap:wrap}
+.shelves{display:flex;flex-direction:column;gap:10px}
+.fz.shelf{background:repeating-linear-gradient(90deg,#d9a86c 0 14px,#cf9c5f 14px 16px,#dcae74 16px 40px,#c99556 40px 42px);border:5px solid #8b5a2b;border-radius:6px;box-shadow:inset 0 0 0 2px #f1cf9b,inset 0 -6px 0 #a8743f,0 4px 0 #6b4220;padding:8px}
+.fz.shelf .fzt{color:#4a2c10;text-shadow:0 1px 0 #f3d6a8}.fz.shelf .frchip{background:#fffaf0;border-color:#a8743f}.fz.shelf .fzempty{color:#5c3a17}
