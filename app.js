@@ -1,9 +1,42 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v40'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v41'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
+// v41：材料のアイコン（種類別・上から順に判定。どれにも当たらなければ各画面の今のアイコン）
+const ICONS=[
+ ['冷凍食品','🧊',/冷凍|アイス|氷/],
+ ['缶詰','🥫',/缶詰|缶|ツナ|レトルト/],
+ ['お菓子','🍪',/お菓子|菓子|クッキー|チョコ|ポテトチップ|ポテチ|スナック|せんべい|煎餅|あられ|グミ|飴|キャンディ|ガム|ビスケット|ケーキ|プリン|ゼリー|ドーナツ|まんじゅう|大福|ようかん/],
+ ['酒','🍺',/ビール|発泡酒|チューハイ|ハイボール|ワイン|日本酒|焼酎|ウイスキー|梅酒|サワー/],
+ ['油','🫒',/油(?!揚)|オリーブオイル|サラダ油|ごま油|胡麻油/],
+ ['ソース・たれ','🍯',/ソース|たれ|タレ|ケチャップ|マヨ|ドレッシング|ポン酢|ぽん酢|めんつゆ|つゆ|ジャム|はちみつ|蜂蜜|カレールウ|ルー|シチュー/],
+ ['調味料','🧂',/塩|砂糖|醤油|しょうゆ|しょう油|味噌|みそ|みりん|料理酒|酢|胡椒|こしょう|コショウ|だし|出汁|コンソメ|鶏がら|わさび|からし|生姜|しょうが|にんにく|ニンニク|七味|一味|スパイス|調味料|片栗粉|小麦粉|パン粉/],
+ ['お茶・コーヒー','☕',/お茶|緑茶|麦茶|ほうじ茶|烏龍茶|ウーロン茶|紅茶|コーヒー|珈琲|カフェオ|カフェラテ|ラテ/],
+ ['飲み物','🧃',/ジュース|サイダー|コーラ|ソーダ|炭酸|スポーツドリンク|ポカリ|アクエリ|カルピス|ドリンク|天然水|ミネラルウォーター|^水$|^お水$|ラムネ|ヤクルト/],
+ ['チーズ','🧀',/チーズ/],
+ ['乳製品','🥛',/牛乳|ミルク|ヨーグルト|オイコス|ダノン|生クリーム|バター|マーガリン/],
+ ['卵','🥚',/卵|玉子|たまご|タマゴ/],
+ ['豆腐・大豆','🫘',/豆腐|納豆|厚揚げ|油揚げ|がんも|豆乳|大豆|枝豆|おから/],
+ ['鶏肉','🍗',/鶏|とり肉|鳥肉|ささみ|ササミ|手羽|チキン|からあげ|唐揚げ|焼き鳥/],
+ ['ハム・ソーセージ','🥓',/ハム|ベーコン|ウインナー|ウィンナー|ソーセージ|サラミ/],
+ ['惣菜','🍱',/惣菜|弁当|コロッケ|餃子|ぎょうざ|ギョーザ|天ぷら|フライ|肉じゃが/],
+ ['肉','🥩',/豚|ぶた|牛|ひき肉|挽肉|ミンチ|肉|ステーキ|こま切れ|ロース|バラ/],
+ ['魚','🐟',/魚|鮭|さけ|サーモン|サバ|さば|鯖|ぶり|鰤|まぐろ|マグロ|刺身|しらす|ししゃも|シシャモ|あじ|アジ|いわし|イワシ|さんま|秋刀魚|たら|鱈|かつお|ちくわ|かまぼこ|はんぺん|明太子|うなぎ/],
+ ['えび・貝','🦐',/えび|エビ|海老|かに|カニ|蟹|^いか|イカ|たこ|タコ|あさり|しじみ|ホタテ|ほたて|帆立|牡蠣/],
+ ['きのこ','🍄',/きのこ|キノコ|しめじ|えのき|しいたけ|椎茸|まいたけ|舞茸|エリンギ|マッシュルーム|なめこ/],
+ ['果物','🍎',/りんご|リンゴ|バナナ|みかん|ミカン|オレンジ|いちご|イチゴ|苺|ぶどう|ブドウ|葡萄|レモン|キウイ|もも|桃|梨|柿|メロン|すいか|スイカ|パイナップル|グレープフルーツ|さくらんぼ|ブルーベリー|果物|フルーツ/],
+ ['米','🍚',/米|ご飯|ごはん|おにぎり|餅/],
+ ['麺','🍜',/麺|うどん|そば|蕎麦|ラーメン|そうめん|素麺|パスタ|スパゲ|焼きそば|マカロニ|春雨/],
+ ['パン','🍞',/パン|ベーグル|クロワッサン|ナン$/],
+ ['漬物・乾物','🫙',/漬物|漬け|キムチ|梅干|たくあん|らっきょう|ふりかけ|佃煮|海苔|わかめ|昆布|ひじき/],
+ ['根菜','🥕',/にんじん|人参|ニンジン|ごぼう|牛蒡|ゴボウ|大根|だいこん|れんこん|蓮根|かぶ|じゃがいも|ジャガイモ|さつまいも|里芋|長芋|山芋|芋|いも/],
+ ['玉ねぎ','🧅',/玉ねぎ|たまねぎ|玉葱|タマネギ|新玉/],
+ ['トマト','🍅',/トマト/],
+ ['野菜','🥬',/キャベツ|レタス|白菜|ほうれん草|小松菜|ねぎ|ネギ|ブロッコリー|水菜|もやし|ニラ|にら|春菊|チンゲン菜|セロリ|アスパラ|オクラ|きゅうり|胡瓜|なす|茄子|ピーマン|パプリカ|かぼちゃ|南瓜|ズッキーニ|とうもろこし|大葉|しそ|三つ葉|豆苗|サラダ|野菜/],
+ ['日用品','🧻',/トイレットペーパー|ティッシュ|キッチンペーパー|洗剤|柔軟剤|シャンプー|リンス|ボディソープ|石けん|石鹸|歯ブラシ|歯磨き|ラップ|アルミホイル|ゴミ袋|ごみ袋|スポンジ|おむつ|オムツ|マスク|電池|ディフューザー|芳香剤|日用品/]];
+function iconOf(n,fb){n=String(n||'').normalize('NFKC');for(const [,e,r] of ICONS)if(r.test(n))return e;return fb===undefined?'':fb}
 const OFTEN0=['玉子','牛乳','食パン','豆腐','納豆','玉ねぎ','にんじん','鶏むね肉','米','トイレットペーパー'];const OFTD=()=>OFTEN0.map(n=>({name:n,cat:n==='トイレットペーパー'?'日用品':'食材'}));const oft=()=>isArr(S.often)?S.often:OFTD();let OE=false;const mapU=(n,o)=>{const x=o||stores().find(z=>z.name===n)||{};const a=x.address||x.city||'';return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(n+(a&&!/不明/.test(a)?' '+a:''))};const mapA=(n,o)=>`<a class="maplink" href="${esc(mapU(n,o))}" target="_blank" rel="noopener"><b>📍${esc(n)}</b></a>`;
 const def={version:DATA_VERSION,settings:{shopDays:[1,4],fridgeDay:0,perTrip:9000,monthly:100000,region:'mukonoso',aiRelay:''},list:[],spend:[],fridge:[],menu:['','','','','','',''],prep:'',userStores:[]};
 // ---- 検証 ----
@@ -129,7 +162,7 @@ list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>
   return `<h2>🗓 ${t.label}（${md(t.from)}の買い物）${t.wd===cur.wd?' <span class="tag">いまの回</span>':''}</h2>`+(keys.length?keys.map(st=>`<h3>🏪 ${st==='お店未定'?esc(st):mapA(st)}</h3><ul class="chk card">${Object.values(g[st]).map(rows=>{const ns=rows.map(r=>r[1]),i=rows[0][0],n=ns[0],done=rows.every(r=>r[0].done);
    const qty=rows.map(r=>r[0].qty||qtyOf(r[0].name)).filter(Boolean),nm=rows.length>1?baseName(i.name):i.name;
    const uses=[];rows.forEach(r=>(r[0].uses||[]).forEach(u=>{if(!uses.some(x=>x.d===u.d&&x.dish===u.dish))uses.push(u)}));
-   const inc=!done&&rows.every(r=>r[0].cart);return `<li class="${done?'done':inc?'incart':''}" data-del="${ns}">${done?'':cartBtn(ns,inc)}<label class="lrow"><input type="checkbox" ${done?'checked':''} data-tm="${ns}"><span style="flex:1">${esc(nm)}${qty.length?` <span class="muted">${esc(qty.join('＋'))}</span>`:''}${rows.length>1?` <span class="tag">${rows.length}件まとめ</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span></label>${done?'':`<input type="number" inputmode="numeric" min="1" id="yen${n}" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select id="cat${n}" aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}${done?'':netBtn(nm)}<button class="sub" data-act="del" data-id="${ns}" aria-label="消す">✕</button>${!done&&!NSF&&NS===baseName(nm)?netMenu(nm,qty.join('＋')):''}${uses.length?`<div class="badges">${uses.sort((a,b)=>(a.d+6)%7-(b.d+6)%7).map(u=>`<button class="badge" data-act="jump" data-id="${u.d}">${WD[u.d]}${u.dish?'・'+esc(u.dish.slice(0,12)):''}</button>`).join('')}</div>`:''}</li>`}).join('')}</ul>`).join(''):'<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだありません</div>')};
+   const inc=!done&&rows.every(r=>r[0].cart);return `<li class="${done?'done':inc?'incart':''}" data-del="${ns}">${done?'':cartBtn(ns,inc)}<label class="lrow"><input type="checkbox" ${done?'checked':''} data-tm="${ns}"><span style="flex:1">${iconOf(nm)?iconOf(nm)+' ':''}${esc(nm)}${qty.length?` <span class="muted">${esc(qty.join('＋'))}</span>`:''}${rows.length>1?` <span class="tag">${rows.length}件まとめ</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span></label>${done?'':`<input type="number" inputmode="numeric" min="1" id="yen${n}" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select id="cat${n}" aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}${done?'':netBtn(nm)}<button class="sub" data-act="del" data-id="${ns}" aria-label="消す">✕</button>${!done&&!NSF&&NS===baseName(nm)?netMenu(nm,qty.join('＋')):''}${uses.length?`<div class="badges">${uses.sort((a,b)=>(a.d+6)%7-(b.d+6)%7).map(u=>`<button class="badge" data-act="jump" data-id="${u.d}">${WD[u.d]}${u.dish?'・'+esc(u.dish.slice(0,12)):''}</button>`).join('')}</div>`:''}</li>`}).join('')}</ul>`).join(''):'<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだありません</div>')};
  return seg+cb+form+`
  ${tr.map(block).join('')}
  <p class="muted">チェックするときに金額と費目を入れると、家計に「日付・店・費目・金額・メモ（品名）」で記録されます。✕で品物を消しても、家計の記録は残ります（家計タブで消せます）。</p>
@@ -249,9 +282,9 @@ function openRecipe(id){CON.open=false;DO=null;const f=recipeById(id);if(!f)retu
 function dayView(){const order=[1,2,3,4,5,6,0];let h='';const used=new Set();
  order.forEach(d=>{const dishes=dishesOf(d);const its=[];S.list.forEach((i,n)=>{if((i.uses||[]).some(u=>u.d===d)){its.push([i,n]);used.add(n)}});if(!dishes.length&&!its.length)return;
   h+=`<div class="card" id="day${d}"><h2>${WD[d]}曜</h2><div class="dishes">${dishes.map(x=>{const id=findRecipe(x);return id?`<button class="dish" data-act="orec" data-id="${esc(id)}">🍳 ${esc(x)} ›</button>`:`<span class="dish0">🍽 ${esc(x)}</span>`}).join('')}</div>
-  ${its.length?`<ul class="chk">${its.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}<span class="muted">${(i.uses||[]).filter(u=>u.d===d&&u.dish).map(u=>'・'+esc(u.dish)).join('')}</span></span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul>`:'<div class="muted">この日に買うものはありません</div>'}</div>`});
+  ${its.length?`<ul class="chk">${its.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${iconOf(i.name)?iconOf(i.name)+' ':''}${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}<span class="muted">${(i.uses||[]).filter(u=>u.d===d&&u.dish).map(u=>'・'+esc(u.dish)).join('')}</span></span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul>`:'<div class="muted">この日に買うものはありません</div>'}</div>`});
  const rest=S.list.map((i,n)=>[i,n]).filter(([i,n])=>!used.has(n));
- if(rest.length)h+=`<div class="card" id="dayx"><h2>曜日なし</h2><ul class="chk">${rest.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}</span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul></div>`;
+ if(rest.length)h+=`<div class="card" id="dayx"><h2>曜日なし</h2><ul class="chk">${rest.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${iconOf(i.name)?iconOf(i.name)+' ':''}${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}</span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul></div>`;
  return h||'<div class="card muted empty"><img src="img/chibi_cheer.webp" alt="" width="120">献立も買い物もまだありません。アキラちゃんの献立の返事から「まとめて入れる」で入ります。</div>'}
 function delItem(n){S.list.splice(n,1);save();render()}
 function clearDone(){S.list=S.list.filter(i=>!i.done);save();render()}
