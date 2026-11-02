@@ -1,9 +1,9 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v39'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v40'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
-const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['予備',10000]];
+const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
 const OFTEN0=['玉子','牛乳','食パン','豆腐','納豆','玉ねぎ','にんじん','鶏むね肉','米','トイレットペーパー'];const OFTD=()=>OFTEN0.map(n=>({name:n,cat:n==='トイレットペーパー'?'日用品':'食材'}));const oft=()=>isArr(S.often)?S.often:OFTD();let OE=false;const mapU=(n,o)=>{const x=o||stores().find(z=>z.name===n)||{};const a=x.address||x.city||'';return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(n+(a&&!/不明/.test(a)?' '+a:''))};const mapA=(n,o)=>`<a class="maplink" href="${esc(mapU(n,o))}" target="_blank" rel="noopener"><b>📍${esc(n)}</b></a>`;
 const def={version:DATA_VERSION,settings:{shopDays:[1,4],fridgeDay:0,perTrip:9000,monthly:100000,region:'mukonoso',aiRelay:''},list:[],spend:[],fridge:[],menu:['','','','','','',''],prep:'',userStores:[]};
 // ---- 検証 ----
@@ -50,7 +50,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
  for(const k of Object.keys(data)){if(k==='lastBackup'&&isDate(data[k]))out[k]=data[k];if(k==='often'&&isArr(data[k]))out[k]=data[k].filter(o=>isObj(o)&&okS(o.name,100)&&o.name&&okS(o.cat,50)&&okS(o.qty,50)&&(o.price===undefined||okAmt1(o.price))).slice(0,60).map(o=>{const x={name:o.name};if(o.cat)x.cat=o.cat;if(o.qty)x.qty=o.qty;if(o.price)x.price=o.price;return x});if(k==='sampleKeys'&&isArr(data[k]))out[k]=data[k].filter(isStr).slice(0,50)}
  out.version=DATA_VERSION;migCats(out);return out}
 // v38：費目名「食材・米」などの旧表記を「食材」へ移す（保存データ・バックアップ・よく買う品）
-function normCat(c){return typeof c==='string'&&/^食材[・、，,\s]*米$/.test(c.trim())?'食材':c}
+function normCat(c){if(typeof c!=='string')return c;const t=c.trim();return /^食材[・、，,\s]*米$/.test(t)?'食材':t==='予備'?'雑費':c}
 function migCats(o){['list','spend','often'].forEach(k=>{if(isArr(o[k]))o[k].forEach(i=>{if(isObj(i)&&'cat' in i)i.cat=normCat(i.cat)})})}
 let BASE={regions:[],stores:[]};
 // 読めなかった生データの退避先（上書きで消さない）。LOAD_ERR があるあいだは保存しない
@@ -83,7 +83,7 @@ const regStores=()=>stores().filter(s=>s.region===S.settings.region);
 function salesOn(s,d){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text&&((x.wd!==undefined&&x.wd===d.getDay())||(isArr(x.md)&&x.md.includes(d.getDate()))))}
 function saleText(s){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text).map(x=>okWd(x.wd)?WD[x.wd]+'曜：'+x.text:isArr(x.md)?'毎月'+x.md.join('・')+'日：'+x.text:x.text)}
 function weekStart(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)} // 月曜始まり
-function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(!f||f(r))).reduce((t,r)=>t+Number(r.amount||0),0)}
+function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(f?f(r):normCat(r.cat)!==EXTRA)).reduce((t,r)=>t+Number(r.amount||0),0)}
 function bar(used,max){const r=max>0?used/max:0;return `<div class="bar"><div class="${r>1?'over':r>=0.8?'warn':''}" style="width:${Math.min(100,r*100)}%"></div></div>`}
 // 買い物の回：買い物日ごとに、次の買い物日の前日までを1回分とする（[1,4]なら 月〜水／木〜日）
 function trips(d){const days=[...new Set((S.settings.shopDays.length?S.settings.shopDays:[1]))].sort((a,b)=>((a+6)%7)-((b+6)%7));
@@ -136,7 +136,7 @@ list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>
  <div class="row"><button class="sub" onclick="clearChecked()">✔ チェック済みをまとめて消す</button></div>`},
 money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=true}});if(fix)save();const d=today(),st=S.settings,c=curTrip(d),mo=ymd(d).slice(0,7);const tUsed=spentBetween(c.from,c.to);
  return `<div class="card">${c.label}（${md(c.from)}〜${md(c.to)}） ${yen(tUsed)} / ${yen(st.perTrip)}${bar(tUsed,st.perTrip)}<div class="muted">1回の目安 ${yen(st.perTrip)}、残り ${yen(st.perTrip-tUsed)}</div></div>
- <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
+ <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);if(k===EXTRA)return `<div class="crow zappi"><span>${k}（生活費の枠の外）</span><span>${yen(u)}</span></div>`;return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
  ${(()=>{const o=spentBetween(mo+'-01',mo+'-31',r=>!CATS.some(([k])=>k===r.cat));return o?`<div class="crow muted"><span>そのほかの費目</span><span>${yen(o)}</span></div>`:''})()}</div>
  <div class="card"><div class="row"><input id="sp_date" type="date" lang="ja" aria-label="日付" value="${ymd(d)}"><select id="sp_store" aria-label="店"><option value="">店</option>${spStoreOpts()}</select></div>
  <div class="row"><select id="sp_cat" aria-label="費目">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" min="1" aria-label="金額（円）" placeholder="金額（円）"></div>

@@ -21,15 +21,18 @@ async function rcPick(inp){const q=document.getElementById('c_q'),t=document.get
 // --- 送った相談の番号（返事を受け取るため。7日で忘れる）---
 function pending(){try{const a=JSON.parse(localStorage.getItem(PK)||'[]');return isArr(a)?a.filter(x=>isObj(x)&&/^c[a-z0-9]{4,40}$/.test(x.id)&&Date.now()-x.at<7*864e5&&!(x.tk&&Date.now()-x.tk>2*864e5)):[]}catch(e){return []}}
 function savePending(a){setLS(PK,JSON.stringify(a.slice(-30)))}
+// v40：ボットからの差し入れ箱（Amazon・後払いなどの明細をボットが /reply の id=cbotpush1 に置く）。いつも受け取り待ちにしておく
+const BOT_PUSH=true,BOTBOX='cbotpush1'; // ライフハック！では port.py が false にする
+function ensureBotBox(){if(!BOT_PUSH||IS_DEMO)return;const a=pending();let e=a.find(x=>x.id===BOTBOX);if(!e){e={id:BOTBOX,type:'bot',at:Date.now()};a.push(e)}e.at=Date.now();delete e.tk;savePending(a)}
 function addPending(id,type){const a=pending();if(a.some(x=>x.id===id))return;a.push({id,type,at:Date.now()});savePending(a);[20,60,180].forEach(s=>setTimeout(fetchReplies,s*1000))}
 function relayBase(){const s=secret();if(s.header!=='X-App-Pass'||!s.url||!s.key)return null;try{return new URL(s.url).origin}catch(e){return null}}
 let fetching=false;
 // 合言葉がちがう（401）・止められた（429）ときは、自動の確認をやめる（家のWi‑Fiごと締め出されないように）
 const NGK=PK+'_authng';const authNg=()=>{try{return !!localStorage.getItem(NGK)}catch(e){return false}};
-async function fetchReplies(manual){const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!manual&&authNg())return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
+async function fetchReplies(manual){ensureBotBox();const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!manual&&authNg())return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
  if(!p.length){if(manual){INBOX_ST='待っている返事はありません';render()}return}
  fetching=true;try{const r=await fetch(b+'/replies?ids='+p.map(x=>x.id).join(','),{headers:{'X-App-Pass':secret().key}});if(r.status===401||r.status===429){setLS(NGK,'1');throw new Error(r.status===401?'合言葉がちがいます。自動の確認を止めました。設定で合言葉を確かめてください':'合言葉のまちがいが続いたため止められています。自動の確認を止めました。しばらくしてから設定の合言葉を確かめてください')}if(!r.ok)throw new Error('受け取りエラー（'+r.status+'）');try{localStorage.removeItem(NGK)}catch(_){}
-  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||(isArr(pe.done)&&pe.done.includes(k))||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
+  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};if(x.id===BOTBOX&&(pe.taken||0)>off){pe.taken=off;pe.done=[];savePending(p)}x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||(isArr(pe.done)&&pe.done.includes(k))||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
   INBOX_ST=n?'':(manual?'まだ返事は届いていません':INBOX_ST)}
  catch(e){if(manual||authNg())INBOX_ST='返事を確かめられませんでした：'+e.message}finally{fetching=false;render()}}
 // 受取済み：取り込んだ番号(#k)までを知らせる。後から届いた分は消さない
@@ -39,7 +42,7 @@ async function ackId(id,upto){if(!id||!upto)return;const b=relayBase();if(!b)ret
  try{await fetch(b+'/ack',{method:'POST',headers:{'Content-Type':'application/json','X-App-Pass':secret().key},body:JSON.stringify({ids:[id],upto:{[id]:upto||0}})})}catch(e){}}
 function dropInbox(keys){const by={};INBOX=INBOX.filter(e=>{if(keys.includes(e.key)){if(e.id){const k=+String(e.key).split('#')[1]||0;(by[e.id]=by[e.id]||[]).push(k)}return false}return true});Object.entries(by).forEach(([id,ks])=>{const t=markDone(id,ks);if(t)ackId(id,t)});render()}
 // --- レシート ---
-function rcCat(c){c=normCat(c);return CATS.some(x=>x[0]===c)?c:'予備'}
+function rcCat(c){c=normCat(c);return CATS.some(x=>x[0]===c)?c:'雑費'}
 function rcKey(r){const k=[String(r.store).slice(0,200),r.date,Math.round(r.total)];if(r.no||r.time)k.push(String(r.no||'').slice(0,60)+'@'+String(r.time||'').slice(0,20));return k.join('|').slice(0,400)}
 const rcSure=r=>!!(r.no||r.time); // 番号か時刻があれば同じレシートと言い切れる
 function rcGroups(r){const by={};r.items.forEach(i=>{const c=rcCat(i.category);by[c]=(by[c]||0)+Math.round(i.price)});let g=Object.entries(by).filter(([,v])=>v>=1);
