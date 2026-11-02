@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v44'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v45'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
@@ -177,7 +177,8 @@ money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=tru
  ${S.spend.slice().reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">まだ記録がありません</div>'}`},
 stock(){return frView()},
 fridge(){return `<div class="row"><a class="link" href="#stock">🧊 冷蔵庫と保存棚の中身を見る（${S.fridge.length}品）</a></div>
- <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" maxlength="500" aria-label="${WD[w]}曜の献立" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)" onchange="render()"></div>${dishChips(w)}`).join('')}</div>
+ <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" maxlength="500" aria-label="${WD[w]}曜の献立" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)" onchange="render()">${String(menuArr()[w]||'').trim()?`<button class="sub mclr" onclick="clearDay(${w})" aria-label="${WD[w]}曜の献立を消す">✕</button>`:''}</div>${dishChips(w)}`).join('')}</div>
+ ${menuArr().some(x=>String(x||'').trim())?`<div class="row"><button class="sub" onclick="clearWeek()">🧹 1週間分の献立をクリア</button></div>`:''}
  <h2>作り置き</h2><textarea id="prep" rows="5" style="width:100%" placeholder="作るもの・いつ作るか・食べきる目安" maxlength="5000" aria-label="作り置きのメモ" oninput="S.prep=this.value.slice(0,5000);save()">${esc(S.prep)}</textarea>`},
 settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 見本データで表示中です（本データには保存されません）</div>':''}<h2>地域</h2>${regionSeg()}
  <h2>買い物の曜日（週2回が目安）</h2><div class="seg">${WD.map((w,i)=>`<button class="${st.shopDays.includes(i)?'on':''}" onclick="togDay(${i})">${w}</button>`).join('')}</div>
@@ -330,6 +331,9 @@ if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;
 async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();AT.open='demo';render();return}
  await aiAsk();AT.open='demo';render();if(q.has('lesson')){startLesson();goStep(+q.get('lesson')-1)}}
 function menuArr(){if(isArr(S.menu)&&S.menu.length===7)return S.menu;const a=['','','','','','',''];String(S.menu||'').split('\n').forEach(l=>{const m=l.match(/^([日月火水木金土])[：:](.*)$/);if(m)a[WD.indexOf(m[1])]=m[2].trim()});return a}
+// v45：曜日ごと・1週間分の献立を消す（元に戻せる。レシピ保管・作り置きは消さない）
+function clearDay(w){const old=menuArr().slice();if(!String(old[w]||'').trim())return;setMenu(w,'');DO=null;const y=scrollY;render();scrollTo(0,y);undo1(`${WD[w]}曜の献立を消しました`,()=>{S.menu=old;save();render()})}
+function clearWeek(){const old=menuArr().slice();if(!old.some(x=>String(x||'').trim()))return;if(!confirm('1週間分の献立をすべて消します。よろしいですか？\n（レシピ保管と作り置きは消えません）'))return;S.menu=['','','','','','',''];DO=null;save();const y=scrollY;render();scrollTo(0,y);undo1('1週間分の献立を消しました',()=>{S.menu=old;save();render()})}
 function setMenu(w,v){const a=menuArr().slice();a[w]=String(v??'').slice(0,500);S.menu=a;save()}
 function bkDue(){return !S.lastBackup||(today()-new Date(S.lastBackup+'T12:00'))>7*864e5}
 const BKX={}; // ほかのファイルが {get,set,pre} を登録（注文の一覧など）。pre は検証の前に戻す
