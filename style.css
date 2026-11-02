@@ -107,3 +107,6 @@ header{background-color:#fff;background-image:linear-gradient(rgba(255,255,255,.
 
 /* v45：献立を消すボタン */
 .mrow .mclr{flex:0 0 44px;min-width:44px;padding:0}
+
+/* v46：オリジナルレシピ */
+.orgbtn{width:100%}.orgbox ol,.orgbox ul{padding-left:1.4em;margin:4px 0}.orgwait{font-weight:bold;color:#1f3a8a}.orgwait .dots::after{content:'…';animation:orgd 1.2s steps(3) infinite}@keyframes orgd{0%{content:'・'}50%{content:'・・'}100%{content:'・・・'}}

@@ -55,7 +55,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(i.list)data.list=S.list.map(x=>strip({name:x.name,qty:x.qty,store:x.store,done:!!x.done,memo:x.memo}));
  if(i.spend!=='off'){const by={};month.forEach(r=>by[r.cat||'その他']=(by[r.cat||'その他']||0)+Number(r.amount||0));data.spendingByCat=by;data.spendingCount=month.length}
  if(i.spend==='detail')data.spending=month.map(r=>strip({date:r.date,store:r.store,cat:r.cat,amount:r.amount,memo:r.memo}));
- if(isObj(CON.extra)&&(CON.type==='compare'||CON.type==='order'))Object.assign(data,CON.extra);
+ if(isObj(CON.extra)&&(CON.type==='compare'||CON.type==='order'))Object.assign(data,CON.extra);if(isObj(CON.orig)&&CON.type==='recipe')data.request=CON.orig; // v46：オリジナルレシピの依頼
  const p={app:'okaimono',id:CON.reqId||'',type,question:q,sentAt:new Date().toISOString(),data};
  if(CON.type==='receipt')data.categories=CATS.map(c=>c[0]);if(CON.type==='fridge')data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'];
  let body=JSON.stringify(p),dropped=0;const size=t=>new Blob([t]).size;

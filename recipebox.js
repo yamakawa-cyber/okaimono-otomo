@@ -24,3 +24,42 @@ function rboxHtml(){const a=rbox();const ws=[1,2,3,4,5,6,0];
 // 献立の画面のいちばん下に足す
 {const f=V.fridge;V.fridge=function(){return f.apply(this,arguments)+rboxHtml()}}
 BKX.recipes={get:()=>rbox(),check:v=>isArr(v),set:v=>{if(!isArr(v))return;const a=rbox(),ids=new Set(a.map(r=>r.id));v.forEach(r=>{if(isObj(r)&&isStr(r.id)&&!ids.has(r.id)){const n=rbNorm(r);if(n)a.push(Object.assign({id:r.id.slice(0,60),at:isDate(r.at)?r.at:'',src:isStr(r.src)?r.src.slice(0,50):''},n))}});rboxSave(a)}};
+// ===== v46：オリジナルレシピ（献立の画面の「出前」「通販」の下）。材料や「こんな料理が食べたい」を書いてアキラちゃんに頼む =====
+const ORK=IS_DEMO?'okaimono_orig_demo':'okaimono_orig';
+let ORG={open:false,q:'',fridge:true,msg:'',ok:true,sending:false};
+function orgSt(){try{const o=JSON.parse(localStorage.getItem(ORK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
+function orgSave(o){setLS(ORK,JSON.stringify(o))}
+// 純粋：依頼の文面（受け取り側がレシピの依頼だと分かるように見出しを付ける）
+function orgQuestion(wish,useFridge){return `【オリジナルレシピの依頼】\n${wish}\n\nこの内容に沿ったオリジナルレシピを1つ考えてください。${useFridge?'冷蔵庫と保存棚にある物（data.fridge）をできるだけ使ってください。':'冷蔵庫の中身は気にしなくて大丈夫です。'}\n返事は kind:"recipe"（name・serves・time・ingredients［分量つきの文字］・steps［{t,d}］）でお願いします。`}
+async function orgSend(){if(IS_DEMO||ORG.sending)return;const e=document.getElementById('org_q');if(e)ORG.q=e.value;const wish=String(ORG.q||'').trim().slice(0,1500);
+ if(!wish){ORG.msg='材料や、食べたい料理のイメージを書いてね';ORG.ok=false;return render()}
+ const s=secret();if(!s.url||!s.key){ORG.msg='アキラちゃんへの送り先がまだ設定されていません。⚙️設定の「アキラちゃんに相談」で送り先と合言葉を入れてください。';ORG.ok=false;return render()}
+ const keep={type:CON.type,q:CON.q,inc:CON.inc,stage:CON.stage,retry:CON.retry,status:CON.status,ok:CON.ok};
+ CON.type='recipe';CON.q=orgQuestion(wish,ORG.fridge);CON.inc={fridge:!!ORG.fridge,list:false,spend:'off',memo:false};CON.orig={kind:'original-recipe',wish,useFridge:!!ORG.fridge};CON.retry=null;CON.status='';
+ ORG.sending=true;ORG.msg='送信中…';ORG.ok=true;render();
+ try{await sendConsult()}finally{const id=CON.reqId,inP=!!id&&pending().some(x=>x.id===id),okSend=CON.ok&&inP,maybe=!CON.ok&&inP;
+  ORG.sending=false;if(okSend||maybe){orgSave({id,wish,at:Date.now(),fridge:!!ORG.fridge});ORG.q='';ORG.msg=maybe?'アキラちゃん側の応答が遅れています。届いていれば、このあと返事が出ます。':'';ORG.ok=true}else{ORG.msg=(CON.status||'送れませんでした')+'（書いた内容は残してあります。電波や設定を確かめて、もう一度送ってください）';ORG.ok=false}
+  CON.orig=null;Object.assign(CON,keep);render()}}
+function orgReply(){const st=orgSt();if(!st.id||typeof INBOX==='undefined')return null;return INBOX.find(e=>e.id===st.id&&!e.err&&e.item&&(e.item.kind==='recipe'||(e.item.kind==='menu'&&e.item.recipe)))||null}
+function orgRecipe(){const e=orgReply();return e?(e.item.kind==='recipe'?e.item:e.item.recipe):null}
+function orgKeep(useW){const e=orgReply(),rc=orgRecipe();if(!rc)return;const res=rboxAdd(rc,'オリジナルレシピ');if(!res)return toast('レシピを読めませんでした');
+ if(useW){const sel=document.getElementById('org_w');RBO=res.id;setTimeout(()=>{},0);const w=sel?+sel.value:1;const r=rbox().find(x=>x.id===res.id);if(r&&!dishesOf(w).includes(r.name)){const cur=String(menuArr()[w]||'').trim();setMenu(w,cur?cur+'・'+r.name:r.name)}toast(`レシピ保管に入れて、${WD[w]}曜の献立に使いました`)}else toast(res.dup?'もうレシピ保管にあります':'レシピ保管に入れました');
+ orgSave({});dropInbox([e.key]);RBO=res.id;render()}
+function orgDone(){const e=orgReply();orgSave({});if(e)dropInbox([e.key]);render()}
+function orgHtml(){const st=orgSt(),rc=orgRecipe(),waiting=st.id&&!rc,mins=waiting?Math.floor((Date.now()-(st.at||0))/60000):0;
+ let h=`<div class="row"><button class="${ORG.open||rc||waiting?'on':'sub'} orgbtn" onclick="ORG.open=!ORG.open;render()" aria-expanded="${ORG.open}">🍳 オリジナルレシピ</button></div>`;
+ if(rc){return h+`<div class="card orgbox"><b>✨ アキラちゃんのオリジナルレシピ：${esc(rc.name)}</b> <span class="muted">${esc([rc.serves,rc.time].filter(Boolean).join('・'))}</span>
+ <div class="muted">頼んだ内容：${esc(st.wish||'')}</div><b>材料</b><ul>${(rc.ingredients||[]).map(x=>{const t=typeof x==='string'?x:[x&&x.name,x&&(x.qty||x.amount)].filter(Boolean).join(' ');return `<li>${iconOf(t)?iconOf(t)+' ':''}${esc(t)}</li>`}).join('')}</ul>
+ <b>作り方</b><ol>${(rc.steps||[]).map(s=>typeof s==='string'?`<li>${esc(s)}</li>`:`<li><b>${esc(s.t||'')}</b>${s.d?' '+esc(s.d):''}</li>`).join('')}</ol>
+ <div class="row"><button onclick="orgKeep(false)">📒 レシピ保管に入れる</button></div>
+ <div class="row"><select id="org_w" aria-label="使う曜日">${[1,2,3,4,5,6,0].map(w=>`<option value="${w}">${WD[w]}曜</option>`).join('')}</select><button class="sub" onclick="orgKeep(true)">📅 保管して献立に使う</button></div>
+ <div class="row"><button class="sub" onclick="orgDone()">とじる（保管しない）</button></div></div>`}
+ if(waiting)h+=`<div class="card orgbox tip"><div class="orgwait">🍳 アキラちゃんがレシピを考え中…<span class="dots"></span></div><div class="muted">頼んだ内容：${esc(st.wish||'')}（${mins<1?'いま':mins+'分前'}に送信）</div>
+ ${mins>=30?`<div class="err">まだ返事が届いていません。アキラちゃんが手を離せないのかもしれません。下のボタンで確かめるか、しばらくしてからまた開いてみてください（返事は7日間とっておけます）。</div>`:'<div class="muted">返事が届くと、ここにレシピが出ます（アプリを開いたときに自動で確かめます）。</div>'}
+ <div class="row"><button class="sub" onclick="fetchReplies(true).then(render)">📩 返事を確かめる</button><button class="sub" onclick="if(confirm('待つのをやめますか？（あとで届いた返事は「📩 返事」に出ます）')){orgSave({});render()}">待つのをやめる</button></div>${INBOX_ST?`<div class="muted">${esc(INBOX_ST)}</div>`:''}</div>`;
+ if(ORG.open&&!waiting)h+=`<div class="card orgbox"><label for="org_q"><b>どんな料理にする？</b></label><textarea id="org_q" rows="4" maxlength="1500" style="width:100%" placeholder="例：ごぼうとにんじんを使いたい／あったかい汁物が食べたい／子どもが喜ぶ甘めの味" oninput="ORG.q=this.value">${esc(ORG.q)}</textarea>
+ <label class="chk1"><input type="checkbox" ${ORG.fridge?'checked':''} onchange="ORG.fridge=this.checked"> <span>🧊 冷蔵庫と保存棚の中身（${S.fridge.length}品）を参考にしてもらう</span></label>
+ <div class="row"><button onclick="orgSend()" ${ORG.sending?'disabled':''}>${ORG.sending?'送信中…':'✨ アキラちゃんにレシピを頼む'}</button></div>
+ ${ORG.msg?`<div class="${ORG.ok?'muted':'err'}">${esc(ORG.msg)}</div>`:''}<div class="muted">書いた内容${ORG.fridge?'と冷蔵庫の中身':''}だけを送ります（家計・買い物リストは送りません）。</div></div>`;
+ else if(ORG.msg&&!waiting)h+=`<div class="${ORG.ok?'muted':'err'}">${esc(ORG.msg)}</div>`;
+ return h}

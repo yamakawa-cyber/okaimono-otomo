@@ -105,6 +105,6 @@ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest
  if(t.dataset.rqgo)return rqGo(t.dataset.rqgo);
  if(t.dataset.rqself){const m=t.dataset.rqself;if(!RQ[m].what){alert('先に何を探すか書いてください');return}NS=NS==='rq'+m?null:'rq'+m;render();scrollTo(0,y)}});
 {const f=V.list;V.list=function(){return reqHtml()+f.apply(this,arguments)}}
-{const f=V.fridge;V.fridge=function(){const s=f.apply(this,arguments);return s.replace('<h2>今週の献立</h2>',reqHtml()+'<h2>今週の献立</h2>')}}
+{const f=V.fridge;V.fridge=function(){const s=f.apply(this,arguments);return s.replace('<h2>今週の献立</h2>',reqHtml()+(typeof orgHtml==='function'?orgHtml():'')+'<h2>今週の献立</h2>')}}
 
 BKX.orders={get:()=>orders(),check:v=>isArr(v),set:v=>{if(isArr(v))saveOrders(v.filter(o=>isObj(o)&&isStr(o.id)&&/^o[a-z0-9]{4,40}$/.test(o.id)&&isArr(o.items)&&isStr(o.at)).map(o=>({id:o.id,at:o.at.slice(0,40),mode:o.mode==='delivery'?'delivery':'goods',logged:o.logged==='yes'||o.logged==='no'?o.logged:undefined,items:o.items.filter(isObj).slice(0,30).map(i=>({name:String(i.name||'').slice(0,200),qty:String(i.qty||'').slice(0,50),store:String(i.store||'').slice(0,200),price:Number.isFinite(i.price)?i.price:null,total:Number.isFinite(i.total)?i.total:null,url:shopUrl(i.url),rank:String(i.rank||'').slice(0,10)}))})))}};
