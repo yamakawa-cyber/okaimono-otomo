@@ -133,7 +133,7 @@ V.ai=function(){
  if(AT.open){const r=curItem();if(r){const rc=recipeOf(r);
   h+=`<div class="row"><button class="sub" onclick="AT.open=null;render()">← 保管庫にもどる</button>${AT.open!=='demo'?`<button class="sub" data-x="hdel" data-k="${esc(AT.open)}">🗑 消す</button>`:''}</div>`;
   h+=r.kind==='receipt'?receiptView(r):r.kind==='recipe'?`<div class="card"><b>🥘 ${esc(r.name)}</b><ul>${(r.ingredients||[]).map(x=>`<li>${esc(typeof x==='string'?x:(x&&x.name)||'')}</li>`).join('')}</ul><div class="row"><button class="sub" onclick="aiIngToList()">材料を買い物リストに入れる</button></div></div>`:r.kind==='chat'?`<div class="card"><div class="bub">${esc(r.reply)}</div></div>`:aiView(r).replace(/<div class="row"><button onclick="AI\.lesson=true[^]*?<\/div>/,'');
-  if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div>`;return h}AT.open=null}
+  if(rc)h+=`<div class="row"><button onclick="startLesson()">👩‍🍳 料理レッスンを始める（${rc.steps.length}ステップ）</button></div><div class="row"><button class="sub" onclick="rboxMove()">📒 献立のレシピ保管へ移す</button></div>`;return h}AT.open=null}
  h+=`<h2>ワンタップ相談</h2><div class="qgrid">${QUICK.map(([,l],i)=>`<button class="qbtn" onclick="quickAsk(${i})">${l}</button>`).join('')}</div><div class="card myq"><label for="my_q"><b>✏️ 自分で書く</b></label><textarea id="my_q" rows="3" style="width:100%" placeholder="アキラちゃんに聞きたいことを自由に書いてね"></textarea><div class="row"><button onclick="myAsk()">送る内容を確認する</button></div><div class="muted">ワンタップ相談も、送る前の確認画面でメッセージを書きかえられます。</div></div>
  <div class="muted">押すと、送る内容の確認画面が開きます。</div>`;
  const all=hist(),kinds=[...new Set(all.map(e=>e.item.kind))],list=all.filter(e=>!AT.filter||e.item.kind===AT.filter);

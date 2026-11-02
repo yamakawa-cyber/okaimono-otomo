@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v42'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v43'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
@@ -249,7 +249,7 @@ function recipeList(){const out=[],seen=new Set();const walk=(o,eid,dep)=>{if(!o
   if(isStr(o.name)&&isArr(o.steps)&&o.steps.length&&isArr(o.ingredients)){const k=eid+'|'+o.name;if(!seen.has(k)){seen.add(k);out.push({eid,rc:o})}}
   Object.values(o).forEach(v=>{if(v&&typeof v==='object')walk(v,eid,dep+1)})};
  let raw=[];try{raw=JSON.parse(localStorage.getItem(typeof HK!=='undefined'?HK:'okaimono_hist')||'[]')}catch(e){}if(!isArr(raw))raw=[];
- raw.forEach(e=>isObj(e)&&walk(e.item,String(e.id||''),0));if(typeof INBOX!=='undefined')INBOX.forEach(e=>walk(e.item,'inbox:'+e.key,0));return out}
+ raw.forEach(e=>isObj(e)&&walk(e.item,String(e.id||''),0));if(typeof INBOX!=='undefined')INBOX.forEach(e=>walk(e.item,'inbox:'+e.key,0));if(typeof rbox==='function')rbox().forEach(r=>walk(r,'box:'+r.id,0));return out}
 const bigr=s=>{const a=new Set();for(let i=0;i<s.length-1;i++)a.add(s.slice(i,i+2));return a};
 function matchScore(dish,name){const k=normDish(dish),n=normDish(name);if(!k||!n)return 0;if(k===n)return 3;if(k.includes(n)||n.includes(k))return 2;const A=bigr(k),B=bigr(n);if(!A.size||!B.size)return 0;let c=0;A.forEach(x=>B.has(x)&&c++);const j=c/Math.min(A.size,B.size);return j>=0.6?1+j/2:0}
 function getLinks(){try{const o=JSON.parse(localStorage.getItem(LK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
