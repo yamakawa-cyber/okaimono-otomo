@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v47'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v48'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
@@ -38,7 +38,7 @@ const ICONS=[
  ['日用品','🧻',/トイレットペーパー|ティッシュ|キッチンペーパー|洗剤|柔軟剤|シャンプー|リンス|ボディソープ|石けん|石鹸|歯ブラシ|歯磨き|ラップ|アルミホイル|ゴミ袋|ごみ袋|スポンジ|おむつ|オムツ|マスク|電池|ディフューザー|芳香剤|日用品/]];
 function iconOf(n,fb){n=String(n||'').normalize('NFKC');for(const [,e,r] of ICONS)if(r.test(n))return e;return fb===undefined?'':fb}
 const OFTEN0=['玉子','牛乳','食パン','豆腐','納豆','玉ねぎ','にんじん','鶏むね肉','米','トイレットペーパー'];const OFTD=()=>OFTEN0.map(n=>({name:n,cat:n==='トイレットペーパー'?'日用品':'食材'}));const oft=()=>isArr(S.often)?S.often:OFTD();let OE=false;const mapU=(n,o)=>{const x=o||stores().find(z=>z.name===n)||{};const a=x.address||x.city||'';return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(n+(a&&!/不明/.test(a)?' '+a:''))};const mapA=(n,o)=>`<a class="maplink" href="${esc(mapU(n,o))}" target="_blank" rel="noopener"><b>📍${esc(n)}</b></a>`;
-const def={version:DATA_VERSION,settings:{shopDays:[1,4],fridgeDay:0,perTrip:9000,monthly:100000,region:'mukonoso',aiRelay:''},list:[],spend:[],fridge:[],menu:['','','','','','',''],prep:'',userStores:[]};
+const def={version:DATA_VERSION,settings:{shopDays:[1,4],fridgeDay:0,perTrip:9000,monthly:100000,region:'mukonoso',aiRelay:''},list:[],spend:[],fridge:[],whrc:[],menu:['','','','','','',''],prep:'',userStores:[]};
 // ---- 検証 ----
 const isStr=v=>typeof v==='string',isArr=Array.isArray,isObj=v=>v&&typeof v==='object'&&!isArr(v);
 const isDate=v=>{if(!isStr(v)||!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const [y,m,d]=v.split('-').map(Number);const x=new Date(Date.UTC(y,m-1,d));return x.getUTCFullYear()===y&&x.getUTCMonth()===m-1&&x.getUTCDate()===d};
@@ -64,7 +64,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
  for(const k of ['list','spend','fridge','userStores'])if(k in data){if(!isArr(data[k])){if(!LEN)bad(k);validate.dropped++;continue}if(data[k].length>MAXITEMS){if(!LEN)bad(k);validate.dropped+=data[k].length-MAXITEMS}out[k]=data[k].slice(0,MAXITEMS)}
  out.list=each(out.list,i=>{if(!isObj(i)||!isStr(i.name)||!i.name||!okS(i.name,200)||!okS(i.store,200)||!okS(i.qty,50)||!okS(i.cat,50)||!okS(i.spendId,50)||(i.yen!==undefined&&!okAmt1(i.yen))||!okB(i.done)||!okB(i.cart)||(i.price!==undefined&&!okAmt1(i.price))||!okB(i.sample)||(i.trip!==undefined&&!okWd(i.trip))||(i.uses!==undefined&&!(isArr(i.uses)&&i.uses.length<=14&&i.uses.every(u=>isObj(u)&&okWd(u.d)&&okS(u.dish,100)))))bad('list')});
  out.spend=each(out.spend,r=>{if(!isObj(r)||!isDate(r.date)||!okAmt1(r.amount)||!okS(r.store,200)||!okS(r.cat,50)||!okS(r.memo,500)||!okS(r.id,100)||!okS(r.rc,400))bad('spend');if(!r.id)r.id=uid()});
- out.fridge=each(out.fridge,f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100))bad('fridge');if(!f.id)f.id=uid()});
+ out.fridge=each(out.fridge,f=>{if(!isObj(f)||!isStr(f.name)||!okB(f.sample)||!okS(f.name,200)||!okS(f.id,100)||(f.until!==undefined&&f.until!==''&&!isDate(f.until))||(f.zone!==undefined&&!['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3','倉庫'].includes(f.zone))||!okS(f.amt,50)||!okS(f.note,100)||!okS(f.rc,400)||!okS(f.sug,20)||!okB(f.est)||(f.kind!==undefined&&!['食材','日用品','その他'].includes(f.kind)))bad('fridge');if(!f.id)f.id=uid()});
  out.userStores=each(out.userStores,s=>{if(!isObj(s)||!isStr(s.name)||!okS(s.name,200)||!isStr(s.id)||!okS(s.id,100)||!okB(s.user)||(s.type!==undefined&&!TYPES.includes(s.type)))bad('userStores');
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
   if(s.region!==undefined&&BASE.regions.length&&!BASE.regions.some(r=>r.id===s.region))bad('userStores');
@@ -72,6 +72,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
   if(s.links!==undefined&&(!isArr(s.links)||!s.links.every(l=>isObj(l)&&okS(l.t,200)&&okS(l.u,2000))))bad('userStores');
   s.links=(s.links||[]).filter(l=>safeUrl(l.u));s.sales=s.sales||[]});
  dedupe(out.spend,'s');dedupe(out.fridge,'f');dedupe(out.userStores,'u');
+ soft(()=>{if('whrc' in data){if(!isArr(data.whrc))bad('whrc');out.whrc=data.whrc.filter(x=>isStr(x)&&x.length<=400).slice(-1000)}}); // v48 倉庫に入れたレシートの印
  soft(()=>{if('menu' in data){if(isArr(data.menu)&&data.menu.length===7&&data.menu.every(x=>isStr(x)&&x.length<=500))out.menu=data.menu;else if(okS(data.menu,5000))out.menu=data.menu;else bad('menu')}});
  soft(()=>{if('prep' in data){if(!okS(data.prep,5000))bad('prep');out.prep=data.prep}});
  soft(()=>{if('settings' in data){const st=data.settings;if(!isObj(st))bad('settings');

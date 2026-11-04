@@ -65,7 +65,7 @@ function inboxHtml(){if(IS_DEMO)return '';if(!INBOX.length)return INBOX_ST?`<div
   h+=rc.map(e=>{const r=e.item,g=rcGroups(r),sum=g.reduce((a,[,v])=>a+v,0);return `<div class="rcprev"><div>🧾 <b>${esc(r.store)}</b> <span class="muted">${esc(r.date)}・合計 ${yen(r.total)}（${r.items.length}品）</span></div>
    <table>${g.map(([c,v])=>`<tr><td>${esc(c)}</td><td>${yen(v)}</td></tr>`).join('')}</table>
    ${rcTaxNote(r)}${rcDup(r)?(rcSure(r)?'<div class="err">同じレシート（番号・時刻も同じ）はもう取り込み済みです。</div>':'<div class="err">店・日付・合計が同じレシートがもう入っています。別の買い物なら「それでも入れる」を押してください。</div>'):''}
-   <div class="row"><button class="sub" data-x="drop" data-k="${esc(e.key)}">入れない</button>${!rcDup(r)?`<button data-x="apply" data-k="${esc(e.key)}">これを家計簿に入れる</button>`:rcSure(r)?'':`<button data-x="force" data-k="${esc(e.key)}">それでも入れる</button>`}</div></div>`}).join('');
+   ${whDone(r)?'<div class="muted">📦 倉庫には入れ済みです</div>':''}<div class="row"><button class="sub" data-x="drop" data-k="${esc(e.key)}">入れない</button><button class="sub" data-x="wh" data-k="${esc(e.key)}">📦 倉庫にも入れる</button>${!rcDup(r)?`<button data-x="apply" data-k="${esc(e.key)}">これを家計簿に入れる</button>`:rcSure(r)?'':`<button data-x="force" data-k="${esc(e.key)}">それでも入れる</button>`}</div></div>`}).join('');
   if(okKeys.length>1)h+=`<div class="row"><button data-x="applyall">まとめて家計簿に入れる（${okKeys.length}枚）</button></div>`}
  h+=other.map(e=>e.err?`<div class="err">読めない返事がありました（${esc(e.err)}）<button class="sub" data-x="drop" data-k="${esc(e.key)}">消す</button></div>`
   :`<div class="rcprev">${esc(KLABEL[e.item.kind]||e.item.kind)}：<b>${esc(histTitle(e.item))}</b>${e.item.kind==='chat'?`<div>${esc(String(e.item.reply).slice(0,200))}</div>`:''}
@@ -76,7 +76,7 @@ setTimeout(()=>fetchReplies(false),1500);document.addEventListener('visibilitych
 
 // ボタンの動作（idは data-k で渡す。onclick に文字列を埋め込まない）
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(!b)return;const k=b.dataset.k||'';
- switch(b.dataset.x){case 'drop':return dropInbox([k]);case 'open':return openReply(k);case 'apply':return rcApply([k]);case 'force':return rcApply([k],true);
+ switch(b.dataset.x){case 'drop':return dropInbox([k]);case 'open':return openReply(k);case 'apply':case 'force':{const e=INBOX.find(x=>x.key===k),r=e&&e.item;rcApply([k],b.dataset.x==='force');if(r&&!whDone(r)&&r.items.some(isFood)&&confirm('このレシートの食材を📦倉庫にも入れますか？（次に確認画面が出ます）'))whOpen(r);return}case 'wh':{const e=INBOX.find(x=>x.key===k);if(e)whOpen(e.item);return}
   case 'applyall':return rcApply(INBOX.filter(e=>!e.err&&e.item.kind==='receipt'&&!rcDup(e.item)).map(e=>e.key));
   case 'hdel':return histDel(k);case 'hopen':return histOpen(k);case 'hfilter':AT.filter=k;return render()}});
 setTimeout(()=>{try{if(linkMenu()&&location.hash==='#fridge')render()}catch(e){}},400);
