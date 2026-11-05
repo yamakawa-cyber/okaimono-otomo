@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v49'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v50'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -171,8 +171,8 @@ list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>
  <div class="row"><button class="sub" onclick="clearChecked()">✔ チェック済みをまとめて消す</button></div>`},
 money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=true}});if(fix)save();const d=today(),st=S.settings,c=curTrip(d),mo=ymd(d).slice(0,7);const tUsed=spentBetween(c.from,c.to);
  return `<div class="card">${c.label}（${md(c.from)}〜${md(c.to)}） ${yen(tUsed)} / ${yen(st.perTrip)}${bar(tUsed,st.perTrip)}<div class="muted">1回の目安 ${yen(st.perTrip)}、残り ${yen(st.perTrip-tUsed)}</div></div>
- <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);if(OUTS.includes(k))return `<div class="crow zappi"><span>${k}（生活費の枠の外）</span><span>${yen(u)}</span></div>`;return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
- ${(()=>{const t=ymd(d),w=ymd(addDays(d,-((d.getDay()+6)%7))),y=t.slice(0,4);const q=(a,k)=>yen(spentBetween(a,t,r=>normCat(r.cat)===k));return `<div class="muted" style="margin-top:6px">枠の外（きょう／今週／今月／今年）</div>${OUTS.map(k=>`<div class="crow zappi"><span>${k}</span><span>${q(t,k)}／${q(w,k)}／${q(mo+'-01',k)}／${q(y+'-01-01',k)}</span></div>`).join('')}`})()}
+ <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);if(OUTS.includes(k))return `<div class="crow zappi"><span>${k}</span><span>${yen(u)}</span></div>`;return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
+ ${(()=>{const t=ymd(d),w=ymd(addDays(d,-((d.getDay()+6)%7))),y=t.slice(0,4);const q=(a,k)=>yen(spentBetween(a,t,r=>normCat(r.cat)===k));return `<div class="muted" style="margin-top:6px">雑費・たばこ・酒（きょう／今週／今月／今年）</div>${OUTS.map(k=>`<div class="crow zappi"><span>${k}</span><span>${q(t,k)}／${q(w,k)}／${q(mo+'-01',k)}／${q(y+'-01-01',k)}</span></div>`).join('')}`})()}
  ${(()=>{const o=spentBetween(mo+'-01',mo+'-31',r=>!CATS.some(([k])=>k===r.cat));return o?`<div class="crow muted"><span>そのほかの費目</span><span>${yen(o)}</span></div>`:''})()}</div>
  <div class="card"><div class="row"><input id="sp_date" type="date" lang="ja" aria-label="日付" value="${ymd(d)}"><select id="sp_store" aria-label="店"><option value="">店</option>${spStoreOpts()}</select></div>
  <div class="row"><select id="sp_cat" aria-label="費目">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" min="1" aria-label="金額（円）" placeholder="金額（円）"></div>
