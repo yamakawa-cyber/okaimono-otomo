@@ -31,7 +31,7 @@ function consultPanel(){const s=secret();
  ${rcPickHtml()}
  <div class="row"><button onclick="toConfirm()" ${CON.sending?'disabled':''}>送る</button><button class="sub" onclick="CON.code=!CON.code;render()">取り込みコードを貼る</button></div>
  ${CON.code?`<textarea id="c_code" rows="4" style="width:100%" placeholder="アキラちゃんから届いた取り込みコード（JSON）"></textarea><div class="row"><button class="sub" onclick="importCode()">取り込む</button></div>`:''}
- ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${pending().length&&relayBase()?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる（待ち${pending().length}件）</button></div>`:''}</div>`}
+ ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${(()=>{const n=waitN();return relayBase()&&(n||BOT_PUSH)?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる${n?`（相談の返事待ち ${n}件）`:''}</button></div>`:''})()}</div>`}
 function toConfirm(){let q=val('c_q');CON.type=val('c_type')||CON.type;if(!q&&RC.imgs.length)q=CON.type==='receipt'?'レシートの写真です。読み取って receipt の形で返してください。':CON.type==='fridge'?'冷蔵庫の写真です。中身を読み取って fridge の形で返してください。':'写真を見て相談にのってください。';if(!q){alert('相談したいことを書いてください');return}if(CON.type==='receipt'&&!RC.imgs.length){alert('レシートの写真を選んでください');return}if(CON.type==='fridge'&&!RC.imgs.length){alert('冷蔵庫の写真を選んでください');return}if(CON.incType!==CON.type){CON.inc=CON.type==='receipt'?{fridge:false,list:false,spend:'off',memo:false}:{fridge:true,list:true,spend:'sum',memo:false};CON.incType=CON.type}if(!['compare','order'].includes(CON.type))CON.extra=null;CON.q=q;CON.stage='confirm';CON.status='';render()}
 function keepQ(){const e=document.getElementById('c_qe');if(e)CON.q=e.value}
 function setInc(k,v){keepQ();CON.inc[k]=v;render()}
@@ -84,3 +84,6 @@ function importCode(){const t=val('c_code');if(!t)return;try{let r;try{r=JSON.pa
 // 各タブに相談ボタンを差し込む
 for(const [tab,t] of [['home','menu'],['fridge','menu'],['list','shop'],['money','money'],['ai','advise']]){const f=V[tab];V[tab]=function(){return consultBtn(t)+f.apply(this,arguments)}}
 {const f=V.settings;V.settings=function(){return f.apply(this,arguments).replace('<h2>バックアップ</h2>',consultSettingsHtml()+'<h2>バックアップ</h2>')}}
+
+// v52：差し入れ箱（cbotpush1・type=bot）はいつも待ちにあるので、件数には数えない
+function waitN(){return pending().filter(x=>x.type!=='bot'&&x.id!==BOTBOX).length}
