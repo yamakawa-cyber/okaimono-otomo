@@ -1,9 +1,10 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v48'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v49'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
-const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0]];const EXTRA='雑費'; // v40：雑費は月の生活費の枠（10万円）の外で別に数える
+const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
+ // v40：雑費は月の生活費の枠（10万円）の外で別に数える
 // v41：材料のアイコン（種類別・上から順に判定。どれにも当たらなければ各画面の今のアイコン）
 const ICONS=[
  ['冷凍食品','🧊',/冷凍|アイス|氷/],
@@ -84,7 +85,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
  for(const k of Object.keys(data)){if(k==='lastBackup'&&isDate(data[k]))out[k]=data[k];if(k==='often'&&isArr(data[k]))out[k]=data[k].filter(o=>isObj(o)&&okS(o.name,100)&&o.name&&okS(o.cat,50)&&okS(o.qty,50)&&(o.price===undefined||okAmt1(o.price))).slice(0,60).map(o=>{const x={name:o.name};if(o.cat)x.cat=o.cat;if(o.qty)x.qty=o.qty;if(o.price)x.price=o.price;return x});if(k==='sampleKeys'&&isArr(data[k]))out[k]=data[k].filter(isStr).slice(0,50)}
  out.version=DATA_VERSION;migCats(out);return out}
 // v38：費目名「食材・米」などの旧表記を「食材」へ移す（保存データ・バックアップ・よく買う品）
-function normCat(c){if(typeof c!=='string')return c;const t=c.trim();return /^食材[・、，,\s]*米$/.test(t)?'食材':t==='予備'?'雑費':c}
+function normCat(c){if(typeof c!=='string')return c;const t=c.trim();return /^食材[・、，,\s]*米$/.test(t)?'食材':t==='予備'?'雑費':/^(タバコ|煙草|たばこ類)$/.test(t)?'たばこ':/^(お酒|酒類|アルコール)$/.test(t)?'酒':c}
 function migCats(o){['list','spend','often'].forEach(k=>{if(isArr(o[k]))o[k].forEach(i=>{if(isObj(i)&&'cat' in i)i.cat=normCat(i.cat)})})}
 let BASE={regions:[],stores:[]};
 // 読めなかった生データの退避先（上書きで消さない）。LOAD_ERR があるあいだは保存しない
@@ -117,7 +118,7 @@ const regStores=()=>stores().filter(s=>s.region===S.settings.region);
 function salesOn(s,d){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text&&((x.wd!==undefined&&x.wd===d.getDay())||(isArr(x.md)&&x.md.includes(d.getDate()))))}
 function saleText(s){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text).map(x=>okWd(x.wd)?WD[x.wd]+'曜：'+x.text:isArr(x.md)?'毎月'+x.md.join('・')+'日：'+x.text:x.text)}
 function weekStart(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)} // 月曜始まり
-function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(f?f(r):normCat(r.cat)!==EXTRA)).reduce((t,r)=>t+Number(r.amount||0),0)}
+function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(f?f(r):!OUTS.includes(normCat(r.cat)))).reduce((t,r)=>t+Number(r.amount||0),0)}
 function bar(used,max){const r=max>0?used/max:0;return `<div class="bar"><div class="${r>1?'over':r>=0.8?'warn':''}" style="width:${Math.min(100,r*100)}%"></div></div>`}
 // 買い物の回：買い物日ごとに、次の買い物日の前日までを1回分とする（[1,4]なら 月〜水／木〜日）
 function trips(d){const days=[...new Set((S.settings.shopDays.length?S.settings.shopDays:[1]))].sort((a,b)=>((a+6)%7)-((b+6)%7));
@@ -170,12 +171,13 @@ list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>
  <div class="row"><button class="sub" onclick="clearChecked()">✔ チェック済みをまとめて消す</button></div>`},
 money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=true}});if(fix)save();const d=today(),st=S.settings,c=curTrip(d),mo=ymd(d).slice(0,7);const tUsed=spentBetween(c.from,c.to);
  return `<div class="card">${c.label}（${md(c.from)}〜${md(c.to)}） ${yen(tUsed)} / ${yen(st.perTrip)}${bar(tUsed,st.perTrip)}<div class="muted">1回の目安 ${yen(st.perTrip)}、残り ${yen(st.perTrip-tUsed)}</div></div>
- <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);if(k===EXTRA)return `<div class="crow zappi"><span>${k}（生活費の枠の外）</span><span>${yen(u)}</span></div>`;return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
+ <div class="card"><b>今月の費目別</b>${CATS.map(([k,b])=>{const u=spentBetween(mo+'-01',mo+'-31',r=>r.cat===k);if(OUTS.includes(k))return `<div class="crow zappi"><span>${k}（生活費の枠の外）</span><span>${yen(u)}</span></div>`;return `<div class="crow"><span>${k}</span><span>${yen(u)} / ${yen(b)}</span></div>${bar(u,b)}`}).join('')}
+ ${(()=>{const t=ymd(d),w=ymd(addDays(d,-((d.getDay()+6)%7))),y=t.slice(0,4);const q=(a,k)=>yen(spentBetween(a,t,r=>normCat(r.cat)===k));return `<div class="muted" style="margin-top:6px">枠の外（きょう／今週／今月／今年）</div>${OUTS.map(k=>`<div class="crow zappi"><span>${k}</span><span>${q(t,k)}／${q(w,k)}／${q(mo+'-01',k)}／${q(y+'-01-01',k)}</span></div>`).join('')}`})()}
  ${(()=>{const o=spentBetween(mo+'-01',mo+'-31',r=>!CATS.some(([k])=>k===r.cat));return o?`<div class="crow muted"><span>そのほかの費目</span><span>${yen(o)}</span></div>`:''})()}</div>
  <div class="card"><div class="row"><input id="sp_date" type="date" lang="ja" aria-label="日付" value="${ymd(d)}"><select id="sp_store" aria-label="店"><option value="">店</option>${spStoreOpts()}</select></div>
  <div class="row"><select id="sp_cat" aria-label="費目">${catOpts()}</select><input id="sp_amt" type="number" inputmode="numeric" min="1" aria-label="金額（円）" placeholder="金額（円）"></div>
  <input id="sp_memo" maxlength="500" aria-label="メモ" placeholder="メモ" style="width:100%"><div class="row"><button onclick="addSpend()">記録する</button><button class="sub" onclick="csv()">CSVで書き出す</button></div></div>
- ${S.spend.slice().reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">まだ記録がありません</div>'}`},
+ <h2>今月の記録</h2>${S.spend.filter(r=>isStr(r.date)&&r.date.startsWith(mo)).reverse().map(r=>`<div class="card scard"><div style="flex:1"><div class="muted">${md(r.date)}</div><b>${esc(r.store||'店なし')}</b><div><span class="tag">${esc(r.cat)}</span> <span class="muted">${esc(r.memo)}</span></div></div><div class="amt">${yen(r.amount)}</div><button class="sub" data-act="delSpend" data-id="${esc(r.id)}">✕</button></div>`).join('')||'<div class="card muted">今月の記録はまだありません（前の月の記録は下の「月次・年次の記録」にあります）</div>'}`},
 stock(){return frView()},
 fridge(){return `<div class="row"><a class="link" href="#stock">🧊 冷蔵庫と保存棚の中身を見る（${S.fridge.length}品）</a></div>
  <h2>今週の献立</h2><div class="card">${[1,2,3,4,5,6,0].map(w=>`<div class="row mrow"><b style="flex:0 0 2em">${WD[w]}</b><input value="${esc(menuArr()[w])}" maxlength="500" aria-label="${WD[w]}曜の献立" placeholder="${WD[w]}曜の献立" oninput="setMenu(${w},this.value)" onchange="render()">${String(menuArr()[w]||'').trim()?`<button class="sub mclr" onclick="clearDay(${w})" aria-label="${WD[w]}曜の献立を消す">✕</button>`:''}</div>${dishChips(w)}`).join('')}</div>
