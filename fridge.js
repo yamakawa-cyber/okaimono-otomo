@@ -16,7 +16,7 @@ function frSelHtml(){const f=S.fridge.find(x=>x.id===FR.sel);if(!f)return '';con
  <div class="muted">量の一部だけうつす</div><div class="row"><input id="fr_part" placeholder="うつす量（例：1個）" aria-label="うつす量" style="flex:0 0 140px"><select id="fr_pz" aria-label="うつす先">${ZONES.filter(x=>x!==z).map(x=>`<option>${x}</option>`).join('')}</select><button class="sub" onclick="frPart(val('fr_pz'))">一部をうつす</button></div>
  <div class="row"><button class="sub" onclick="frToList()">🛒 →買い物リスト</button><button class="sub" onclick="frDel()">✕ 消す（使い切った）</button><button class="sub" onclick="FR.sel=null;render()">とじる</button></div></div>`}
 function frView(){const L=frItems();if(FR.wh)return whReviewHtml();if(FR.rev)return frReviewHtml();
- return `<div class="row frtop"><button onclick="frMenu()">🍳 この中身で献立を相談</button></div>
+ return `${CON.open&&CON.from===location.hash?consultPanel():''}<div class="row frtop"><button onclick="frMenu()">🍳 この中身で献立を相談</button></div>
  <div class="card"><b>手で入れる</b><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_amt2" placeholder="量" style="flex:0 0 80px"></div>
  <div class="row"><select id="fr_zone" aria-label="しまう場所">${ZONES.map(z=>`<option>${z}</option>`).join('')}</select><input id="fr_until" type="date" lang="ja" aria-label="期限"></div><div class="row"><button onclick="addFr()">しまう</button></div></div>
 ${whView(L)}
