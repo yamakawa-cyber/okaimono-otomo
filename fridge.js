@@ -56,12 +56,16 @@ function frRevApply(){const R=FR.rev;if(!R)return;const prev=S.fridge.map(f=>Obj
 {const f=rcImport;rcImport=function(arr){if(arr.length===1&&arr[0].kind==='fridge')return frReview(arr[0],null);return f(arr)}}
 
 // --- v48 📦 倉庫：レシートの食材をいったん倉庫へ → ここから冷蔵庫・冷凍室・保存棚へ振り分け ---
-const WH='倉庫',FOODCAT=['食材','おやつ・飲み物','惣菜'];
-const isFood=i=>i.type?i.type==='食材':FOODCAT.includes(rcCat(i.category)); // 古い形の返事は費目で判断
+const WH='倉庫',FOODCAT=['食材','おやつ・飲み物','惣菜'],NOFOOD_CAT=['日用品','雑費','たばこ','酒','子ども'];
+// v53：ガソリン・洗車・たばこ・酒・日用品などは倉庫に出さない（AIが食材と付けても除外）
+const NOFOOD_NM=/ガソリン|レギュラー(?!コーヒー)|ハイオク|軽油|灯油|燃料|給油|洗車|カーウォッシュ|駐車場|駐車料|通行料|有料道路|\bETC\b|たばこ|タバコ|煙草|ビール|日本酒|焼酎|酎ハイ|チューハイ|ワイン|ウイスキー|洗剤|柔軟剤|トイレットペーパー|ティッシュ|おむつ|電池/;
+const NOFOOD_STORE=/ENEOS|エネオス|出光|コスモ石油|コスモSS|シェル|Shell|JOMO|キグナス|宇佐美|アポロステーション|apollostation|ガソリンスタンド|洗車/;
+const isFood=i=>{const nm=String(i.std||'')+' '+String(i.name||'');if(NOFOOD_NM.test(nm))return false;const c=i.category!==undefined?rcCat(i.category):'';if(c&&NOFOOD_CAT.includes(c))return false;if(i.type)return i.type==='食材';return FOODCAT.includes(c)}; // 古い形は費目で判断
+const hasWhFood=r=>isArr(r&&r.items)&&!NOFOOD_STORE.test(String(r.store||''))&&r.items.some(isFood)
 const whSet=()=>{if(!isArr(S.whrc))S.whrc=[];return S.whrc};
 const whDone=r=>whSet().includes(rcKey(r));
 let WHS=new Set(); // 倉庫で選んだ品
-function whOpen(r){const rc=rcKey(r);const its=r.items.filter(i=>isFood(i)&&Math.round(i.price)>=0&&!/値引|割引|クーポン/.test(i.name));
+function whOpen(r){if(!hasWhFood(r))return alert('このレシートには倉庫に入れる食材がありません（食材以外は倉庫に出ません）');const rc=rcKey(r);const its=r.items.filter(i=>isFood(i)&&Math.round(i.price)>=0&&!/値引|割引|クーポン/.test(i.name));
  if(!its.length)return alert('このレシートには倉庫に入れる食材が見つかりませんでした');
  FR.wh={rc,dup:whDone(r),store:String(r.store).slice(0,40),date:r.date,items:its.map(i=>{const n=String(i.std||i.name).slice(0,200),d=Number.isInteger(i.days)&&isDate(r.date)?ymd(addDays(new Date(r.date+'T12:00'),i.days)):'';const same=S.fridge.some(f=>f.name===n);return {on:true,name:n,raw:i.std&&i.std!==i.name?String(i.name).slice(0,60):'',sug:zoneOk(i.zone)&&i.zone!==WH?i.zone:'',until:d,amt:isStr(i.qty)?i.qty.slice(0,50):'',same,how:'add'}})};
  FR.sel=null;CON.open=false;location.hash='#stock';render();scrollTo(0,0)}
