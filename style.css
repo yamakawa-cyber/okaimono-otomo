@@ -110,3 +110,13 @@ header{background-color:#fff;background-image:linear-gradient(rgba(255,255,255,.
 
 /* v46：オリジナルレシピ */
 .orgbtn{width:100%}.orgbox ol,.orgbox ul{padding-left:1.4em;margin:4px 0}.orgwait{font-weight:bold;color:#1f3a8a}.orgwait .dots::after{content:'…';animation:orgd 1.2s steps(3) infinite}@keyframes orgd{0%{content:'・'}50%{content:'・・'}100%{content:'・・・'}}
+
+/* v54：倉庫リストをコンパクトに（チェック＋品名が近接） */
+.card.wh{padding:10px 12px}.card.wh>.muted{margin:0 0 6px;line-height:1.35}.card.wh .row{gap:6px;margin:6px 0}
+ul.chk.whlist li{padding:4px 0;gap:6px;flex-wrap:nowrap;align-items:center}
+ul.chk.whlist li label.lrow{flex:0 0 auto;min-width:0;width:auto;gap:0}
+ul.chk.whlist li input[type=checkbox]{margin:4px 2px 4px 0}
+ul.chk.whlist .frchip{flex:1 1 auto;min-width:0;text-align:left}
+ul.chk.whlist .tag{flex:0 1 auto;margin:0}
+ul.chk.whlist .whnm{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.card.wh .frmv{gap:4px;margin:2px 0 0}

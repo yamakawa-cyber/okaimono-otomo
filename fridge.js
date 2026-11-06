@@ -14,7 +14,7 @@ function frSelHtml(){const f=S.fridge.find(x=>x.id===FR.sel);if(!f)return '';con
  <div class="muted">ほかの場所へうつす</div><div class="frmv">${ZONES.filter(x=>x!==z).map(x=>`<button class="sub" data-frmv="${x}">${ZICON[x]} ${x}</button>`).join('')}</div>
  <div class="row"><input id="fr_amt" value="${esc(f.amt||'')}" placeholder="量（例：半分・2個）" aria-label="量"><button class="sub" onclick="frSetAmt()">量を変える</button></div>
  <div class="muted">量の一部だけうつす</div><div class="row"><input id="fr_part" placeholder="うつす量（例：1個）" aria-label="うつす量" style="flex:0 0 140px"><select id="fr_pz" aria-label="うつす先">${ZONES.filter(x=>x!==z).map(x=>`<option>${x}</option>`).join('')}</select><button class="sub" onclick="frPart(val('fr_pz'))">一部をうつす</button></div>
- <div class="row"><button class="sub" onclick="frToList()">🛒 →買い物リスト</button><button class="sub" onclick="frDel()">✕ 消す（使い切った）</button><button class="sub" onclick="FR.sel=null;render()">とじる</button></div></div>`}
+ <div class="row"><button class="sub" onclick="frToList()">🛒 →買い物リスト</button><button class="sub" onclick="frDel()">${z===WH?'✕ 倉庫から消す':'✕ 消す（使い切った）'}</button><button class="sub" onclick="FR.sel=null;render()">とじる</button></div></div>`}
 function frView(){const L=frItems();if(FR.wh)return whReviewHtml();if(FR.rev)return frReviewHtml();
  return `${CON.open&&CON.from===location.hash?consultPanel():''}<div class="row frtop"><button onclick="frMenu()">🍳 この中身で献立を相談</button></div>
  <div class="card"><b>手で入れる</b><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_amt2" placeholder="量" style="flex:0 0 80px"></div>
@@ -23,7 +23,7 @@ ${whView(L)}
  <h2>🧊 冷蔵庫と保存棚（${WD[S.settings.fridgeDay]}曜に点検）</h2>
  <div class="fridge">${frZone('冷蔵室',L)}${frZone('チルド',L)}${frZone('野菜室',L)}${frZone('冷凍室',L)}</div><div class="fdoorbar">${frZone('ドアポケット',L)}</div>
  <h2>🪵 保存棚</h2><div class="shelves">${SHELVES.map(z=>frZone(z,L)).join('')}</div>
- <div class="muted">品物をタップすると、場所の移動・量・リストへ・消すができます。⚠️は期限が近いもの。</div>${frSelHtml()}
+ <div class="muted">品物をタップすると、場所の移動・量・リストへ・消すができます。⚠️は期限が近いもの。</div>${(()=>{const f=S.fridge.find(x=>x.id===FR.sel);return(f&&f.zone===WH)?'':frSelHtml()})()}
  <div class="card"><div class="row"><button onclick="frPhoto()">📷 冷蔵庫の写真をアキラちゃんに読んでもらう</button></div>
  <div class="row"><button class="sub" onclick="frMissing()">🛒 足りない物をリストに</button></div>
  <div class="muted">「足りない物」は、よく買う品のうち冷蔵庫にも買い物リストにも無いものです。</div></div>`}
@@ -69,11 +69,13 @@ function whOpen(r){if(!hasWhFood(r))return alert('このレシートには倉庫
  if(!its.length)return alert('このレシートには倉庫に入れる食材が見つかりませんでした');
  FR.wh={rc,dup:whDone(r),store:String(r.store).slice(0,40),date:r.date,items:its.map(i=>{const n=String(i.std||i.name).slice(0,200),d=Number.isInteger(i.days)&&isDate(r.date)?ymd(addDays(new Date(r.date+'T12:00'),i.days)):'';const same=S.fridge.some(f=>f.name===n);return {on:true,name:n,raw:i.std&&i.std!==i.name?String(i.name).slice(0,60):'',sug:zoneOk(i.zone)&&i.zone!==WH?i.zone:'',until:d,amt:isStr(i.qty)?i.qty.slice(0,50):'',same,how:'add'}})};
  FR.sel=null;CON.open=false;location.hash='#stock';render();scrollTo(0,0)}
-function whReviewHtml(){const R=FR.wh,n=R.items.filter(i=>i.on).length;
- return `<h2>📦 倉庫に入れる食材を確認</h2><div class="card"><div class="muted">${esc(R.store)}（${md(R.date)}）のレシートから、食材だけを出しています。チェックを外した物は入れません。期限は「目安」です。</div>
+function whReviewHtml(){const R=FR.wh,n=R.items.filter(i=>i.on).length,all=R.items.length>0&&n===R.items.length;
+ return `<h2>📦 倉庫に入れる食材を確認</h2><div class="card wh"><div class="muted">${esc(R.store)}（${md(R.date)}）・食材のみ。外した物は入れない。期限は目安。</div>
  ${R.dup?'<div class="err">このレシートはもう倉庫に入れています。もう一度入れると二重になります。</div>':''}
- <ul class="chk frrev">${R.items.map((i,k)=>`<li><label class="lrow"><input type="checkbox" ${i.on?'checked':''} onchange="FR.wh.items[${k}].on=this.checked;render()"><span style="flex:1">${emoOf(i.name)} ${esc(i.name)}${i.raw?` <span class="muted">（${esc(i.raw)}）</span>`:''}${i.amt?` <span class="muted">${esc(i.amt)}</span>`:''}${i.sug?` <span class="tag">おすすめ：${esc(i.sug)}</span>`:''}${i.until?` <span class="tag">期限の目安 ${md(i.until)}</span>`:''}</span></label>${i.same?`<select aria-label="同じ名前の品" onchange="FR.wh.items[${k}].how=this.value"><option value="add"${i.how==='add'?' selected':''}>同名あり：足す</option><option value="over"${i.how==='over'?' selected':''}>同名あり：上書き</option></select>`:''}</li>`).join('')}</ul>
+ <div class="row"><button class="sub" onclick="whRevAll()">${all?'ぜんぶ外す':'ぜんぶ選ぶ'}</button></div>
+ <ul class="chk frrev whlist">${R.items.map((i,k)=>`<li><label class="lrow"><input type="checkbox" ${i.on?'checked':''} onchange="FR.wh.items[${k}].on=this.checked;render()"><span class="whnm">${emoOf(i.name)} ${esc(i.name)}${i.raw?` <span class="muted">（${esc(i.raw)}）</span>`:''}${i.amt?` <span class="muted">${esc(i.amt)}</span>`:''}</span></label>${i.sug?`<span class="tag">おすすめ：${esc(i.sug)}</span>`:''}${i.until?`<span class="tag">期限 ${md(i.until)}</span>`:''}${i.same?`<select aria-label="同じ名前の品" onchange="FR.wh.items[${k}].how=this.value"><option value="add"${i.how==='add'?' selected':''}>同名あり：足す</option><option value="over"${i.how==='over'?' selected':''}>同名あり：上書き</option></select>`:''}</li>`).join('')}</ul>
  <div class="row"><button class="sub" onclick="FR.wh=null;render()">入れない</button><button onclick="whApply()" ${n?'':'disabled'}>${R.dup?'それでも':''}📦 倉庫に入れる（${n}品）</button></div></div>`}
+function whRevAll(){const R=FR.wh;if(!R)return;const all=R.items.length>0&&R.items.every(i=>i.on);R.items.forEach(i=>i.on=!all);render()}
 function whApply(){const R=FR.wh;if(!R)return;const prev=S.fridge.map(f=>Object.assign({},f)),prevRc=whSet().slice();let n=0;
  R.items.filter(i=>i.on).forEach(i=>{const f={id:uid(),name:i.name,until:i.until,zone:WH,kind:'食材',rc:R.rc};if(i.until)f.est=true;if(i.amt)f.amt=i.amt;if(i.sug)f.sug=i.sug;
   const o=i.how==='over'&&S.fridge.find(x=>x.name===i.name);if(o)Object.assign(o,f,{id:o.id});else S.fridge.push(f);n++});
@@ -81,12 +83,17 @@ function whApply(){const R=FR.wh;if(!R)return;const prev=S.fridge.map(f=>Object.
  FR.wh=null;save();render();scrollTo(0,0);undo1(`📦 倉庫に${n}品入れました`,()=>{S.fridge=prev;S.whrc=prevRc;save();render()},n)}
 // 倉庫の一覧：複数えらんで移動・おすすめどおり移動
 function whView(L){const its=L.filter(f=>f.zone===WH);if(!its.length)return '';[...WHS].forEach(id=>{if(!its.some(f=>f.id===id))WHS.delete(id)});
- return `<h2>📦 倉庫 <span class="muted">${its.length}品</span></h2><div class="card wh"><div class="muted">レシートから入れた食材です。えらんで場所へうつしてね。品名をタップすると1品ずつ・量の一部だけの移動もできます。</div>
- <ul class="chk">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} onchange="this.checked?WHS.add('${esc(f.id)}'):WHS.delete('${esc(f.id)}');render()"><span style="flex:1"></span></label>${frChip(f)}${f.sug?` <span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
- <div class="row"><button class="sub" onclick="its_all()">ぜんぶ選ぶ</button><button class="sub" onclick="whSug()">おすすめの場所へうつす（${WHS.size||its.filter(f=>f.sug).length}品）</button></div>
- ${WHS.size?`<div class="muted">選んだ${WHS.size}品をうつす</div><div class="frmv">${ZONES.filter(x=>x!==WH).map(x=>`<button class="sub" onclick="whMove('${x}')">${ZICON[x]} ${x}</button>`).join('')}</div>`:''}</div>`}
-function its_all(){S.fridge.filter(f=>f.zone===WH).forEach(f=>WHS.add(f.id));render()}
-function whMove(z){const prev=S.fridge.map(f=>Object.assign({},f));let n=0;S.fridge.forEach(f=>{if(f.zone===WH&&WHS.has(f.id)){f.zone=z;n++}});WHS.clear();save();render();undo1(`${n}品を${z}へうつしました`,()=>{S.fridge=prev;save();render()},n)}
+ const all=its.length>0&&its.every(f=>WHS.has(f.id)),n=WHS.size,selWh=!!(FR.sel&&its.some(f=>f.id===FR.sel));
+ return `<h2>📦 倉庫 <span class="muted">${its.length}品</span></h2><div class="card wh"><div class="muted">チェックして好きな場所へうつす／消す。品名タップで1品ずつ・一部移動も可。</div>
+ <ul class="chk whlist">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} onchange="this.checked?WHS.add('${esc(f.id)}'):WHS.delete('${esc(f.id)}');render()"></label>${frChip(f)}${f.sug?`<span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
+ <div class="row"><button class="sub" onclick="its_all()">${all?'ぜんぶ外す':'ぜんぶ選ぶ'}</button><button class="sub" onclick="whDel()" ${n?'':'disabled'}>✕ 倉庫から消す${n?`（${n}品）`:''}</button></div>
+ <div class="muted">${n?`選んだ${n}品を好きな場所へうつす`:'下のボタンで好きな場所へ（先にチェック）'}</div>
+ <div class="frmv">${ZONES.filter(x=>x!==WH).map(x=>`<button class="sub" onclick="whMove('${x}')" ${n?'':'disabled'}>${ZICON[x]} ${x}</button>`).join('')}</div>
+ <div class="row"><button class="sub" onclick="whSug()">おすすめの場所へうつす（任意・${n||its.filter(f=>f.sug).length}品）</button></div>
+ ${selWh?frSelHtml():''}</div>`}
+function its_all(){const its=S.fridge.filter(f=>f.zone===WH);if(its.length&&its.every(f=>WHS.has(f.id)))WHS.clear();else its.forEach(f=>WHS.add(f.id));render()}
+function whMove(z){if(!WHS.size)return;const prev=S.fridge.map(f=>Object.assign({},f));let n=0;S.fridge.forEach(f=>{if(f.zone===WH&&WHS.has(f.id)){f.zone=z;n++}});if(FR.sel&&WHS.has(FR.sel))FR.sel=null;WHS.clear();save();render();undo1(`${n}品を${z}へうつしました`,()=>{S.fridge=prev;save();render()},n)}
+function whDel(){if(!WHS.size)return;const n=WHS.size;if(!confirm(`選んだ${n}品を倉庫から消しますか？（あとで元に戻せます）`))return;const prev=S.fridge.map(f=>Object.assign({},f));S.fridge=S.fridge.filter(f=>!(f.zone===WH&&WHS.has(f.id)));if(FR.sel&&WHS.has(FR.sel))FR.sel=null;WHS.clear();save();render();undo1(`${n}品を倉庫から消しました`,()=>{S.fridge=prev;save();render()},n)}
 function whSug(){const prev=S.fridge.map(f=>Object.assign({},f));let n=0;S.fridge.forEach(f=>{if(f.zone===WH&&f.sug&&(!WHS.size||WHS.has(f.id))){f.zone=f.sug;n++}});if(!n)return toast('おすすめの場所がついた品がありません');WHS.clear();save();render();undo1(`${n}品をおすすめの場所へうつしました`,()=>{S.fridge=prev;save();render()},n)}
 // 量の一部だけうつす（例：「4個」のうち「1個」→ 残り「3個」）
 function frPart(z){const f=S.fridge.find(x=>x.id===FR.sel);if(!f)return;const p=val('fr_part').trim().slice(0,50);if(!p)return toast('うつす量を入れてね');
