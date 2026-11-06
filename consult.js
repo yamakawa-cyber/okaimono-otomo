@@ -11,7 +11,7 @@ function setConsult(field,v,el){const s=secret();v=String(v).trim();
  if(field==='key'){if(v.length>1000){if(el)el.value='';alert('キーが長すぎます');return}s.key=v}
  if(field==='header'){if(!/^[A-Za-z0-9-]{1,64}$/.test(v)){alert('ヘッダ名は英数字とハイフンだけです');return}s.header=v}
  saveSecret(s);render()}
-const mask=k=>k?'●'.repeat(Math.min(8,k.length))+k.slice(-4):'未設定';
+const mask=k=>k?'設定済み（キーは表示しません）':'未設定';
 function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃんに相談</h2><div class="card">
  相談の受け取りURL（https）<input id="c_url" value="${esc(s.url)}" placeholder="https://…" style="width:100%" onchange="setConsult('url',this.value,this)">
  送信キー（いま：${esc(mask(s.key))}）<input id="c_key" type="password" autocomplete="off" placeholder="貼り付けると上書き" style="width:100%" onchange="setConsult('key',this.value,this)">

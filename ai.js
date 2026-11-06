@@ -76,6 +76,10 @@ AISHAPE.recipe=r=>isStr(r.name)&&isArr(r.ingredients)&&r.ingredients.every(isStr
 const HK=IS_DEMO?'okaimono_hist_demo':'okaimono_hist',HIST_MAX=150,HIST_BYTES=1500000;
 const KLABEL={menu:'🍳 献立',recipe:'🥘 レシピ',shop:'🛒 買い物',money:'💰 家計',hacks:'💡 こつ',advise:'🧭 相談',chat:'💬 ひとこと',receipt:'🧾 レシート'};
 function hist(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return isArr(a)?a.filter(e=>isObj(e)&&isStr(e.id)&&isObj(e.item)&&AISHAPE[e.item.kind]):[]}catch(e){return []}}
+function checkHist(v){if(!isArr(v))return[];const seen=new Set(),norm=[],bad=[];v.forEach(e=>{if(!isObj(e)||!isStr(e.id)||e.id.length>100||!isObj(e.item)||seen.has(e.id)){bad.push(e);return}try{checkAI(e.item);seen.add(e.id);const x={id:e.id,at:isStr(e.at)?e.at.slice(0,40):new Date().toISOString(),src:isStr(e.src)?e.src.slice(0,50):'',sig:JSON.stringify(e.item),item:e.item};norm.push(x)}catch(_){bad.push(e)}});
+ // 戻せない返事を捨てずに保持し、確認・再取り込みできるようにする。
+ try{bad.slice(0,100).forEach((e,k)=>{const key='restore'+uid()+'#'+k;if(INBOX.some(x=>x.key===key))return;INBOX.push({key,id:null,item:e.item,err:'バックアップのこの返事は形が足りないため読み込めません'})})}catch(_){}
+ return norm}
 function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));setLS(HK,JSON.stringify(a))}}
 function histTitle(r){return r.kind==='receipt'?`${r.store}（${yen(r.total)}）`:r.kind==='recipe'?r.name:r.kind==='chat'?String(r.reply).slice(0,40):(r.title||KLABEL[r.kind])}
 function histAdd(item,src){if(!isObj(item)||!AISHAPE[item.kind])return null;const sig=JSON.stringify(item);const a=hist();const old=a.find(e=>e.sig===sig);if(old)return old.id;

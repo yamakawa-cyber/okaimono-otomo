@@ -81,11 +81,12 @@ function whApply(){const R=FR.wh;if(!R)return;const prev=S.fridge.map(f=>Object.
   const o=i.how==='over'&&S.fridge.find(x=>x.name===i.name);if(o)Object.assign(o,f,{id:o.id});else S.fridge.push(f);n++});
  if(!whSet().includes(R.rc))S.whrc.push(R.rc);if(S.whrc.length>1000)S.whrc=S.whrc.slice(-1000);
  FR.wh=null;save();render();scrollTo(0,0);undo1(`📦 倉庫に${n}品入れました`,()=>{S.fridge=prev;S.whrc=prevRc;save();render()},n)}
+document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-whid]');if(!c)return;const id=c.dataset.whid;if(c.checked)WHS.add(id);else WHS.delete(id);render()});
 // 倉庫の一覧：複数えらんで移動・おすすめどおり移動
 function whView(L){const its=L.filter(f=>f.zone===WH);if(!its.length)return '';[...WHS].forEach(id=>{if(!its.some(f=>f.id===id))WHS.delete(id)});
  const all=its.length>0&&its.every(f=>WHS.has(f.id)),n=WHS.size,selWh=!!(FR.sel&&its.some(f=>f.id===FR.sel));
  return `<h2>📦 倉庫 <span class="muted">${its.length}品</span></h2><div class="card wh"><div class="muted">チェックして好きな場所へうつす／消す。品名タップで1品ずつ・一部移動も可。</div>
- <ul class="chk whlist">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} onchange="this.checked?WHS.add('${esc(f.id)}'):WHS.delete('${esc(f.id)}');render()"></label>${frChip(f)}${f.sug?`<span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
+ <ul class="chk whlist">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} data-whid="${esc(f.id)}"></label>${frChip(f)}${f.sug?`<span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
  <div class="row"><button class="sub" onclick="its_all()">${all?'ぜんぶ外す':'ぜんぶ選ぶ'}</button><button class="sub" onclick="whDel()" ${n?'':'disabled'}>✕ 倉庫から消す${n?`（${n}品）`:''}</button></div>
  <div class="muted">${n?`選んだ${n}品を好きな場所へうつす`:'下のボタンで好きな場所へ（先にチェック）'}</div>
  <div class="frmv">${ZONES.filter(x=>x!==WH).map(x=>`<button class="sub" onclick="whMove('${x}')" ${n?'':'disabled'}>${ZICON[x]} ${x}</button>`).join('')}</div>

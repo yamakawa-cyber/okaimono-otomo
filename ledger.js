@@ -26,6 +26,6 @@ async function sendLedger(manual){if(!LEDGER_SYNC||IS_DEMO||ldgBusy)return;const
  ldgBusy=true;try{const r=await fetch(b+'/ledger',{method:'POST',headers:{'Content-Type':'application/json','X-App-Pass':secret().key},body:JSON.stringify(ledgerPayload())});if(!r.ok)throw new Error('中継サーバーのエラー '+r.status);
   const L2=ldgRead();L2.sentAt=ymd(today());ldgWrite(L2);if(manual)toast('会計を送りました');if(location.hash==='#money')render()}catch(e){if(manual)toast('送れませんでした：'+e.message)}finally{ldgBusy=false}}
 {const f=V.money;V.money=function(){return f.apply(this,arguments)+ledgerHtml()}}
-BKX.ledger={get:()=>ldgRead(),check:v=>isObj(v),set:v=>{if(isObj(v)){const L=ldgRead();L.months=Object.assign({},isObj(v.months)?v.months:{},L.months||{});ldgWrite(L)}}};
+BKX.ledger={get:()=>ldgRead(),check:v=>isObj(v),set:v=>{if(isObj(v))ldgWrite(structuredClone(v))}};
 try{ldgUpdate()}catch(e){}
 setTimeout(()=>sendLedger(false),4000);
