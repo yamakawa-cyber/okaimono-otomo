@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v62'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v63'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -267,19 +267,24 @@ function recipeList(){const out=[],seen=new Set();const walk=(o,eid,dep)=>{if(!o
 const bigr=s=>{const a=new Set();for(let i=0;i<s.length-1;i++)a.add(s.slice(i,i+2));return a};
 function matchScore(dish,name){const k=normDish(dish),n=normDish(name);if(!k||!n)return 0;if(k===n)return 3;if(k.includes(n)||n.includes(k))return 2;const A=bigr(k),B=bigr(n);if(!A.size||!B.size)return 0;let c=0;A.forEach(x=>B.has(x)&&c++);const j=c/Math.min(A.size,B.size);return j>=0.6?1+j/2:0}
 function getLinks(){try{const o=JSON.parse(localStorage.getItem(LK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
+function recipeWinners(dish){const all=recipeList();let top=0;const rows=all.map(r=>{const sc=matchScore(dish,r.rc.name);if(sc>top)top=sc;return {r,sc}});return top>0?rows.filter(x=>x.sc===top).map(x=>x.r):[]}
 function findRecipeObj(dish){if(!dish)return null;const all=recipeList();const L=getLinks();const nk=normDish(dish);
- if(L[nk]){const hit=all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(hit)return hit}
- let best=null,bs=0;all.forEach(r=>{const sc=matchScore(dish,r.rc.name);if(sc>bs){bs=sc;best=r}});return best}
+ if(L[nk]){const hit=all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(hit)return hit;const wins=recipeWinners(dish);if(wins.length!==1)return null}
+ const wins=recipeWinners(dish);return wins.length===1?wins[0]:null}
 function findRecipe(dish){const r=findRecipeObj(dish);return r?r.eid+'|'+r.rc.name:null}
 function recipeById(id){return recipeList().find(r=>r.eid+'|'+r.rc.name===id)||null}
-function linkMenu(){const L=getLinks();let ch=false;const all=recipeList();menuArr().forEach((m,d)=>dishesOf(d).forEach(x=>{const nk=normDish(x);if(!nk)return;const cur=L[nk]&&all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(cur)return;let best=null,bs=0;all.forEach(r=>{const sc=matchScore(x,r.rc.name);if(sc>bs){bs=sc;best=r}});if(best){L[nk]=best.eid+'|'+best.rc.name;ch=true}}));if(ch)setLS(LK,JSON.stringify(L));return ch}
+function linkMenu(){const L=getLinks();let ch=false;const all=recipeList();menuArr().forEach((m,d)=>dishesOf(d).forEach(x=>{const nk=normDish(x);if(!nk)return;if(L[nk]&&all.find(r=>r.eid+'|'+r.rc.name===L[nk]))return;const wins=recipeWinners(x);if(wins.length!==1)return;const next=wins[0].eid+'|'+wins[0].rc.name;if(L[nk]!==next){L[nk]=next;ch=true}}));if(ch)setLS(LK,JSON.stringify(L));return ch}
 let DO=null;
 function dishChips(w){const ds=dishesOf(w);if(!ds.length)return '';return `<div class="dishes">${ds.map((x,j)=>{const k=w+'|'+j,op=DO===k;return `<button class="dish${op?' on':''}" aria-expanded="${op}" data-act="tdish" data-id="${esc(k)}">${findRecipe(x)?'🍳':'🍽'} ${esc(x)} ${op?'▲':'▼'}</button>`}).join('')}</div>${DO&&DO.split('|')[0]==w?dishPanel(w,ds[+DO.split('|')[1]]):''}`}
 function togDish(k){const y=scrollY;DO=DO===k?null:k;if(DO)linkMenu();render();scrollTo(0,y)}
 const ingName=x=>normDish(baseName(typeof x==='string'?x:(x&&x.name)||'')).replace(/チューブ$/,'');
 function ingState(x){const n=ingName(x);const hit=S.list.filter(i=>{const m=normDish(baseName(i.name));return m&&(m===n||m.includes(n)||n.includes(m))});return hit.some(i=>i.done)?'bought':hit.length?'listed':''}
 const PANTRY=/^(塩|こしょう|しょうゆ|醤油|みりん|酒|砂糖|酢|サラダ油|油|水|顆粒だし|だし|片栗粉|小麦粉|味噌|みそ|アルミホイル|ごま油|バター)/;
-function dishPanel(w,dish){const f=findRecipeObj(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
+function linkDish(nk,id){if(typeof RBID==='undefined'||!RBID.test(id)||typeof rbox!=='function')return;const r=rbox().find(x=>x.id===id);if(!r)return;const L=getLinks();L[String(nk||'').slice(0,200)]='box:'+r.id+'|'+r.name;setLS(LK,JSON.stringify(L));render()}
+function ambigPanel(dish){const wins=recipeWinners(dish).filter(r=>isStr(r.eid)&&r.eid.startsWith('box:')&&(typeof RBID==='undefined'||RBID.test(r.eid.slice(4))));const nk=normDish(dish);
+ return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">同じ名前のレシピが${wins.length}件あります。自動ではつなぎません。使うものを選ぶと、そのレシピだけにつながり、あとから別のレシピへは戻りません。</div>
+ ${wins.map(r=>{const ing=(r.rc.ingredients||[])[0]||'',st=r.rc.steps&&r.rc.steps[0],t=st&&(st.t||(typeof st==='string'?st:''))||'';return `<div class="row"><span>${esc(r.rc.name)}（${esc(ing)}・${esc(t)}）</span><button class="sub" data-act="linkdish" data-nk="${esc(nk)}" data-id="${esc(r.eid.slice(4))}">このレシピにつなぐ</button></div>`}).join('')}</div>`}
+function dishPanel(w,dish){const wins=recipeWinners(dish);const f=findRecipeObj(dish);if(!f&&wins.length>1)return ambigPanel(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
  if(rc){const ing=(rc.ingredients||[]);const miss=ing.filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
   return `<div class="card dpanel"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}・${esc(rc.time||'')}</span>
   <h3>材料</h3><ul class="ing">${ing.map(x=>{const st=ingState(x);const t=typeof x==='string'?x:(x.name||'')+(x.qty?' '+x.qty:'');return `<li><span>${esc(t)}</span>${st==='bought'?'<span class="tag ok">買った</span>':st==='listed'?'<span class="tag">リスト済み</span>':PANTRY.test(ingName(x))?'<span class="tag muted">家にある?</span>':''}</li>`}).join('')}</ul>
@@ -318,6 +323,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   case 'del':delMany(String(id).split(',').map(Number).filter(Number.isInteger));break;
   case 'jump':jumpDay(+id);break;
   case 'tdish':togDish(id);break;
+  case 'linkdish':linkDish(b.dataset.nk,id);break;
   case 'mtl':missingToList(+b.dataset.w,id);break;
   case 'dles':dishLesson(id);break;
   case 'ask':askRecipe(+b.dataset.w,id);break;

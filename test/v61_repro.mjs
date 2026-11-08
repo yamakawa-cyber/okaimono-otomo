@@ -18,6 +18,7 @@ async function tab() {
   return { send, close: () => ws.close() };
 }
 async function ev(send, expression) { const out = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }); if (!out.result || out.result.exceptionDetails) throw new Error(JSON.stringify(out.result && out.result.exceptionDetails || out).slice(0, 900)); return out.result.result.value; }
+async function waitApp(send) { for (let i = 0; i < 40; i++) { try { const v = await ev(send, 'typeof APP_VER==="string" && document.readyState==="complete" ? APP_VER : ""'); if (v === 'okaimono-v63') return; } catch (e) {} await sleep(200); } throw new Error('reload'); }
 try {
   await ready();
   const page = await tab();
@@ -135,14 +136,87 @@ try {
       return JSON.stringify({ imported, opened, stable: id1 === id2 && id1.length > 0, ambiguous, collision, xss: window.__xss });
     });
   })()`);
-  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes), links: JSON.parse(links) };
-  const a = out.amount, r = out.recipes, L = out.links;
+  const life = await ev(page.send, `(() => {
+    const bad = 'id"mark';
+    const rec = (id, name, ing, t) => ({ id, name, ingredients:[ing], steps:[{ t, d:'' }], at:'2026-11-08', src:'t' });
+    S.menu = ['カレー','','','','','','']; save();
+    localStorage.setItem('okaimono_recipes', JSON.stringify([rec(bad,'カレー','塩','切る'), rec(bad,'カレー','牛乳','煮ない')]));
+    localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:' + bad + '|カレー' }));
+    rbTold = false; DO = null; location.hash = '#fridge'; render();
+    const read = () => ({ L: getLinks()['カレー'] || '', dang: !!document.getElementById('rbdang'), ings: rbox().map(r => r.ingredients[0] + '/' + r.steps[0].t).sort() });
+    const immediate = read();
+    linkMenu();
+    const afterLink = read();
+    togDish('0|0');
+    const panel = (document.querySelector('.dpanel') || {}).innerText || '';
+    const opened = read();
+    const openOk = opened.L === 'box:' + bad + '|カレー' && panel.includes('塩') && panel.includes('牛乳') && panel.includes('自動ではつなぎません') && !panel.includes('作り方');
+    const milkBtn = [...document.querySelectorAll('[data-act=linkdish]')].find(b => (b.closest('.row') || b).innerText.includes('牛乳'));
+    if (milkBtn) milkBtn.click();
+    const milk = rbox().find(r => r.ingredients[0] === '牛乳');
+    const salt = rbox().find(r => r.ingredients[0] === '塩');
+    linkMenu();
+    const afterManual = getLinks()['カレー'] || '';
+    const panel2 = (document.querySelector('.dpanel') || {}).innerText || '';
+    const manualOk = !!(milk && salt && afterManual === 'box:' + milk.id + '|カレー' && afterManual.indexOf(salt.id) < 0 && panel2.includes('牛乳') && panel2.includes('煮ない') && !panel2.includes('自動ではつなぎません'));
+    return JSON.stringify({ immediate, afterLink, openOk, manualOk, milkId: milk && milk.id, saltId: salt && salt.id, afterManual, xss: window.__xss });
+  })()`);
+  await sleep(1000);
+  const waited = await ev(page.send, `(() => { linkMenu(); const L = getLinks()['カレー'] || ''; const milk = rbox().find(r => r.ingredients[0] === '牛乳'); return JSON.stringify({ L, still: !!(milk && L === 'box:' + milk.id + '|カレー') }); })()`);
+  const lifeJ = JSON.parse(life);
+  await page.send('Page.navigate', { url: `http://127.0.0.1:${port}/index.html#fridge` });
+  await waitApp(page.send);
+  await sleep(1200);
+  const manualReload = await ev(page.send, `(() => { const L = getLinks()['カレー'] || ''; linkMenu(); const L2 = getLinks()['カレー'] || ''; return JSON.stringify({ L, L2, milk: ${JSON.stringify(lifeJ.milkId || '')} }); })()`);
+  const imported = await ev(page.send, `(() => {
+    const bad = 'id"mark';
+    const rec = (id, name, ing, t) => ({ id, name, ingredients:[ing], steps:[{ t, d:'' }], at:'2026-11-08', src:'t' });
+    localStorage.setItem('okaimono_recipes', '[]');
+    localStorage.setItem('okaimono_links', '{}');
+    const obj = { app:'okaimono', version:2, data:{ version:2, settings:S.settings, list:[], spend:[], fridge:[], menu:['カレー','','','','','',''], prep:'', userStores:[] }, links:{ 'カレー':'box:' + bad + '|カレー' }, hist:[], extra:{ recipes:[rec(bad,'カレー','塩','切る'), rec(bad,'カレー','牛乳','煮ない')] } };
+    const dt = new DataTransfer(); dt.items.add(new File([JSON.stringify(obj)], 'b.json', { type:'application/json' }));
+    const inp = document.createElement('input'); inp.type = 'file'; inp.files = dt.files;
+    window.confirm = () => true; window.alert = () => {}; rbTold = false; restore({ target: inp });
+    return 'started';
+  })()`);
+  let importSoon = null;
+  for (let i = 0; i < 30; i++) {
+    await sleep(50);
+    const snap = JSON.parse(await ev(page.send, `(() => { const all = JSON.parse(localStorage.getItem('okaimono_recipes') || '[]'); const L = (JSON.parse(localStorage.getItem('okaimono_links') || '{}'))['カレー'] || ''; return JSON.stringify({ n: all.filter(r => r.name === 'カレー').length, L, ings: all.map(r => r.ingredients && r.ingredients[0]).sort().join(',') }); })()`));
+    if (snap.n === 2 && snap.ings === '塩,牛乳') { importSoon = JSON.parse(await ev(page.send, `(() => { linkMenu(); location.hash='#fridge'; render(); return JSON.stringify({ L: getLinks()['カレー'] || '', dang: !!document.getElementById('rbdang'), both: rbox().map(r => r.ingredients[0]).sort().join(',') }); })()`)); break; }
+  }
+  await sleep(800);
+  const importLate = await ev(page.send, `(() => { linkMenu(); return JSON.stringify({ L: getLinks()['カレー'] || '', dang: !!document.getElementById('rbdang'), kept: (getLinks()['カレー'] || '') === 'box:id"mark|カレー', both: rbox().filter(r => r.name === 'カレー').map(r => r.ingredients[0]).sort().join(',') }); })()`);
+  await page.send('Page.navigate', { url: `http://127.0.0.1:${port}/index.html#fridge` });
+  await waitApp(page.send);
+  await sleep(1200);
+  const reloaded = await ev(page.send, `(() => { const L = getLinks()['カレー'] || ''; const dang = !!document.getElementById('rbdang'); linkMenu(); return JSON.stringify({ ver: APP_VER, L, L2: getLinks()['カレー'] || '', dang, dang2: !!document.getElementById('rbdang'), both: rbox().filter(r => r.name === 'カレー').map(r => r.ingredients[0]).sort().join(',') }); })()`);
+  const unique = await ev(page.send, `(() => {
+    const bad = 'id"mark';
+    const rec = (id, name, ing, t) => ({ id, name, ingredients:[ing], steps:[{ t, d:'' }], at:'2026-11-08', src:'t' });
+    S.menu = ['カレー','','','','','','']; save();
+    localStorage.setItem('okaimono_recipes', JSON.stringify([rec(bad,'カレー','肉','煮る'), rec(bad,'シチュー','乳','煮込む')]));
+    localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:' + bad + '|カレー' }));
+    rbTold = false; location.hash = '#fridge'; render();
+    linkMenu();
+    const c = rbox().find(r => r.name === 'カレー'), s = rbox().find(r => r.name === 'シチュー');
+    return JSON.stringify({ lk: getLinks()['カレー'] || '', cid: c && c.id, sid: s && s.id });
+  })()`);
+  await sleep(800);
+  const uniqueLate = await ev(page.send, `(() => { linkMenu(); const u = ${unique}; const lk = getLinks()['カレー'] || ''; return JSON.stringify({ lk, ok: lk === 'box:' + u.cid + '|カレー' && lk.indexOf(u.sid) < 0 }); })()`);
+  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes), links: JSON.parse(links), life: lifeJ, waited: JSON.parse(waited), imported, importSoon, importLate: JSON.parse(importLate), reloaded: JSON.parse(reloaded), manualReload: JSON.parse(manualReload), unique: JSON.parse(unique), uniqueLate: JSON.parse(uniqueLate) };
+  const a = out.amount, r = out.recipes, L = out.links, F = out.life, W = out.waited, S0 = out.importSoon || {}, S1 = out.importLate, R = out.reloaded, M = out.manualReload, U = out.uniqueLate;
   const ok = a.note && a.blank.done === false && a.blank.spend === 0 && a.blank.thuChecked === false && a.blank.said
     && a.zero.done === false && a.zero.spend === 0 && a.zero.said
     && a.bought.done === true && a.bought.n === 1 && a.bought.amount === 480 && a.bought.cat === '日用品' && a.bought.monDone
     && a.undone.done === false && a.undone.n === 0 && a.xss === 0
     && r.xss === 0 && r.before && r.before.text && r.before.count.includes('2件') && r.idsOk && r.keptName && r.keptIng && r.quoteGone && r.linkMoved && r.backupHasBad === false && r.backupHasName && r.restored && r.noOnclick
-    && L.imported && L.opened && L.stable && L.ambiguous && L.collision && L.xss === 0;
+    && L.imported && L.opened && L.stable && L.ambiguous && L.collision && L.xss === 0
+    && F.immediate.L === 'box:id"mark|カレー' && F.immediate.dang && F.afterLink.L === 'box:id"mark|カレー' && F.openOk && F.manualOk && W.still
+    && M.L === 'box:' + F.milkId + '|カレー' && M.L2 === M.L
+    && S0.L === 'box:id"mark|カレー' && S0.both === '塩,牛乳' && S0.dang && S1.kept && S1.both === '塩,牛乳' && S1.dang
+    && R.L === 'box:id"mark|カレー' && R.L2 === R.L && R.dang && R.both === '塩,牛乳' && R.ver === 'okaimono-v63'
+    && U.ok;
   console.log(JSON.stringify(out, null, 2));
   if (!ok) process.exitCode = 2; else console.log('REPRO_OK');
   page.close();
