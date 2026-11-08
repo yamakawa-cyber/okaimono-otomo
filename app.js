@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v60'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v64'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -173,7 +173,7 @@ list(){const d=today(),tr=trips(d),cur=curTrip(d);const opts=regStores().map(s=>
    const inc=!done&&rows.every(r=>r[0].cart);return `<li class="${done?'done':inc?'incart':''}" data-del="${ns}">${done?'':cartBtn(ns,inc)}<label class="lrow"><input type="checkbox" ${done?'checked':''} data-tm="${ns}"><span style="flex:1">${iconOf(nm)?iconOf(nm)+' ':''}${esc(nm)}${qty.length?` <span class="muted">${esc(qty.join('＋'))}</span>`:''}${rows.length>1?` <span class="tag">${rows.length}件まとめ</span>`:''}${i.yen?` <span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''}</span></label>${done?'':`<input type="number" inputmode="numeric" min="1" data-yen="${ns}" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select data-cat="${ns}" aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}${done?'':netBtn(nm)}<button class="sub" data-act="del" data-id="${ns}" aria-label="消す">✕</button>${!done&&!NSF&&NS===baseName(nm)?netMenu(nm,qty.join('＋')):''}${uses.length?`<div class="badges">${uses.sort((a,b)=>(a.d+6)%7-(b.d+6)%7).map(u=>`<button class="badge" data-act="jump" data-id="${u.d}">${WD[u.d]}${u.dish?'・'+esc(u.dish.slice(0,12)):''}</button>`).join('')}</div>`:''}</li>`}).join('')}</ul>`).join(''):'<div class="card muted empty"><img src="img/chibi_sleep.webp" alt="" width="120">まだありません</div>')};
  return seg+cb+form+`
  ${tr.map(block).join('')}
- <p class="muted">チェックするときに金額と費目を入れると、家計に「日付・店・費目・金額・メモ（品名）」で記録されます。✕で品物を消しても、家計の記録は残ります（家計タブで消せます）。</p>
+ <p class="muted">チェックは、金額（1円以上）を入れてから押します。空欄や0円のままでは買ったになりません。同じ品が複数の曜日に出ていてもリストでは1つなので、チェックはその品の全部の曜日に効きます。家計には「日付・店・費目・金額・メモ（品名）」で残ります。✕で品物を消しても、家計の記録は残ります（家計タブで消せます）。</p>
  <div class="row"><button class="sub" onclick="clearChecked()">✔ チェック済みをまとめて消す</button></div>`},
 money(){let fix=false;S.spend.forEach(r=>{if(isObj(r)&&!r.id){r.id=uid();fix=true}});if(fix)save();const d=today(),st=S.settings,c=curTrip(d),mo=ymd(d).slice(0,7);const tUsed=spentBetween(c.from,c.to);
  return `<div class="card">${c.label}（${md(c.from)}〜${md(c.to)}） ${yen(tUsed)} / ${yen(st.perTrip)}${bar(tUsed,st.perTrip)}<div class="muted">1回の目安 ${yen(st.perTrip)}、残り ${yen(st.perTrip-tUsed)}</div></div>
@@ -219,11 +219,12 @@ function tog(n){const i=S.list[n];if(!i)return;i.done=!i.done;delete i.cart;if(i
 let LV=null;const lvNow=()=>LV||(S.list.some(i=>i.uses&&i.uses.length)?'day':'trip');
 const baseName=n=>String(n).replace(/[\s　]+[0-9０-９０-９\/½¼].*$/,'').replace(/[\s　]+(少々|適量|1袋|1箱|1本|1個|1房|1丁|1束)$/,'').trim()||String(n);
 const qtyOf=n=>{const m=String(n).match(/[\s　]+([0-9０-９].*)$/);return m?m[1]:''};
-function cartField(its,root){if(!root)root=document.querySelector('li[data-del="'+its.map(i=>S.list.indexOf(i)).join(',')+'"]');const ai=root&&root.querySelector('input[data-yen]'),cs=root&&root.querySelector('select[data-cat]');return ai?{a:+ai.value,c:cs?cs.value:'',present:true}:{a:NaN,c:'',present:false}}
+function cartField(its,root){if(!root)root=document.querySelector('li[data-del="'+its.map(i=>S.list.indexOf(i)).join(',')+'"]');const ai=root&&root.querySelector('input[data-yen]'),cs=root&&root.querySelector('select[data-cat]');if(!ai)return {a:NaN,c:'',present:false,blank:false};const raw=String(ai.value==null?'':ai.value).trim();return {a:raw===''?NaN:+raw,c:cs?cs.value:'',present:true,blank:raw===''}}
+function amountBlock(f){if(!f||!f.present)return '';if(f.blank)return '金額を入れてからチェックしてください。同じ品が複数の曜日に出ていても、チェックすると品全体が買ったになります。';if(!okAmt1(f.a))return '金額は1円以上の数字で入れてください。0円では買ったにしません。';return ''}
 function markBought(its,field){const f=field||cartField(its),sid=its[0].spendId||uid();its.forEach(i=>{i.done=true;delete i.cart;i.spendId=sid});const first=its[0];S.spend=S.spend.filter(r=>r.id!==sid);first.yen=undefined;first.cat=undefined;
  if(f.present&&okAmt1(f.a)){first.yen=f.a;first.cat=f.c||'食材';S.spend.push({id:sid,date:ymd(today()),store:first.store||'',cat:first.cat,amount:f.a,memo:its.length>1?baseName(first.name):first.name});return true}return false}
 function togMany(ns,root){const its=ns.map(n=>S.list[n]).filter(Boolean);if(!its.length)return;const nd=!its.every(i=>i.done);
- if(nd)markBought(its,cartField(its,root));else its.forEach(i=>{if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId}delete i.yen;delete i.cat;i.done=false;delete i.cart});
+ if(nd){const why=amountBlock(cartField(its,root));if(why){toast(why);const y=scrollY;render();scrollTo(0,y);return}markBought(its,cartField(its,root))}else its.forEach(i=>{if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId}delete i.yen;delete i.cat;i.done=false;delete i.cart});
  const y=scrollY;save();render();scrollTo(0,y)}
 const cartBtn=(ns,on)=>`<button class="cartb${on?' on':''}" data-cart="${ns}" aria-pressed="${on?'true':'false'}" aria-label="カゴに入れた">${on?'✅ カゴ':'🛒 カゴ'}</button>`;
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-cart]');if(!b)return;e.preventDefault();const its=b.dataset.cart.split(',').map(Number).filter(Number.isInteger).map(n=>S.list[n]).filter(Boolean);if(!its.length)return;const f=cartField(its,b.closest('li'));if(f.present){if(okAmt1(f.a)){its[0].price=f.a;its[0].cat=f.c||its[0].cat||'食材'}else delete its[0].price}const on=!its.every(i=>i.cart);its.forEach(i=>{if(on)i.cart=true;else delete i.cart});const y=scrollY;save();render();scrollTo(0,y)});
@@ -239,8 +240,10 @@ document.addEventListener('change',e=>{const f=e.target.dataset&&e.target.datase
  if(f==='name'){v=v.trim().slice(0,100);if(!v){toast('品名は空にできません');return render()}o.name=v}else if(f==='price'){const p=+v;if(okAmt1(p))o.price=p;else delete o.price}else{v=v.trim().slice(0,50);if(v)o[f]=v;else delete o[f]}S.often=L;save()});
 function cartToBought(){const its=S.list.filter(i=>i.cart&&!i.done);if(!its.length)return;const rem=new Set(its),groups=[],seen=new Set();
  document.querySelectorAll('li[data-del]').forEach(li=>{const ns=li.dataset.del.split(',').map(Number),g=ns.map(n=>S.list[n]).filter(i=>rem.has(i)&&!seen.has(i));if(g.length&&g.every(i=>rem.has(i))){groups.push([g,li]);g.forEach(i=>seen.add(i))}});its.forEach(i=>{if(!seen.has(i)){groups.push([[i],null]);seen.add(i)}});
- const rec=[];groups.forEach(([g,li])=>{if(markBought(g,li?cartField(g,li):undefined))rec.push(g[0])});
- const y=scrollY;save();render();scrollTo(0,y);undo1(`カゴの中の${its.length}品（表示${groups.length}行）を「買った」にしました`+(rec.length?`（家計に${rec.length}件記録）`:''),()=>{const sids=new Set();its.forEach(i=>{i.done=false;i.cart=true;if(i.spendId){sids.add(i.spendId);delete i.spendId}delete i.yen;delete i.cat});S.spend=S.spend.filter(r=>!sids.has(r.id));save();render()},its.length)}
+ const rec=[],skip=[];groups.forEach(([g,li])=>{const f=li?cartField(g,li):undefined;const why=amountBlock(f);if(why){skip.push(g);return}if(markBought(g,f))rec.push(g[0])});
+ const y=scrollY;save();render();scrollTo(0,y);
+ if(!rec.length&&skip.length){toast('金額を入れてから、カゴの中を買ったにしてください');return}
+ const bought=groups.length-skip.length;undo1(`カゴの中の${its.length}品（表示${bought}行）を「買った」にしました`+(rec.length?`（家計に${rec.length}件記録）`:'')+(skip.length?`。金額が空の${skip.length}行はそのままです`:''),()=>{const sids=new Set();groups.forEach(([g])=>{if(skip.includes(g))return;g.forEach(i=>{i.done=false;i.cart=true;if(i.spendId){sids.add(i.spendId);delete i.spendId}delete i.yen;delete i.cat})});S.spend=S.spend.filter(r=>!sids.has(r.id));save();render()},its.length)}
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-tm]');if(!c)return;togMany(c.dataset.tm.split(',').map(Number).filter(Number.isInteger),c.closest('li'))});
 function delMany(ns){const gone=ns.map(k=>[k,S.list[k]]).filter(x=>x[1]);if(!gone.length)return;S.list=S.list.filter((_,k)=>!ns.includes(k));save();render();
  undoToast(`「${gone[0][1].name.slice(0,14)}」${gone.length>1?`ほか${gone.length-1}件`:''}を消しました`,()=>{gone.sort((a,b)=>a[0]-b[0]).forEach(([k,i])=>S.list.splice(Math.min(k,S.list.length),0,i));save();render()},gone.length)}
@@ -264,24 +267,32 @@ function recipeList(){const out=[],seen=new Set();const walk=(o,eid,dep)=>{if(!o
 const bigr=s=>{const a=new Set();for(let i=0;i<s.length-1;i++)a.add(s.slice(i,i+2));return a};
 function matchScore(dish,name){const k=normDish(dish),n=normDish(name);if(!k||!n)return 0;if(k===n)return 3;if(k.includes(n)||n.includes(k))return 2;const A=bigr(k),B=bigr(n);if(!A.size||!B.size)return 0;let c=0;A.forEach(x=>B.has(x)&&c++);const j=c/Math.min(A.size,B.size);return j>=0.6?1+j/2:0}
 function getLinks(){try{const o=JSON.parse(localStorage.getItem(LK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
+function recipeWinners(dish){const all=recipeList();let top=0;const rows=all.map(r=>{const sc=matchScore(dish,r.rc.name);if(sc>top)top=sc;return {r,sc}});return top>0?rows.filter(x=>x.sc===top).map(x=>x.r):[]}
 function findRecipeObj(dish){if(!dish)return null;const all=recipeList();const L=getLinks();const nk=normDish(dish);
- if(L[nk]){const hit=all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(hit)return hit}
- let best=null,bs=0;all.forEach(r=>{const sc=matchScore(dish,r.rc.name);if(sc>bs){bs=sc;best=r}});return best}
+ if(L[nk]){const hit=all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(hit)return hit;const wins=recipeWinners(dish);if(wins.length!==1)return null}
+ const wins=recipeWinners(dish);return wins.length===1?wins[0]:null}
 function findRecipe(dish){const r=findRecipeObj(dish);return r?r.eid+'|'+r.rc.name:null}
 function recipeById(id){return recipeList().find(r=>r.eid+'|'+r.rc.name===id)||null}
-function linkMenu(){const L=getLinks();let ch=false;const all=recipeList();menuArr().forEach((m,d)=>dishesOf(d).forEach(x=>{const nk=normDish(x);if(!nk)return;const cur=L[nk]&&all.find(r=>r.eid+'|'+r.rc.name===L[nk]);if(cur)return;let best=null,bs=0;all.forEach(r=>{const sc=matchScore(x,r.rc.name);if(sc>bs){bs=sc;best=r}});if(best){L[nk]=best.eid+'|'+best.rc.name;ch=true}}));if(ch)setLS(LK,JSON.stringify(L));return ch}
+function linkMenu(){const L=getLinks();let ch=false;const all=recipeList();menuArr().forEach((m,d)=>dishesOf(d).forEach(x=>{const nk=normDish(x);if(!nk)return;if(L[nk]&&all.find(r=>r.eid+'|'+r.rc.name===L[nk]))return;const wins=recipeWinners(x);if(wins.length!==1)return;const next=wins[0].eid+'|'+wins[0].rc.name;if(L[nk]!==next){L[nk]=next;ch=true}}));if(ch)setLS(LK,JSON.stringify(L));return ch}
 let DO=null;
 function dishChips(w){const ds=dishesOf(w);if(!ds.length)return '';return `<div class="dishes">${ds.map((x,j)=>{const k=w+'|'+j,op=DO===k;return `<button class="dish${op?' on':''}" aria-expanded="${op}" data-act="tdish" data-id="${esc(k)}">${findRecipe(x)?'🍳':'🍽'} ${esc(x)} ${op?'▲':'▼'}</button>`}).join('')}</div>${DO&&DO.split('|')[0]==w?dishPanel(w,ds[+DO.split('|')[1]]):''}`}
 function togDish(k){const y=scrollY;DO=DO===k?null:k;if(DO)linkMenu();render();scrollTo(0,y)}
 const ingName=x=>normDish(baseName(typeof x==='string'?x:(x&&x.name)||'')).replace(/チューブ$/,'');
 function ingState(x){const n=ingName(x);const hit=S.list.filter(i=>{const m=normDish(baseName(i.name));return m&&(m===n||m.includes(n)||n.includes(m))});return hit.some(i=>i.done)?'bought':hit.length?'listed':''}
 const PANTRY=/^(塩|こしょう|しょうゆ|醤油|みりん|酒|砂糖|酢|サラダ油|油|水|顆粒だし|だし|片栗粉|小麦粉|味噌|みそ|アルミホイル|ごま油|バター)/;
-function dishPanel(w,dish){const f=findRecipeObj(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
+function linkDish(nk,id){if(typeof RBID==='undefined'||!RBID.test(id)||typeof rbox!=='function')return;const r=rbox().find(x=>x.id===id);if(!r)return;const L=getLinks();L[String(nk||'').slice(0,200)]='box:'+r.id+'|'+r.name;setLS(LK,JSON.stringify(L));render()}
+function ingLine(x){if(typeof x==='string')return x;if(isObj(x))return [x.name,x.qty||x.amount].filter(Boolean).join(' ');return ''}
+function stepHtml(st){if(typeof st==='string')return `<li>${esc(st)}</li>`;if(!isObj(st))return '';const d=st.d||st.detail||'',tip=isStr(st.tip)?st.tip:'';return `<li><b>${esc(st.t||st.title||'')}</b>${d?' '+esc(d):''}${tip?` <span class="muted">${esc(tip)}</span>`:''}${st.min?` <span class="muted">約${esc(st.min)}分</span>`:''}</li>`}
+function ambigPanel(dish){const wins=recipeWinners(dish).filter(r=>isStr(r.eid)&&r.eid.startsWith('box:')&&(typeof RBID==='undefined'||RBID.test(r.eid.slice(4))));const nk=normDish(dish);
+ return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">同じ名前のレシピが${wins.length}件あります。自動ではつなぎません。中身を見てから、使うものを選んでください。選ぶと、そのレシピだけにつながります。</div>
+ ${wins.map(r=>{const rc=r.rc||{},meta=[rc.serves,rc.time].filter(Boolean).join('・'),ings=(rc.ingredients||[]).map(ingLine).filter(s=>s!==''),steps=(rc.steps||[]).map(stepHtml).join('');
+  return `<div class="ambig"><b>${esc(rc.name||dish)}</b>${meta?` <span class="muted">${esc(meta)}</span>`:''}<div><b>材料</b></div><ul class="ing">${ings.map(t=>`<li><span>${esc(t)}</span></li>`).join('')||'<li class="muted">なし</li>'}</ul><div><b>作り方</b></div><ol class="steps">${steps||'<li class="muted">なし</li>'}</ol><div class="row"><button class="sub" data-act="linkdish" data-nk="${esc(nk)}" data-id="${esc(r.eid.slice(4))}">このレシピにつなぐ</button></div></div>`}).join('')}</div>`}
+function dishPanel(w,dish){const wins=recipeWinners(dish);const f=findRecipeObj(dish);if(!f&&wins.length>1)return ambigPanel(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
  if(rc){const ing=(rc.ingredients||[]);const miss=ing.filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
   return `<div class="card dpanel"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}・${esc(rc.time||'')}</span>
   <h3>材料</h3><ul class="ing">${ing.map(x=>{const st=ingState(x);const t=typeof x==='string'?x:(x.name||'')+(x.qty?' '+x.qty:'');return `<li><span>${esc(t)}</span>${st==='bought'?'<span class="tag ok">買った</span>':st==='listed'?'<span class="tag">リスト済み</span>':PANTRY.test(ingName(x))?'<span class="tag muted">家にある?</span>':''}</li>`}).join('')}</ul>
   <div class="row">${miss.length?`<button data-act="mtl" data-w="${w}" data-id="${esc(id)}">🛒 足りない材料をリストへ（${miss.length}）</button>`:'<span class="muted">材料はそろっています</span>'}</div>
-  <h3>作り方</h3><ol class="steps">${(rc.steps||[]).map(st=>`<li>${esc(st.t||'')}${st.min?` <span class="muted">約${esc(st.min)}分</span>`:''}</li>`).join('')}</ol>
+  <h3>作り方</h3><ol class="steps">${(rc.steps||[]).map(stepHtml).join('')}</ol>
   <div class="row"><button data-act="dles" data-id="${esc(id)}">👩‍🍳 料理レッスンを始める</button></div></div>`}
  const buys=S.list.filter(i=>(i.uses||[]).some(u=>u.d===w&&(!u.dish||normDish(dish).includes(normDish(u.dish))||normDish(u.dish).includes(normDish(dish)))));
  return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">レシピはまだ保管庫にありません</div>${buys.length?`<h3>この料理で買うもの</h3><ul class="ing">${buys.map(i=>`<li><span>${esc(i.name)}</span>${i.done?'<span class="tag ok">買った</span>':'<span class="tag">リスト済み</span>'}</li>`).join('')}</ul>`:''}
@@ -297,7 +308,7 @@ function dayView(){const order=[1,2,3,4,5,6,0];let h='';const used=new Set();
   ${its.length?`<ul class="chk">${its.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${iconOf(i.name)?iconOf(i.name)+' ':''}${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}<span class="muted">${(i.uses||[]).filter(u=>u.d===d&&u.dish).map(u=>'・'+esc(u.dish)).join('')}</span></span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" data-yen="${n}" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select data-cat="${n}" aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul>`:'<div class="muted">この日に買うものはありません</div>'}</div>`});
  const rest=S.list.map((i,n)=>[i,n]).filter(([i,n])=>!used.has(n));
  if(rest.length)h+=`<div class="card" id="dayx"><h2>曜日なし</h2><ul class="chk">${rest.map(([i,n])=>`<li class="${i.done?'done':i.cart?'incart':''}" data-del="${n}">${i.done?'':cartBtn(n,i.cart)}<label class="lrow"><input type="checkbox" ${i.done?'checked':''} data-tm="${n}"><span style="flex:1">${iconOf(i.name)?iconOf(i.name)+' ':''}${esc(i.name)}${i.qty?` <span class="muted">${esc(i.qty)}</span>`:''}</span></label>${i.done?(i.yen?`<span class="muted">${yen(i.yen)}・${esc(i.cat||'')}</span>`:''):`<input type="number" inputmode="numeric" min="1" data-yen="${n}" aria-label="金額" placeholder="金額" style="width:80px"${i.price?` value="${i.price}"`:''}><select data-cat="${n}" aria-label="費目" style="width:96px">${catOpts(i.cat||'食材')}</select>`}<button class="sub" data-act="del" data-id="${n}" aria-label="消す">✕</button></li>`).join('')}</ul></div>`;
- return h||'<div class="card muted empty"><img src="img/chibi_cheer.webp" alt="" width="120">献立も買い物もまだありません。アキラちゃんの献立の返事から「まとめて入れる」で入ります。</div>'}
+ return (h||'<div class="card muted empty"><img src="img/chibi_cheer.webp" alt="" width="120">献立も買い物もまだありません。アキラちゃんの献立の返事から「まとめて入れる」で入ります。</div>')+'<p class="muted">同じ品が月と木のように複数の曜日に出ていても、リストの品は1つです。チェックすると、出ている曜日がすべて買ったになります。金額は1円以上を入れてからチェックしてください。空欄や0円では変わりません。</p>'}
 function delItem(n){S.list.splice(n,1);save();render()}
 function clearDone(){S.list=S.list.filter(i=>!i.done);save();render()}
 function addSpend(){const a=+val('sp_amt');if(!okAmt1(a))return alert('金額は1円以上の数字で入れてください（マイナスは使えません）');const dt=val('sp_date');if(!isDate(dt))return alert('日付を入れてください');S.spend.push({id:uid(),date:dt,store:val('sp_store').slice(0,200),cat:val('sp_cat').slice(0,50),amount:a,memo:val('sp_memo').slice(0,500)});save();render()}
@@ -315,6 +326,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   case 'del':delMany(String(id).split(',').map(Number).filter(Number.isInteger));break;
   case 'jump':jumpDay(+id);break;
   case 'tdish':togDish(id);break;
+  case 'linkdish':linkDish(b.dataset.nk,id);break;
   case 'mtl':missingToList(+b.dataset.w,id);break;
   case 'dles':dishLesson(id);break;
   case 'ask':askRecipe(+b.dataset.w,id);break;
@@ -364,8 +376,9 @@ function restore(ev){const inp=ev.target,f=inp.files[0];if(!f)return;
   if(!confirm('いまのデータを、バックアップの内容で置き換えます。よろしいですか？'+(drop?`\n（読めない記録${drop}件は外して戻します）`:'')+(j.version>DATA_VERSION?'\n（新しい版のバックアップです。読めるところだけ戻します）':'')))return;
   // 3) まとめて書く。本体が入らなければ、ほかも書かない
   const prev=localStorage.getItem(K);try{localStorage.setItem(K,txt)}catch(e){throw new Error('スマホの保存領域に入りきりませんでした')}S=nd;LOAD_ERR='';LOAD_DROP=0;
+  if(BKX.recipes)BKX.recipes.last=[];
   Object.entries(BKX).forEach(([k,x])=>{if(k in exOk)try{x.set(exOk[k])}catch(e){}});
-  if(isObj(j.links))setLS(LK,JSON.stringify(L));
+  if(isObj(j.links)){const fix=typeof rbFixLinks==='function'?rbFixLinks((BKX.recipes&&BKX.recipes.last)||[],L):{links:L,unresolved:[]};setLS(LK,JSON.stringify(fix.links));if(typeof RBUN!=='undefined')RBUN=fix.unresolved||[]}
   if(isArr(j.hist)&&typeof checkHist==='function')saveHist(checkHist(j.hist))
   alert('戻しました'+(drop?`（読めない記録${drop}件は外しました）`:''));render()})
  .catch(e=>alert('読めませんでした（いまのデータはそのままです）：'+e.message)).finally(()=>{inp.value=''})}
