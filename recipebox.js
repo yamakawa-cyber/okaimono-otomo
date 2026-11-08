@@ -1,7 +1,11 @@
 // ===== v43：レシピ保管（献立の画面）。アキラちゃんの返事のレシピをボタン1つで移してためておく =====
 const RBK=IS_DEMO?'okaimono_recipes_demo':'okaimono_recipes',RB_MAX=300,RBID=/^[A-Za-z0-9_-]{1,60}$/;let RBO=null;
 const rbValid=r=>isObj(r)&&isStr(r.id)&&RBID.test(r.id)&&isStr(r.name)&&r.name&&isArr(r.ingredients)&&isArr(r.steps);
-function rbox(){try{const a=JSON.parse(localStorage.getItem(RBK)||'[]');return isArr(a)?a.filter(rbValid):[]}catch(e){return []}}
+function rbFreshId(){return ('r'+uid()).replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)}
+function rbMigrate(v){const out=[],ids=new Set(),map=new Map();let changed=false;if(!isArr(v))return {out,changed,map};v.forEach(r=>{if(!isObj(r)){changed=true;return}const n=rbNorm(r);if(!n){changed=true;return}let id=isStr(r.id)&&RBID.test(r.id)?r.id:rbFreshId();if(!RBID.test(id)||ids.has(id)){id=rbFreshId();while(ids.has(id))id=rbFreshId()}if(r.id!==id){if(isStr(r.id))map.set(r.id,id);changed=true}ids.add(id);out.push(Object.assign({id,at:isDate(r.at)?r.at:'',src:isStr(r.src)?String(r.src).slice(0,50):''},n))});return {out,changed,map}}
+let rbTold=false;
+function rbRetarget(map){if(!map||!map.size||typeof getLinks!=='function'||typeof setLS!=='function')return;const L=getLinks();let ch=false;Object.keys(L).forEach(k=>{const v=L[k];if(!isStr(v))return;map.forEach((nid,oid)=>{const from='box:'+oid+'|';if(v.startsWith(from)){L[k]='box:'+nid+'|'+v.slice(from.length);ch=true}})});if(ch)setLS(LK,JSON.stringify(L))}
+function rbox(){let raw=[];try{raw=JSON.parse(localStorage.getItem(RBK)||'[]')}catch(e){return []}if(!isArr(raw))return [];const m=rbMigrate(raw);if(m.changed){rboxSave(m.out);rbRetarget(m.map);if(!rbTold){rbTold=true;setTimeout(()=>toast('レシピの番号を安全なものに直しました。料理の中身はそのままです'),0)}}return m.out.filter(rbValid)}
 function rboxIndex(id){return rbox().findIndex(r=>r.id===id)}
 function rboxSel(index){return `<select data-rbw="${index}" aria-label="入れる曜日">${[1,2,3,4,5,6,0].map(w=>`<option value="${w}">${WD[w]}曜</option>`).join('')}</select>`}
 function rboxSave(a){setLS(RBK,JSON.stringify(a.slice(0,RB_MAX)))}
@@ -27,7 +31,7 @@ function rboxHtml(){const a=rbox();
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-rb]');if(!b)return;const k=Number(b.dataset.k);if(!Number.isInteger(k)||!rbox()[k])return;const id=rbox()[k].id;switch(b.dataset.rb){case 'toggle':RBO=RBO===id?null:id;render();break;case 'menu':rboxToMenu(id);break;case 'lesson':rboxLesson(id);break;case 'del':rboxDel(id);break}});
 // 献立の画面のいちばん下に足す
 {const f=V.fridge;V.fridge=function(){return f.apply(this,arguments)+rboxHtml()}}
-function normRbox(v){const out=[],ids=new Set();if(!isArr(v))return out;v.forEach(r=>{if(!isObj(r)||!isStr(r.id)||!RBID.test(r.id)||ids.has(r.id))return;const n=rbNorm(r);if(n){ids.add(r.id);out.push(Object.assign({id:r.id,at:isDate(r.at)?r.at:'',src:isStr(r.src)?r.src.slice(0,50):''},n))}});return out}
+function normRbox(v){return rbMigrate(v).out.filter(rbValid)}
 BKX.recipes={get:()=>rbox(),check:v=>isArr(v),set:v=>{if(isArr(v))rboxSave(normRbox(v))}};
 // ===== v46：オリジナルレシピ（献立の画面の「出前」「通販」の下）。材料や「こんな料理が食べたい」を書いてアキラちゃんに頼む =====
 const ORK=IS_DEMO?'okaimono_orig_demo':'okaimono_orig';
