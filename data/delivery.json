@@ -1,6 +1,6 @@
 {
  "source": "宅配・ネットスーパー情報（武庫之荘駅の近く基準）。docs/宅配情報.json から作成。週1回のお店情報の見直しで、このファイル（app/data/delivery.json）も確認・更新する。確認できない項目は「不明」。",
- "checked_at": "2026-11-01",
+ "checked_at": "2026-11-08",
  "area": "兵庫県尼崎市武庫之荘（参考: 尼崎・西宮・伊丹）",
  "note": "公式ページで確認できた内容のみ。確認できない項目は「不明」。料金は改定されることがあるので、注文画面で再確認すること。",
  "assumed_address": "兵庫県尼崎市 武庫之荘駅の近く",
@@ -26,7 +26,7 @@
     "https://www.super-fresco.co.jp/wp/wp-content/uploads/2025/10/11c0a0af7dac7cff83b4668a7e00bac6.pdf"
    ],
    "rank": 1,
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "coop-kobe-kohai",
@@ -53,7 +53,7 @@
    ],
    "covers_home": "○（兵庫県全域）",
    "rank": 2,
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "life-netsuper",
@@ -66,7 +66,7 @@
    "covers_mukonoso": "不明（尼崎大西店の公式お届け先一覧に武庫之荘は無し。西宮北口店は未確認）",
    "fee": "不明（公式ページで未確認。非公式記事では税抜2,000円以上440円〜8,000円以上無料）",
    "free_threshold": "不明",
-   "cutoff_to_delivery": "当日〜（最短3時間）、1日4回配達",
+   "cutoff_to_delivery": "当日〜（最短3時間）。1日4回：11:00〜14:00／14:00〜16:00／16:00〜18:00／18:00〜20:00",
    "min_order": "不明",
    "payment": "クレジットカード、代金引換",
    "membership": "無料会員登録",
@@ -78,7 +78,7 @@
    ],
    "covers_home": "○（公式の兵庫県配達エリア一覧に武庫之荘の該当地域あり。担当店舗名はページから特定できず）",
    "rank": 3,
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "aeon-netsuper",
@@ -105,7 +105,7 @@
    ],
    "covers_home": "○（イオン伊丹昆陽店の公式配送エリアに 武庫之荘あり。この店の送料はログイン後でないと表示されず不明）",
    "rank": 4,
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "heiwado-netsuper",
@@ -124,7 +124,7 @@
     "https://netsuper.heiwado.jp/s/areas/28/"
    ],
    "rank": 5,
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "amazon-life",
@@ -145,7 +145,7 @@
     "https://www.amazon.co.jp/life"
    ],
    "covers_home": "不明（兵庫県は対象。住所での確認はAmazonログインが必要）",
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "mandai-net",
@@ -167,7 +167,7 @@
     "https://www.mandai-net.co.jp/store/181.html"
    ],
    "covers_home": "不明（郵便番号検索ページが応答なし）",
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "kohyo-daiei",
@@ -193,7 +193,7 @@
     "https://www.ubereats.com/jp/store/kohyo-%E6%AD%A6%E5%BA%AB%E4%B9%8B%E8%8D%98%E5%BA%97/z8rA9SVNQ1y4eIp0C5GRIQ"
    ],
    "covers_home": "×（ダイエーネットスーパーは再開しているが、担当エリアに尼崎市なし。KOHYO 武庫之荘店はUber Eatsに出店）",
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "ubereats-grocery",
@@ -217,7 +217,7 @@
    "urls": [
     "https://www.ubereats.com/jp/category/amagasaki-hyogo/grocery"
    ],
-   "checked_at": "2026-10-25"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "net-kansai-super",
@@ -239,15 +239,15 @@
     "https://www.kansaisuper.jp/guide/area.php"
    ],
    "covers_home": "×（公式配送先一覧は武庫之荘1〜5丁目のみ。武庫之荘駅の近くの地域は載っていない）",
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   },
   {
    "id": "seiyu-rakuten",
    "name": "西友ネットスーパー（楽天全国スーパー）",
    "related_stores": [],
    "covers_mukonoso": "不明（エリア限定、公式で要確認）",
-   "fee": "不明（公式ページで金額を確認できず）",
-   "free_threshold": "不明",
+   "fee": "330円（税込）。5,500円（税込）以上で無料（一部エリアを除く）",
+   "free_threshold": "5,500円（税込）以上（一部エリアを除く）",
    "cutoff_to_delivery": "購入日を含む4日間から選択、最短当日",
    "min_order": "不明",
    "payment": "クレジットカード（1回払い）、楽天ポイント、後払い（手数料330円）",
@@ -258,7 +258,7 @@
     "https://netsuper.rakuten.co.jp/seiyu/info/area28/"
    ],
    "covers_home": "×（公式の兵庫県配送エリア一覧に尼崎市なし）",
-   "checked_at": "2026-11-01"
+   "checked_at": "2026-11-08"
   }
  ],
  "not_available": [

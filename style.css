@@ -70,7 +70,7 @@ ul.frrev li select{min-width:7em}
 .nsb{min-width:40px}.nsbox{border-left:5px solid #2e7d32;margin:6px 0}.nslinks{display:flex;flex-wrap:wrap}.nslinks a.chip{text-decoration:none;display:inline-flex;align-items:center}
 .cmp3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.cmpc{margin:0}.cmpr{font-weight:bold;font-size:15px}.cmpc.cheap{border-top:5px solid #2e7d32}.cmpc.better{border-top:5px solid #1f3a8a}.cmpc.luxury{border-top:5px solid #b8860b}
 .ord .tag{font-weight:bold}.ord.cart{border-left:5px solid #f9a825}.ord.done{opacity:.7}a.btnlink{display:inline-block;background:#c62828;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:bold}
-.nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:40px;color:#1f3a8a;font-weight:bold}
+.nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:44px;color:#1f3a8a;font-weight:bold}
 .maplink{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
 .qedit{font-size:16px;line-height:1.5;margin:4px 0}.myq{margin-top:8px}
 .req2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.req2 button{font-size:16px;font-weight:bold;min-height:52px}.reqbox .rql{display:block;margin-top:6px;font-weight:bold;font-size:14px}.rqself{text-align:right}.rqself a{font-size:14px}
@@ -86,7 +86,7 @@ nav{padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-
 .card,.tag,td,th,.muted,a{overflow-wrap:anywhere}img,table{max-width:100%}
 
 .dropped{margin:6px 0 0;padding-left:1.2em;font-size:14px}.dropped li{margin:2px 0}.ver{text-align:center}
-summary{padding:10px 0;cursor:pointer}
+summary{padding:10px 0;cursor:pointer;min-height:44px}
 .lmon{border-top:1px solid #eee;padding:6px 0}.lmon summary{display:flex;justify-content:space-between;gap:8px;cursor:pointer;min-height:44px;align-items:center}.lmon .over{color:#e53935;font-weight:bold}
 .crow.zappi{color:#6a5acd}
 
