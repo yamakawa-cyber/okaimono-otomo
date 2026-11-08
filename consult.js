@@ -6,13 +6,13 @@ const MAXBYTES=100000;
 function secret(){try{const j=JSON.parse(localStorage.getItem(SK)||'{}');return {url:isStr(j.url)?j.url:'',key:isStr(j.key)?j.key:'',header:isStr(j.header)?j.header:'Authorization'}}catch(e){return {url:'',key:'',header:'Authorization'}}}
 function saveSecret(x){setLS(SK,JSON.stringify(x));try{localStorage.removeItem(PK+'_authng')}catch(_){}}
 function okConsultUrl(u){try{const x=new URL(u);if(x.protocol==='https:')return true;return x.protocol==='http:'&&/^(localhost|127\.0\.0\.1)$/.test(x.hostname)}catch(e){return false}} // 試験用にlocalhostのみhttp可
-function setConsult(field,v,el){const s=secret();v=String(v).trim();
+function setConsult(field,v,el){if(typeof originShared==='function'&&originShared()){alert('このアドレスには合言葉を保存しません。専用アドレスの設定で入れ直してください。');if(el)el.value='';return}const s=secret();v=String(v).trim();
  if(field==='url'){if(v&&!okConsultUrl(v)){if(el)el.value=s.url;alert('受け取りURLは https:// で始まるものだけ使えます');return}s.url=v}
  if(field==='key'){if(v.length>1000){if(el)el.value='';alert('キーが長すぎます');return}s.key=v}
  if(field==='header'){if(!/^[A-Za-z0-9-]{1,64}$/.test(v)){alert('ヘッダ名は英数字とハイフンだけです');return}s.header=v}
  saveSecret(s);render()}
 const mask=k=>k?'設定済み（キーは表示しません）':'未設定';
-function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃんに相談</h2><div class="card">
+function consultSettingsHtml(){const s=secret();if(typeof originShared==='function'&&originShared())return `<h2>アキラちゃんに相談</h2><div class="card"><div>このアドレスでは合言葉を受け付けません。専用アドレスで入れ直してください。ここに残っている合言葉は、上のボタンで消せます。</div></div>`;return `<h2>アキラちゃんに相談</h2><div class="card">
  相談の受け取りURL（https）<input id="c_url" value="${esc(s.url)}" placeholder="https://…" style="width:100%" onchange="setConsult('url',this.value,this)">
  送信キー（いま：${esc(mask(s.key))}）<input id="c_key" type="password" autocomplete="off" placeholder="貼り付けると上書き" style="width:100%" onchange="setConsult('key',this.value,this)">
  キーを付けるヘッダ<select id="c_hdr" aria-label="キーを付けるヘッダ" onchange="setConsult('header',this.value)">${['Authorization','X-Api-Key','X-Webhook-Secret','X-App-Pass'].map(h=>`<option${h===s.header?' selected':''}>${h}</option>`).join('')}</select>
@@ -65,7 +65,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(size(body)>MAXBYTES)throw new Error('送るデータが大きすぎます（冷蔵庫や買い物リストを減らすか、送るものを減らしてください）');
  if(RC.imgs.length){p.data.images=RC.imgs.slice(0,RC_MAX_IMGS);body=JSON.stringify(p);if(size(body)>MAXBYTES+RC_MAXBYTES)throw new Error('写真が大きすぎます。枚数を減らしてください')}
  return {body,dropped}}
-async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;keepQ();CON.q=String(CON.q||'').trim().slice(0,4000);if(!CON.q){CON.status='送るメッセージを書いてください';CON.ok=false;return render()}if(!s.url||!s.key){CON.status='送信先が未設定です';CON.ok=false;return render()}
+async function sendConsult(){if(typeof originShared==='function'&&originShared()){CON.status='このアドレスからは送信しません。専用アドレスで送ってください。';CON.ok=false;return render()}const s=secret();if(IS_DEMO||CON.sending)return;keepQ();CON.q=String(CON.q||'').trim().slice(0,4000);if(!CON.q){CON.status='送るメッセージを書いてください';CON.ok=false;return render()}if(!s.url||!s.key){CON.status='送信先が未設定です';CON.ok=false;return render()}
  if(!CTYPES.some(([k])=>k===CON.type)||!CON.q)return;
  if(!navigator.onLine){CON.status='いまオフラインなので送れません。電波のあるところで、もう一度送ってください。';CON.ok=false;return render()}
  // 時間切れ・504のあとは同じ番号で送り直す（受け取り側で同じ相談とわかるように）

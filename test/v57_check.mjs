@@ -198,6 +198,8 @@ try {
   const logic = JSON.parse(await evalJson(page.send, LOGIC));
   if (logic.fails.length) { console.log(JSON.stringify(logic, null, 2)); throw new Error('logic ' + logic.fails.length); }
   await page.send('Page.navigate', { url: 'http://127.0.0.1:' + port + '/index.html?demo=1#ai' });
+  await waitText(page.send, 'アキラハック');
+  await evalJson(page.send, `if((location.hash||'')!=='#ai')location.hash='#ai'`);
   await waitText(page.send, 'ワンタップ相談');
   await evalJson(page.send, `(async()=>{AI.mode='menu';await aiAsk();AT.open='demo';location.hash='#ai';render();})()`);
   await waitText(page.send, '料理レッスンを始める');

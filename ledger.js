@@ -21,7 +21,7 @@ function ledgerPayload(days){const L=ldgUpdate(),d=today(),from=ymd(new Date(d.g
  return {app:'okaimono',type:'ledger',made:ymd(d),from,to:ymd(d),note:'months[月].total は生活費（月の枠の対象）、zappi は雑費・tabako はたばこ・sake は酒（どれも枠の外）',budget:{monthly:S.settings.monthly,outside:OUTS,cats:Object.fromEntries(CATS.map(c=>[c[0],c[1]]))},
   receipts:S.spend.filter(r=>r.date>=from).map(r=>({id:r.id,date:r.date,store:r.store||'',cat:normCat(r.cat),amount:r.amount,memo:r.memo||'',rc:r.rc?1:0})),months:Object.fromEntries(Object.entries(L.months||{}).map(([k,v])=>{const x=Object.assign({},v);delete x.items;return [k,x]}))}}
 let ldgBusy=false;
-async function sendLedger(manual){if(!LEDGER_SYNC||IS_DEMO||ldgBusy)return;const b=relayBase();if(!b){if(manual)toast('中継サーバー（X-App-Pass）の設定がないので送れません');return}
+async function sendLedger(manual){if(typeof originShared==='function'&&originShared()){if(manual)toast('このアドレスからは会計を送りません');return}if(!LEDGER_SYNC||IS_DEMO||ldgBusy)return;const b=relayBase();if(!b){if(manual)toast('中継サーバー（X-App-Pass）の設定がないので送れません');return}
  const L=ldgRead();if(!manual&&L.sentAt&&(today()-new Date(L.sentAt))<6*864e5)return;if(!manual&&typeof authNg==='function'&&authNg())return;
  ldgBusy=true;try{const r=await fetch(b+'/ledger',{method:'POST',headers:{'Content-Type':'application/json','X-App-Pass':secret().key},body:JSON.stringify(ledgerPayload())});if(!r.ok)throw new Error('中継サーバーのエラー '+r.status);
   const L2=ldgRead();L2.sentAt=ymd(today());ldgWrite(L2);if(manual)toast('会計を送りました');if(location.hash==='#money')render()}catch(e){if(manual)toast('送れませんでした：'+e.message)}finally{ldgBusy=false}}

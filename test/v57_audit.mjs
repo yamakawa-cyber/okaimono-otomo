@@ -310,7 +310,7 @@ const MAIN = `(() => {
         const mm = monthsFrom(S.spend)['2026-11'];
         rec('ledger-split', '中', inside === 3510 && tripNow === 2010 && mm.total === 3510 && mm.zappi === 300 && mm.tabako === 40 && mm.sake === 30, 'inside=' + inside + ' trip=' + tripNow + ' ' + JSON.stringify({ t: mm.total, z: mm.zappi, tb: mm.tabako, sk: mm.sake }));
         rec('no-wakugai-word', '低', true, '画面は別ナビゲーションで見る');
-        rec('app-ver', '情報', APP_VER === 'okaimono-v58', APP_VER);
+        rec('app-ver', '情報', APP_VER === 'okaimono-v59', APP_VER);
         return JSON.stringify(R);
       });
     });
