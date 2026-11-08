@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v56'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v57'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -108,6 +108,10 @@ function rescueHtml(){const canGo=RESCUE_OK||RAW_SAVED;
  if(LOAD_DROP)return `<div class="card tip" role="status">⚠️ 読めない記録が${LOAD_DROP}件あったので、それだけ外して開きました。元のデータは退避してあります。${droppedHtml()}<div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rok">わかった</button></div></div>`;return ''}
 function exportRescue(){const a=rescues();if(LOAD_RAW&&!a.some(x=>x.raw===LOAD_RAW))a.push({at:new Date().toISOString(),why:'退避できなかった元のデータ',raw:LOAD_RAW});if(!a.length)return toast('退避データはありません');RAW_SAVED=true;setTimeout(render,0);const blob=new Blob([JSON.stringify({app:'okaimono',rescue:true,exported:new Date().toISOString(),items:a.map(x=>({at:x.at,why:x.why,data:(()=>{try{return JSON.parse(x.raw)}catch(e){return x.raw}})()}))},null,1)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='おかいもの_退避データ_'+ymd(today())+'.json';l.click()}
 const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// 本人のグリルトースター。色・温度・タイマー以外は未確認（品番不明）。使える容器や調理法は断定しない。
+const GRILL={name:'アラジンのグリルトースター（グリーン）',tempLo:100,tempHi:280,timerMin:15};
+function kitchenData(){const g=GRILL;return {appliance:'アラジン グリルトースター',color:'グリーン',modelKnown:false,tempC:[g.tempLo,g.tempHi],timerMin:g.timerMin,doNotAssert:['グリルパン','深皿','浅皿','ふた','焼き網','すのこ','アルミホイル','耐熱ガラス','クッキングシート','シリコン','煮る','蒸す','炊く','油をためる','汁や水を入れる']}}
+function kitchenNote(){const g=GRILL;return `【家の調理器具】${g.name}。確認できているのは、温度${g.tempLo}℃〜${g.tempHi}℃、タイマーは1回${g.timerMin}分まで、だけです。品番は不明です。グリルパン・深皿・浅皿・ふた・焼き網・すのこ・アルミホイル・耐熱ガラス・クッキングシート・シリコンが使えるとは書かないでください。煮る・蒸す・炊く・油をためる・汁や水を庫内に入れる手順も、この機種でできると書かないでください。トースターで作るなら、取扱説明書で入れてよいと確認できた受け皿に乾いた食材をのせ、${g.tempLo}〜${g.tempHi}℃・${g.timerMin}分以内で焼いてください。${g.timerMin}分で火が通らなければ、取り出して様子を見てからタイマーをやり直してください。油は薄くぬるだけです。プラスチック・紙・木は入れません。作動中はそばを離れません。本体とガラスは熱いので乾いたミトンで持ちます。肉と魚は中まで火が通ってから食べます。カーテンなど燃えやすいものから離し、子どもとペットを近づけません。`}
 const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
 const today=()=>{const p=new URLSearchParams(location.search).get('today');return p&&isDate(p)?new Date(p+'T12:00'):new Date()};
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -283,7 +287,7 @@ function dishPanel(w,dish){const f=findRecipeObj(dish);const id=f&&(f.eid+'|'+f.
 function missingToList(w,id){const f=recipeById(id);if(!f)return;const rc=f.rc;const miss=(rc.ingredients||[]).filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
  const y=scrollY;const [n]=pushList(listItemsOf({items:miss}).map(i=>Object.assign(i,{uses:[{d:w,dish:rc.name.slice(0,100)}],trip:tripForDay(w)})));render();scrollTo(0,y);toast(`足りない材料を${n}品リストに入れました`)}
 function dishLesson(id){const f=recipeById(id);if(!f)return;CON.open=false;AT.open=null;AT.lesson=Object.assign({},f.rc,{ingredients:(f.rc.ingredients||[]).map(x=>typeof x==='string'?x:[x&&x.name,x&&(x.qty||x.amount)].filter(Boolean).join(' ')),steps:(f.rc.steps||[]).map(x=>Object.assign({t:'',d:'',tip:''},x))});AT.step=-1;AT.checked={};if(typeof timerStop==='function')timerStop();if(typeof wakeOn==='function')wakeOn();location.hash='#ai';render();scrollTo(0,0)}
-function askRecipe(w,dish){CON.open=true;CON.from=location.hash;CON.type='recipe';CON.stage='form';CON.q=`${WD[w]}曜の「${dish}」のレシピを教えて。材料（4人分・分量つき）と手順、料理レッスン用のステップでお願い。`;CON.status='';render();const c=document.querySelector('.consultbox,#c_q');if(c)c.scrollIntoView({block:'center'})}
+function askRecipe(w,dish){CON.open=true;CON.from=location.hash;CON.type='recipe';CON.stage='form';CON.q=`${WD[w]}曜の「${dish}」のレシピを教えて。材料（4人分・分量つき）と手順、料理レッスン用のステップでお願い。\n${kitchenNote()}`;CON.status='';render();const c=document.querySelector('.consultbox,#c_q');if(c)c.scrollIntoView({block:'center'})}
 function openRecipe(id){CON.open=false;DO=null;const f=recipeById(id);if(!f)return;const w=menuArr().findIndex((m,d)=>dishesOf(d).some(x=>findRecipe(x)===id));if(w>=0){const j=dishesOf(w).findIndex(x=>findRecipe(x)===id);DO=w+'|'+j;location.hash='#fridge';render();const el=document.querySelector('.dpanel');if(el)el.scrollIntoView({block:'start'});return}dishLesson(id)}
 function dayView(){const order=[1,2,3,4,5,6,0];let h='';const used=new Set();
  order.forEach(d=>{const dishes=dishesOf(d);const its=[];S.list.forEach((i,n)=>{if((i.uses||[]).some(u=>u.d===d)){its.push([i,n]);used.add(n)}});if(!dishes.length&&!its.length)return;

@@ -37,7 +37,7 @@ function frHas(n){const b=s=>normDish(baseName(s));const m=b(n);return x=>{const
 function frMissing(){const miss=oft().filter(o=>{const h=frHas(o.name);return !S.fridge.some(f=>h(f.name))&&!S.list.some(i=>!i.done&&h(i.name))});if(!miss.length)return toast('足りない物はありません（よく買う品はそろっています）');
  const add=miss.map(o=>{const it={name:o.name,qty:o.qty||'',store:'',trip:curTrip(today()).wd,done:false};if(o.cat)it.cat=o.cat;if(o.price)it.price=o.price;return it});S.list.push(...add);save();render();
  undo1(`${add.length}品をリストに入れました（${add.slice(0,3).map(i=>i.name).join('、')}${add.length>3?'…':''}）`,()=>{S.list=S.list.filter(i=>!add.includes(i));save();render()},add.length)}
-function frMenu(){CON.open=true;CON.from=location.hash;CON.type='menu';CON.stage='form';CON.status='';CON.q='冷蔵庫の中身（場所・量つき）を見て、使い切れる献立を考えて。期限が近いものから先に使ってね。足りない材料があれば買い物リストの形でも教えて。';render();scrollTo(0,0)}
+function frMenu(){CON.open=true;CON.from=location.hash;CON.type='menu';CON.stage='form';CON.status='';CON.q='冷蔵庫の中身（場所・量つき）を見て、使い切れる献立を考えて。期限が近いものから先に使ってね。足りない材料があれば買い物リストの形でも教えて。\n'+kitchenNote();render();scrollTo(0,0)}
 function frPhoto(){CON.open=true;CON.from=location.hash;CON.type='fridge';CON.stage='form';CON.status='';CON.q='冷蔵庫の写真です。中身を読み取って fridge の形で返してください。';render();scrollTo(0,0);const f=document.getElementById('rc_file');if(f&&secret().url)f.click()}
 // --- 読み取り結果の確認画面 ---
 AISHAPE.fridge=r=>isArr(r.items)&&r.items.length>0&&r.items.length<=200&&r.items.every(i=>isObj(i)&&isStr(i.name)&&i.name.length>0&&i.name.length<=200&&(i.zone===undefined||isStr(i.zone))&&(i.amount===undefined||isStr(i.amount))&&(i.note===undefined||isStr(i.note))&&(i.until===undefined||i.until===''||isDate(i.until)));

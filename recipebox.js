@@ -6,9 +6,9 @@ function rboxIndex(id){return rbox().findIndex(r=>r.id===id)}
 function rboxSel(index){return `<select data-rbw="${index}" aria-label="入れる曜日">${[1,2,3,4,5,6,0].map(w=>`<option value="${w}">${WD[w]}曜</option>`).join('')}</select>`}
 function rboxSave(a){setLS(RBK,JSON.stringify(a.slice(0,RB_MAX)))}
 const rbSig=r=>String(r.name).normalize('NFKC').replace(/\s/g,'')+'#'+(r.ingredients||[]).length+'#'+(r.steps||[]).length;
-// 純粋：保管用の形にそろえる（材料は文字に、手順は {t,d} のまま）
+// 純粋：保管用の形にそろえる（材料は文字。手順は t・d と、あれば tip・min）
 function rbNorm(rc){if(!isObj(rc)||!isStr(rc.name)||!rc.name.trim())return null;const ing=(isArr(rc.ingredients)?rc.ingredients:[]).map(x=>typeof x==='string'?x:isObj(x)?[x.name,x.qty||x.amount].filter(Boolean).join(' '):'').filter(Boolean).map(x=>String(x).slice(0,200)).slice(0,100);
- const st=(isArr(rc.steps)?rc.steps:[]).map(x=>typeof x==='string'?{t:x.slice(0,200),d:''}:isObj(x)?{t:String(x.t||x.title||'').slice(0,200),d:String(x.d||x.detail||'').slice(0,2000)}:null).filter(x=>x&&(x.t||x.d)).slice(0,60);
+ const st=(isArr(rc.steps)?rc.steps:[]).map(x=>{if(typeof x==='string')return {t:x.slice(0,200),d:''};if(!isObj(x))return null;const o={t:String(x.t||x.title||'').slice(0,200),d:String(x.d||x.detail||'').slice(0,2000)};if(isStr(x.tip)&&x.tip.trim())o.tip=x.tip.trim().slice(0,500);const mn=Number(x.min);if(Number.isFinite(mn)&&mn>0&&mn<=180)o.min=Math.round(mn);return (o.t||o.d)?o:null}).filter(Boolean).slice(0,60);
  if(!st.length)st.push({t:'作る',d:''});return {name:rc.name.trim().slice(0,200),serves:isStr(rc.serves)?rc.serves.slice(0,50):'',time:isStr(rc.time)?rc.time.slice(0,50):'',ingredients:ing,steps:st}}
 function rboxAdd(rc,src){const n=rbNorm(rc);if(!n)return null;const a=rbox();const old=a.find(r=>rbSig(r)===rbSig(n));if(old)return {id:old.id,dup:true};const id='r'+uid();a.unshift(Object.assign({id,at:ymd(today()),src:src||''},n));rboxSave(a);return {id,dup:false}}
 // アキラちゃん欄の「📒 献立のレシピ保管へ移す」
@@ -35,7 +35,7 @@ let ORG={open:false,q:'',fridge:true,msg:'',ok:true,sending:false};
 function orgSt(){try{const o=JSON.parse(localStorage.getItem(ORK)||'{}');return isObj(o)?o:{}}catch(e){return {}}}
 function orgSave(o){setLS(ORK,JSON.stringify(o))}
 // 純粋：依頼の文面（受け取り側がレシピの依頼だと分かるように見出しを付ける）
-function orgQuestion(wish,useFridge){return `【オリジナルレシピの依頼】\n${wish}\n\nこの内容に沿ったオリジナルレシピを1つ考えてください。${useFridge?'冷蔵庫と保存棚にある物（data.fridge）をできるだけ使ってください。':'冷蔵庫の中身は気にしなくて大丈夫です。'}\n返事は kind:"recipe"（name・serves・time・ingredients［分量つきの文字］・steps［{t,d}］）でお願いします。`}
+function orgQuestion(wish,useFridge){return `【オリジナルレシピの依頼】\n${wish}\n\nこの内容に沿ったオリジナルレシピを1つ考えてください。${useFridge?'冷蔵庫と保存棚にある物（data.fridge）をできるだけ使ってください。':'冷蔵庫の中身は気にしなくて大丈夫です。'}\n返事は kind:"recipe"（name・serves・time・ingredients［分量つきの文字］・steps［{t,d}］）でお願いします。\n${kitchenNote()}`}
 async function orgSend(){if(IS_DEMO||ORG.sending)return;const e=document.getElementById('org_q');if(e)ORG.q=e.value;const wish=String(ORG.q||'').trim().slice(0,1500);
  if(!wish){ORG.msg='材料や、食べたい料理のイメージを書いてね';ORG.ok=false;return render()}
  const s=secret();if(!s.url||!s.key){ORG.msg='アキラちゃんへの送り先がまだ設定されていません。⚙️設定の「アキラちゃんに相談」で送り先と合言葉を入れてください。';ORG.ok=false;return render()}
