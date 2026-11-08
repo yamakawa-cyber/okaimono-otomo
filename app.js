@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v61'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v62'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -367,8 +367,9 @@ function restore(ev){const inp=ev.target,f=inp.files[0];if(!f)return;
   if(!confirm('いまのデータを、バックアップの内容で置き換えます。よろしいですか？'+(drop?`\n（読めない記録${drop}件は外して戻します）`:'')+(j.version>DATA_VERSION?'\n（新しい版のバックアップです。読めるところだけ戻します）':'')))return;
   // 3) まとめて書く。本体が入らなければ、ほかも書かない
   const prev=localStorage.getItem(K);try{localStorage.setItem(K,txt)}catch(e){throw new Error('スマホの保存領域に入りきりませんでした')}S=nd;LOAD_ERR='';LOAD_DROP=0;
+  if(BKX.recipes)BKX.recipes.last=[];
   Object.entries(BKX).forEach(([k,x])=>{if(k in exOk)try{x.set(exOk[k])}catch(e){}});
-  if(isObj(j.links))setLS(LK,JSON.stringify(L));
+  if(isObj(j.links)){const fix=typeof rbFixLinks==='function'?rbFixLinks((BKX.recipes&&BKX.recipes.last)||[],L):{links:L,unresolved:[]};setLS(LK,JSON.stringify(fix.links));if(typeof RBUN!=='undefined')RBUN=fix.unresolved||[]}
   if(isArr(j.hist)&&typeof checkHist==='function')saveHist(checkHist(j.hist))
   alert('戻しました'+(drop?`（読めない記録${drop}件は外しました）`:''));render()})
  .catch(e=>alert('読めませんでした（いまのデータはそのままです）：'+e.message)).finally(()=>{inp.value=''})}

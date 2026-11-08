@@ -97,13 +97,52 @@ try {
       });
     });
   })()`);
-  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes) };
-  const a = out.amount, r = out.recipes;
+  const links = await ev(page.send, `(() => {
+    const bad = 'id"mark';
+    const pack = (recipes, links) => ({ app:'okaimono', version:2, data:{ version:2, settings:S.settings, list:[], spend:[], fridge:[], menu:['','','','','','',''], prep:'', userStores:[] }, links, hist:[], extra:{ recipes } });
+    const step = (name, ing, t) => ({ t, d:'' });
+    const rec = (id, name, ing, t) => ({ id, name, ingredients:[ing], steps:[step(name, ing, t)], at:'2026-11-08', src:'t' });
+    const restoreFile = obj => new Promise(res => { const dt = new DataTransfer(); dt.items.add(new File([JSON.stringify(obj)], 'b.json', { type:'application/json' })); const inp = document.createElement('input'); inp.type = 'file'; inp.files = dt.files; window.confirm = () => true; window.alert = () => {}; restore({ target: inp }); setTimeout(res, 400); });
+    return restoreFile(pack([
+      rec(bad, '戻すカレー', '塩', '切る'),
+      rec('ok_one', '普通', '卵', '焼く')
+    ], { '戻すカレー': 'box:' + bad + '|戻すカレー' })).then(() => {
+      const all = JSON.parse(localStorage.getItem('okaimono_recipes') || '[]');
+      const curry = all.find(r => r.name === '戻すカレー');
+      const link = (JSON.parse(localStorage.getItem('okaimono_links') || '{}'))['戻すカレー'];
+      const imported = !!(curry && /^[A-Za-z0-9_-]{1,60}$/.test(curry.id) && link === 'box:' + curry.id + '|戻すカレー' && curry.ingredients[0] === '塩' && curry.steps[0].t === '切る' && all.some(r => r.id === 'ok_one' && r.name === '普通'));
+      localStorage.setItem('okaimono_recipes', JSON.stringify([rec(bad, 'カレー', '肉', '煮る'), rec(bad, 'シチュー', '乳', '煮込む')]));
+      localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:' + bad + '|カレー' }));
+      rbTold = false; location.hash = '#fridge'; render();
+      const open = rbox();
+      const c = open.find(r => r.name === 'カレー'), s = open.find(r => r.name === 'シチュー');
+      const lk = getLinks()['カレー'];
+      const opened = !!(c && s && c.id !== s.id && lk === 'box:' + c.id + '|カレー' && lk.indexOf(s.id) < 0 && document.body.innerText.includes('カレー') && document.body.innerText.includes('シチュー'));
+      const id1 = open.map(r => r.id).join(',');
+      const id2 = rbox().map(r => r.id).join(',');
+      localStorage.setItem('okaimono_recipes', JSON.stringify([rec(bad, 'カレー', '肉', '煮る'), rec(bad, 'カレー', '豆', '焼く')]));
+      localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:' + bad + '|カレー' }));
+      rbTold = false; render();
+      const both = rbox();
+      const amb = getLinks()['カレー'];
+      const ambiguous = both.filter(r => r.name === 'カレー').length === 2 && both[0].ingredients[0] !== both[1].ingredients[0] && amb === 'box:' + bad + '|カレー' && both.every(r => amb.indexOf(r.id) < 0) && !!document.getElementById('rbdang');
+      localStorage.setItem('okaimono_recipes', JSON.stringify([rec('same_id_ok', 'カレー', '肉', '煮る'), rec('same_id_ok', 'シチュー', '乳', '煮込む')]));
+      localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:same_id_ok|カレー' }));
+      rbTold = false; render();
+      const col = rbox();
+      const keep = col.find(r => r.name === 'カレー'), other = col.find(r => r.name === 'シチュー');
+      const collision = !!(keep && keep.id === 'same_id_ok' && other && other.id !== 'same_id_ok' && getLinks()['カレー'] === 'box:same_id_ok|カレー');
+      return JSON.stringify({ imported, opened, stable: id1 === id2 && id1.length > 0, ambiguous, collision, xss: window.__xss });
+    });
+  })()`);
+  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes), links: JSON.parse(links) };
+  const a = out.amount, r = out.recipes, L = out.links;
   const ok = a.note && a.blank.done === false && a.blank.spend === 0 && a.blank.thuChecked === false && a.blank.said
     && a.zero.done === false && a.zero.spend === 0 && a.zero.said
     && a.bought.done === true && a.bought.n === 1 && a.bought.amount === 480 && a.bought.cat === '日用品' && a.bought.monDone
     && a.undone.done === false && a.undone.n === 0 && a.xss === 0
-    && r.xss === 0 && r.before && r.before.text && r.before.count.includes('2件') && r.idsOk && r.keptName && r.keptIng && r.quoteGone && r.linkMoved && r.backupHasBad === false && r.backupHasName && r.restored && r.noOnclick;
+    && r.xss === 0 && r.before && r.before.text && r.before.count.includes('2件') && r.idsOk && r.keptName && r.keptIng && r.quoteGone && r.linkMoved && r.backupHasBad === false && r.backupHasName && r.restored && r.noOnclick
+    && L.imported && L.opened && L.stable && L.ambiguous && L.collision && L.xss === 0;
   console.log(JSON.stringify(out, null, 2));
   if (!ok) process.exitCode = 2; else console.log('REPRO_OK');
   page.close();
