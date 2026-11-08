@@ -9,19 +9,21 @@ function aiProvider(){const u=(S.settings.aiRelay||'').trim();return u&&/^https:
 function aiContext(kind){const d=today();
  const sale=regStores().filter(s=>salesOn(s,d).length).map(s=>({store:s.name,items:salesOn(s,d).map(x=>x.text)}));
  const mo=ymd(d).slice(0,8);const sp=S.spend.filter(r=>r.date.startsWith(mo.slice(0,7)));const byCat={};sp.forEach(r=>byCat[r.cat]=(byCat[r.cat]||0)+Number(r.amount));
- return {today:ymd(d),fridge:S.fridge.map(f=>({name:f.name,until:f.until})),menu:menuArr(),sale,perTrip:S.settings.perTrip,monthly:S.settings.monthly,
-  spendTotal:sp.reduce((t,r)=>t+Number(r.amount),0),byCat,recent:S.spend.slice(-10).map(r=>r.memo||r.cat),list:S.list.map(i=>i.name)}}
+ const ctx={today:ymd(d),fridge:S.fridge.map(f=>({name:f.name,until:f.until})),menu:menuArr(),sale,perTrip:S.settings.perTrip,monthly:S.settings.monthly,
+  spendTotal:sp.reduce((t,r)=>t+Number(r.amount),0),byCat,recent:S.spend.slice(-10).map(r=>r.memo||r.cat),list:S.list.map(i=>i.name)};
+ if(kind==='menu'&&typeof kitchenData==='function')ctx.kitchen=kitchenData();return ctx}
 const MOCK={
  menu:c=>{const f=c.fridge.map(x=>x.name);const a=f[0]||'にんじん',b=f[1]||'豚こま';
-  return {kind:'menu',title:'冷蔵庫からの献立案',plan:[`月：${b}と${a}の甘辛炒め`,'火：鶏むね肉の塩レモン焼き','水：作り置きのきんぴら＋具だくさん味噌汁','木：豚汁と焼き魚','金：カレー（2日分）'],
-   prep:[`${a}のきんぴら（日曜に作る・水曜まで）`,'ゆで卵（日曜・3日以内）','鶏むね肉の下味冷凍（日曜・2週間）'],
-   recipe:{name:`${b}と${a}の甘辛炒め`,serves:'2人分',time:'約15分',ingredients:[`${b} 200g`,`${a} 1本`,'玉ねぎ 1/2個','しょうゆ・みりん 各大さじ2','砂糖 小さじ1','サラダ油 小さじ2'],
-    steps:[{t:'野菜を切る',d:`${a}は皮をむいて細切り（4〜5cm）。玉ねぎは薄切り。`,tip:'太さをそろえると火の通りが同じになります。',min:4},
-     {t:'たれを合わせる',d:'しょうゆ・みりん・砂糖を小さな器で混ぜておく。',tip:'先に作っておくと炒めながら慌てません。',min:1},
-     {t:'肉を炒める',d:`フライパンに油を中火で熱し、${b}を広げて焼く。色が変わったら一度取り出す。`,tip:'さわりすぎないのが、かたくしないこつ。',min:3},
-     {t:'野菜を炒める',d:`同じフライパンで${a}と玉ねぎを2〜3分炒める。`,tip:'しんなりして、玉ねぎが透き通ればOK。',min:3},
-     {t:'合わせて味付け',d:'肉を戻し、たれを回し入れて、汁気が少なくなるまで1〜2分からめる。',tip:'最後は強火にすると照りが出ます。',min:2},
-     {t:'盛り付け・保存',d:'お皿に盛る。余りは冷めてから保存容器へ。冷蔵で2日が目安。',tip:'作り置きにするなら、汁気をしっかり飛ばします。',min:2}]}}},
+  return {kind:'menu',title:'冷蔵庫からの献立案',plan:[`月：${b}と${a}のグリルトースター焼き（200℃・15分以内）`,'火：食パンをトースターで焼く（180℃・色がつけば止める）','水：作り置きの余り','木：焼き魚（トースターなら200℃。中まで火を通す）','金：カレー（2日分）'],
+   prep:[`${b}と${a}のグリルトースター焼き（当日。余りは粗熱のあと冷蔵）`],
+   recipe:{name:`${b}と${a}のグリルトースター焼き`,serves:'2人分',time:'約25分（加熱は15分ずつ）',ingredients:[`${b} 200g`,`${a} 1本`,'玉ねぎ 1/2個','しょうゆ 大さじ2','みりん 大さじ2','砂糖 小さじ1','サラダ油 小さじ2'],
+    steps:[{t:'手を洗って材料を並べる',d:'石けんで手を洗います。台の上を空けます。材料を全部出して、この一覧と見比べ、足りないものがないか確かめます。',tip:'砂糖やみりんが無くても、しょうゆと塩だけでも味はつきます。油が無ければ、油なしで焼きます。',min:3},
+     {t:'野菜を切る',d:`${a}は皮をむいて、幅5mm・長さ4〜5cmの細切りにします。玉ねぎは薄切りにします。太さをそろえると、火の通りが同じになります。`,tip:'押さえる手は指を丸めて、爪の先が食材に当たる形にします。刃は自分のほうへ向けません。',min:6},
+     {t:'たれを合わせる',d:'しょうゆ・みりん・砂糖を、小さなお椀で混ぜます。このお椀はトースターに入れません。',tip:'先に混ぜておくと、焼くときに慌てません。',min:1},
+     {t:'油を薄くからめる',d:`${b}と切った野菜にサラダ油を小さじ1ずつ回しかけ、全体に薄くからめます。油を皿にためないでください。`,tip:'表面が軽く光るくらいで十分です。多いと煙が出ます。',min:2},
+     {t:'トースターの温度を合わせる',d:'アラジンのグリルトースター（グリーン）を200℃に合わせます。タイマーは15分までです。庫内の受け皿は、取扱説明書で入れてよいと書いてあるものだけ使います。深皿・ふた・焼き網・グリルパン・アルミホイル・耐熱ガラス・クッキングシートは、説明書で確認できるまで使いません。プラスチック・紙・木は入れません。',tip:'品番が分からないので、煮る・蒸す・炊く手順にはしません。乾いた食材を焼くだけです。',min:1},
+     {t:'並べて焼く',d:`トースターに、説明書でよいと確認した受け皿を入れ、${b}と野菜を重ならないよう広げ、たれを半量かけます。200℃で焼きます。10分たったら一度止め、乾いたミトンで扉を開け、裏返して残りのたれをかけます。野菜がしんなりして透き通り、肉の色が変わり、いちばん厚いところを切ってピンクが残っていなければできあがりです。15分でタイマーが止まってもピンクなら、取り出して様子を見てから、もう一度15分以内でセットします。`,tip:'作動中はそばを離れません。ガラスと本体は熱いです。水や汁をヒーターにかけません。煙がたくさん出たら180℃に下げます。',min:15},
+     {t:'取り出して盛る',d:'タイマーを止め、乾いたミトンで受け皿を出して皿に盛ります。余りは粗熱が取れてから、ふたのできる容器に入れて冷蔵庫へ。熱いうちに密閉しません。',tip:'切り口がまだピンクなら、トースターに戻して追加で焼きます。冷めるまで本体に触りません。しまい方は取扱説明書に合わせます。',min:5}]}}},
  shop:c=>({kind:'shop',title:'特売に合わせた買い物リスト',note:c.sale.length?'きょうの特売：'+c.sale.map(s=>s.store+'（'+s.items.join('・')+'）').join('、'):'きょう決まった特売日のお店はありません',
    items:[{name:'玉子',store:'スーパーマルハチ 武庫之荘店',why:'火曜は玉子の特売',yen:230},{name:'牛乳',store:'フレスコ 武庫之荘店',why:'金曜は牛乳の日',yen:200},{name:'鶏むね肉 2枚',store:'KOHYO 武庫之荘店',why:'献立の火曜分',yen:600},{name:'玉ねぎ 3個',store:'KOHYO 武庫之荘店',why:'在庫なし',yen:200},{name:'冷凍ブロッコリー',store:'業務スーパー 南武庫之荘店',why:'作り置きの付け合わせ',yen:250}],budget:c.perTrip}),
  money:c=>({kind:'money',title:'今月の出費まとめ',total:c.spendTotal,monthly:c.monthly,byCat:c.byCat,tips:['食料品は週2回の買い物にまとめ、間の買い足しを減らすと月3,000円ほど下がる見込み','日用品は、ツルハの1日・10日・20日やウエルシアの20日など、感謝デーにまとめて買う','米や調味料は、月1回の大容量でまとめ買い（業務スーパーなど）']}),
@@ -76,13 +78,17 @@ AISHAPE.recipe=r=>isStr(r.name)&&isArr(r.ingredients)&&r.ingredients.every(isStr
 const HK=IS_DEMO?'okaimono_hist_demo':'okaimono_hist',HIST_MAX=150,HIST_BYTES=1500000;
 const KLABEL={menu:'🍳 献立',recipe:'🥘 レシピ',shop:'🛒 買い物',money:'💰 家計',hacks:'💡 こつ',advise:'🧭 相談',chat:'💬 ひとこと',receipt:'🧾 レシート'};
 function hist(){try{const a=JSON.parse(localStorage.getItem(HK)||'[]');return isArr(a)?a.filter(e=>isObj(e)&&isStr(e.id)&&isObj(e.item)&&AISHAPE[e.item.kind]):[]}catch(e){return []}}
+function checkHist(v){if(!isArr(v))return[];const seen=new Set(),norm=[],bad=[];v.forEach(e=>{if(!isObj(e)||!isStr(e.id)||e.id.length>100||!isObj(e.item)||seen.has(e.id)){bad.push(e);return}try{checkAI(e.item);seen.add(e.id);const x={id:e.id,at:isStr(e.at)?e.at.slice(0,40):new Date().toISOString(),src:isStr(e.src)?e.src.slice(0,50):'',sig:JSON.stringify(e.item),item:e.item};norm.push(x)}catch(_){bad.push(e)}});
+ // 戻せない返事を捨てずに保持し、確認・再取り込みできるようにする。
+ try{bad.slice(0,100).forEach((e,k)=>{const key='restore'+uid()+'#'+k;if(INBOX.some(x=>x.key===key))return;INBOX.push({key,id:null,item:e.item,err:'バックアップのこの返事は形が足りないため読み込めません'})})}catch(_){}
+ return norm}
 function saveHist(a){a=a.slice(0,HIST_MAX);while(a.length>1&&new Blob([JSON.stringify(a)]).size>HIST_BYTES)a.pop();try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){a.splice(Math.floor(a.length/2));setLS(HK,JSON.stringify(a))}}
 function histTitle(r){return r.kind==='receipt'?`${r.store}（${yen(r.total)}）`:r.kind==='recipe'?r.name:r.kind==='chat'?String(r.reply).slice(0,40):(r.title||KLABEL[r.kind])}
 function histAdd(item,src){if(!isObj(item)||!AISHAPE[item.kind])return null;const sig=JSON.stringify(item);const a=hist();const old=a.find(e=>e.sig===sig);if(old)return old.id;
  const e={id:'h'+uid(),at:new Date().toISOString(),src:src||'',sig,item};a.unshift(e);saveHist(a);try{if(typeof linkMenu==='function')setTimeout(linkMenu,0)}catch(x){}return e.id}
 let AT={filter:'',open:null,lesson:null,step:0,checked:{},timer:null};
-const QUICK=[['menu','🍳 冷蔵庫で今夜の献立','冷蔵庫にあるもので、今夜の献立を考えて。作り方（レシピ）も1品つけてね。'],
- ['menu','🥡 作り置きプラン','今週の作り置きプランを考えて。日持ちの目安と、1品は作り方（レシピ）もつけてね。'],
+const QUICK=[['menu','🍳 冷蔵庫で今夜の献立','冷蔵庫にあるもので、今夜の献立を考えて。作り方（レシピ）も1品つけてね。\n'+kitchenNote()],
+ ['menu','🥡 作り置きプラン','今週の作り置きプランを考えて。日持ちの目安と、1品は作り方（レシピ）もつけてね。\n'+kitchenNote()],
  ['shop','🛒 特売で買い物リスト','きょう・次の買い物日の特売に合わせて、予算内の買い物リストを作って。'],
  ['money','💰 今週の出費どう？','今週と今月の出費を見て、使いすぎていないか、来週どうすればいいか教えて。'],
  ['hacks','💡 節約ワザ','最近買ったものや冷蔵庫のもので使える、節約のこつ・ライフハックを教えて。'],
@@ -118,14 +124,42 @@ function ding(){try{navigator.vibrate&&navigator.vibrate([400,200,400,200,400])}
  try{const C=window.AudioContext||window.webkitAudioContext;const c=new C();[0,0.5,1].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0.3,c.currentTime+t);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+0.4);o.start(c.currentTime+t);o.stop(c.currentTime+t+0.45)})}catch(e){}
  const el=document.getElementById('lt_time');if(el)el.textContent='⏰ 時間です！'}
 function goStep(n){const rc=AT.lesson;AT.step=Math.max(-1,Math.min(rc.steps.length-1,n));timerStop();TM.step=-2;render();scrollTo(0,0)}
-lessonView=function(rc){const n=rc.steps.length,i=AT.step;
- const head=`<div class="card"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}${rc.time?'・'+esc(rc.time):''}</span><div class="bar"><div style="width:${(i+1)/n*100}%"></div></div><div class="muted">${WAKE?'💡 画面がつきっぱなしになります':''}</div></div>`;
- if(i<0)return head+`<div class="card lesson"><h2>材料をそろえよう</h2><ul class="chk">${rc.ingredients.map((x,k)=>`<li><input type="checkbox" ${AT.checked[k]?'checked':''} onchange="AT.checked[${k}]=this.checked"><span class="big">${esc(x)}</span></li>`).join('')}</ul>
-  <div class="row"><button class="sub" onclick="endLesson()">やめる</button><button onclick="goStep(0)">はじめる →</button></div></div>`;
- const s=rc.steps[i];if(TM.step!==i){TM.step=i;TM.left=Math.round((Number(s.min)>0?Number(s.min):0)*60)}
- return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}</div><h2>${esc(s.t)}</h2><p class="big">${esc(s.d)}</p>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}
- ${Number(s.min)>0?`<div class="timer"><span id="lt_time" class="tbig">${fmt(TM.left)}</span><div class="row"><button id="lt_btn" onclick="timerToggle()">${TM.run?'⏸ 止める':'▶ スタート'}</button><button class="sub" onclick="timerReset()">↺</button></div></div>`:''}
- <div class="row"><button class="sub" onclick="goStep(${i-1})">← もどる</button>${i<n-1?`<button onclick="goStep(${i+1})">つぎへ →</button>`:`<button onclick="endLesson();alert('できあがり！おつかれさま')">できあがり 🎉</button>`}</div></div>`};
+const ingText=x=>typeof x==='string'?x:isObj(x)?[x.name,x.qty||x.amount].filter(Boolean).join(' '):'';
+const stepBlob=s=>[s&&s.t,s&&s.d,s&&s.tip].filter(Boolean).join('\n');
+const usesToast=t=>/トースター|オーブン|アラジン|予熱/.test(t);
+const usesHeat=t=>/フライパン|中火|弱火|強火|炒め|揚げる|沸騰|煮立|予熱/.test(t)||/焼(く|き|い)/.test(t)||/油を|油が(多|煙)|サラダ油を/.test(t);
+const usesKnife=t=>/包丁|皮をむ|むいて|細切り|薄切り|切って|切ります|切る/.test(t);
+const COOK_WORDS=[['中火','火の強さの真ん中です。鍋底から小さな音が続くくらいにして、煙が出たら少し下げます。'],['弱火','火を小さくします。煮汁が小さくふつふつするくらいです。'],['強火','火を大きくします。色がすぐにつくので、そばを離れないでください。'],['しんなり','野菜の力がなくなって、やわらかく折れ曲がった状態です。'],['透き通','色がうすくなり、向こうが少し見えるくらいです。'],['ひと煮立ち','鍋のふちまでぶくぶく沸いたところです。沸いたら火を弱めてください。'],['さっと','ごく短い時間です。色が変わったらすぐ止めてください。'],['粗熱','手で触れるくらいまで冷ますことです。熱いうちに密閉しないでください。'],['下味','焼く前に、塩や調味料をなじませることです。'],['予熱','食材を入れる前に、レシピに書いてある温度まで庫内を温めることです。時間の指定がなければ、取扱説明書に合わせてください。']];
+function cookWords(text){return COOK_WORDS.filter(([w])=>text.includes(w))}
+function toasterCard(short){const g=GRILL;if(short)return `<div class="warn"><b>熱源の注意</b><div>${esc(g.name)}は${g.tempLo}〜${g.tempHi}℃、タイマーは1回${g.timerMin}分まで。そばを離れず、説明書で確認できた受け皿だけを使います。</div></div>`;
+ return `<div class="warn"><b>熱源の注意（${esc(g.name)}）</b><ul><li>分かっているのは、温度${g.tempLo}℃〜${g.tempHi}℃、タイマーは1回${g.timerMin}分まで、です。品番は不明です。</li><li>${g.timerMin}分で止まっても火が通っていなければ、取り出して様子を見てから、もう一度${g.timerMin}分以内でセットします。</li><li>深皿・ふた・焼き網・グリルパン・アルミホイル・耐熱ガラス・クッキングシートは、取扱説明書で使えると確認できるまで使いません。</li><li>煮る・蒸す・炊く・油をためる・水や汁を入れる手順は、この機種ではやりません。</li><li>作動中はそばを離れません。プラスチック・紙・木は入れません。本体とガラスは熱いので、乾いたミトンで持ちます。</li><li>肉と魚は、切り口の中まで火が通ってから食べます。カーテンなど燃えやすいものから離し、子どもとペットを近づけません。</li></ul></div>`}
+function heatCard(){return `<div class="warn"><b>熱と油の注意</b><ul><li>火や加熱を始めたら、この手順が終わるまでそばを離れません。</li><li>油がたくさん煙を出したら火を弱めます。油をためて揚げません。</li><li>水滴を熱い油に落とすと跳ねます。鍋や受け皿は乾いた布で持ち、濡れた布は使いません。</li><li>終わったら火やタイマーを止め、冷めるまで触りません。</li></ul></div>`}
+function knifeCard(){return `<div class="tip"><b>包丁</b><div>押さえる手は指を丸めて、爪の先が食材に当たる形にします。刃は自分のほうへ向けません。</div></div>`}
+function lessonTick(k,on){AT.checked[k]=!!on;const el=document.getElementById('ls_n');if(el)el.textContent=Object.keys(AT.checked).filter(i=>AT.checked[i]).length}
+function lessonMap(rc,i){const n=rc.steps.length;return `<details class="lessonmap"${i<0?' open':''}><summary>${i<0?'手順は '+n+' つ。上からこの順です':'全体の流れ（'+(i+1)+' / '+n+'）'}</summary><ol>${rc.steps.map((s,k)=>`<li class="${k<i?'done':k===i?'now':''}">${k===i?'いま：':''}${esc(s.t||'手順')}</li>`).join('')}</ol></details>`}
+lessonView=function(rc){const steps=isArr(rc.steps)?rc.steps:[],n=steps.length,i=AT.step;
+ const head=`<div class="card"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}${rc.time?'・'+esc(rc.time):''}</span><div class="bar"><div style="width:${n?Math.max(0,(i+1)/n*100):0}%"></div></div><div class="muted">${WAKE?'画面がつきっぱなしになります。読み終わっても消えません。':''}</div></div>`;
+ const ings=(rc.ingredients||[]).map(ingText).filter(Boolean);
+ const anyToast=steps.some(s=>usesToast(stepBlob(s)))||usesToast(String(rc.name||''));
+ if(i<0){const got=ings.filter((_,k)=>AT.checked[k]).length;
+  return head+`<div class="card lesson"><h2>始める前に、材料をそろえる</h2><p class="big">上から順に進めます。チェックが全部ついてから「はじめる」を押してください。途中で迷ったら「手順は ${n} つ」を開くと、いまがどこか分かります。</p>
+  ${anyToast?toasterCard(false):''}${lessonMap(rc,-1)}
+  ${ings.length?`<div class="muted">そろった材料 <span id="ls_n">${got}</span> / ${ings.length}</div><ul class="chk">${ings.map((x,k)=>`<li><input type="checkbox" ${AT.checked[k]?'checked':''} onchange="lessonTick(${k},this.checked)"><span class="big">${esc(x)}</span></li>`).join('')}</ul>`:'<p>材料の記載がありません。手順に出てくる食材が手元にあるか見てから始めてください。</p>'}
+  <div class="row"><button class="sub" onclick="endLesson()">やめる</button><button onclick="goStep(0)">はじめる →</button></div></div>`}
+ const s=steps[i]||{t:'',d:''};if(TM.step!==i){TM.step=i;TM.left=Math.round((Number(s.min)>0?Number(s.min):0)*60)}
+ const text=stepBlob(s),words=cookWords(text),toast=usesToast(text),heat=usesHeat(text),cut=usesKnife(text);
+ const firstToast=toast&&!steps.slice(0,i).some(x=>usesToast(stepBlob(x)));
+ const nxt=i<n-1?steps[i+1]:null;
+ return head+`<div class="card lesson"><div class="muted">ステップ ${i+1} / ${n}${i>0?'　ここまで '+i+' 手順できました':''}</div><h2>${esc(s.t||'この手順')}</h2>
+ <p class="big">${esc(s.d||'細かい文はありません。見出しの通りに進めて、できたら「つぎへ」を押してください。')}</p>
+ ${s.tip?`<div class="tip"><b>こつ</b><div>${esc(s.tip)}</div></div>`:''}
+ <div class="tip"><b>できたかどうか</b><div>上の文の色・やわらかさ・時間と比べます。まだなら、もう少し続けてから進みます。違って見えても、前の手順へは「もどる」で帰れます。</div></div>
+ ${words.length?`<div class="tip"><b>ことば</b><ul>${words.map(([w,d])=>`<li><b>${esc(w)}</b>　${esc(d)}</li>`).join('')}</ul></div>`:''}
+ ${toast?toasterCard(!(firstToast||/温度|タイマー|焼(く|き|い)/.test(text))):heat?heatCard():''}${cut?knifeCard():''}
+ ${Number(s.min)>0?`<div class="timer"><div class="muted">この手順の目安 ${esc(s.min)} 分。見た目が先にできたら止めて進んで大丈夫です。</div><span id="lt_time" class="tbig">${fmt(TM.left)}</span><div class="row"><button id="lt_btn" onclick="timerToggle()">${TM.run?'⏸ 止める':'▶ スタート'}</button><button class="sub" onclick="timerReset()">↺ 最初から</button></div>${toast&&Number(s.min)>GRILL.timerMin?`<div class="warn">このトースターのタイマーは${GRILL.timerMin}分までです。${GRILL.timerMin}分で一度止めて様子を見てから、必要ならやり直してください。</div>`:''}</div>`:''}
+ ${lessonMap(rc,i)}
+ ${nxt?`<div class="next">このあと：${esc(nxt.t||'つぎの手順')}</div>`:'<div class="tip"><b>できあがりのあと</b><ul><li>火とトースターのタイマーを止めたか見ます。</li><li>熱い皿は乾いた布で運びます。</li><li>余りは粗熱が取れてから冷蔵庫へ。熱いうちに密閉しません。</li><li>肉と魚は、切り口の中まで火が通っているか見てから食べます。</li></ul></div>'}
+ <div class="row"><button class="sub" onclick="goStep(${i-1})">${i===0?'← 材料にもどる':'← 前の手順'}</button>${i<n-1?`<button onclick="goStep(${i+1})">つぎへ${nxt&&nxt.t?'（'+esc(String(nxt.t).slice(0,14))+'）':' →'}</button>`:`<button onclick="endLesson();alert('できあがりです。火とタイマーを止めて、熱いものに触らないようにしてください。')">できあがり</button>`}</div></div>`};
 V.ai=function(){
  if(AT.lesson)return lessonView(AT.lesson);
  let h='';

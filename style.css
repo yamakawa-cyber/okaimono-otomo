@@ -4,7 +4,7 @@ main{padding:12px}h2{font-size:18px;margin:16px 0 8px}.card{background:#fff;bord
 .sale{background:#fff1e6;border-left:5px solid #1f3a8a}.muted{color:#666;font-size:14px}.tag{display:inline-block;background:#e3ebf8;border-radius:8px;padding:1px 8px;margin:2px;font-size:14px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}nav a{flex:1;text-align:center;padding:6px 0;font-size:12px;color:#555;text-decoration:none}nav a.on{color:#1f3a8a;font-weight:bold}
 button,input,select,textarea{font-size:16px;padding:10px;border-radius:8px;border:1px solid #ccc;font-family:inherit}button{background:#1f3a8a;color:#fff;border:0;min-height:44px}button.sub{background:#eee;color:#333}
-.row{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}.row>*{flex:1;min-width:0}a.link{display:inline-block;margin:4px 8px 0 0;color:#c55a1f}
+.row{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}.row>*{flex:1;min-width:0}a.link{display:inline-block;margin:4px 8px 0 0;color:#a74613}
 .seg{display:flex;gap:4px}.seg button{flex:1;background:#eee;color:#333}.seg button.on{background:#1f3a8a;color:#fff}
 .bar{height:14px;background:#eee;border-radius:7px;overflow:hidden}.bar div{height:100%;background:#4caf50}.bar div.over{background:#e53935}
 li.done span{text-decoration:line-through;color:#666}ul.chk{list-style:none;padding:0}ul.chk li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eee}ul.chk input{width:24px;height:24px}
@@ -70,7 +70,7 @@ ul.frrev li select{min-width:7em}
 .nsb{min-width:40px}.nsbox{border-left:5px solid #2e7d32;margin:6px 0}.nslinks{display:flex;flex-wrap:wrap}.nslinks a.chip{text-decoration:none;display:inline-flex;align-items:center}
 .cmp3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.cmpc{margin:0}.cmpr{font-weight:bold;font-size:15px}.cmpc.cheap{border-top:5px solid #2e7d32}.cmpc.better{border-top:5px solid #1f3a8a}.cmpc.luxury{border-top:5px solid #b8860b}
 .ord .tag{font-weight:bold}.ord.cart{border-left:5px solid #f9a825}.ord.done{opacity:.7}a.btnlink{display:inline-block;background:#c62828;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:bold}
-.nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:40px;color:#1f3a8a;font-weight:bold}
+.nslinks a.chip,.cmpc a.chip{display:inline-flex!important;width:auto!important;flex:0 0 auto;text-decoration:none;border-radius:16px;padding:6px 12px;min-height:44px;color:#1f3a8a;font-weight:bold}
 .maplink{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
 .qedit{font-size:16px;line-height:1.5;margin:4px 0}.myq{margin-top:8px}
 .req2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.req2 button{font-size:16px;font-weight:bold;min-height:52px}.reqbox .rql{display:block;margin-top:6px;font-weight:bold;font-size:14px}.rqself{text-align:right}.rqself a{font-size:14px}
@@ -86,7 +86,7 @@ nav{padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-
 .card,.tag,td,th,.muted,a{overflow-wrap:anywhere}img,table{max-width:100%}
 
 .dropped{margin:6px 0 0;padding-left:1.2em;font-size:14px}.dropped li{margin:2px 0}.ver{text-align:center}
-summary{padding:10px 0;cursor:pointer}
+summary{padding:10px 0;cursor:pointer;min-height:44px}
 .lmon{border-top:1px solid #eee;padding:6px 0}.lmon summary{display:flex;justify-content:space-between;gap:8px;cursor:pointer;min-height:44px;align-items:center}.lmon .over{color:#e53935;font-weight:bold}
 .crow.zappi{color:#6a5acd}
 
@@ -111,6 +111,11 @@ header{background-color:#fff;background-image:linear-gradient(rgba(255,255,255,.
 /* v46：オリジナルレシピ */
 .orgbtn{width:100%}.orgbox ol,.orgbox ul{padding-left:1.4em;margin:4px 0}.orgwait{font-weight:bold;color:#1f3a8a}.orgwait .dots::after{content:'…';animation:orgd 1.2s steps(3) infinite}@keyframes orgd{0%{content:'・'}50%{content:'・・'}100%{content:'・・・'}}
 
+/* v57：料理レッスン（初心者が手順の位置を見失わない） */
+.lesson h2{line-height:1.35}.lesson .big{margin:8px 0}.lesson details summary{min-height:44px;padding:8px 0;font-weight:bold}
+.lessonmap ol{margin:0 0 8px;padding-left:1.4em}.lessonmap li{margin:4px 0;line-height:1.5}.lessonmap li.now{font-weight:bold;color:#1f3a8a}.lessonmap li.done{color:#555}
+.warn{background:#fff6e8;border:1px solid #8a4b12;border-radius:8px;padding:10px;margin:8px 0;color:#222}.warn b{color:#6b320c}.warn ul,.tip ul{margin:6px 0 0;padding-left:1.2em}.warn li,.tip li{margin:4px 0}
+.lesson .next{margin:8px 0;font-size:16px;line-height:1.5}
 /* v54：倉庫リストをコンパクトに（チェック＋品名が近接） */
 .card.wh{padding:10px 12px}.card.wh>.muted{margin:0 0 6px;line-height:1.35}.card.wh .row{gap:6px;margin:6px 0}
 ul.chk.whlist li{padding:4px 0;gap:6px;flex-wrap:nowrap;align-items:center}

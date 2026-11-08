@@ -69,7 +69,7 @@ function compareView(r){CMP_SHOWN=r;const opts=RANKS.map(([k])=>r.options.find(o
 {const f=V.list;V.list=function(){return ordersHtml()+f.apply(this,arguments)}}
 if(SHOP_AI)CTYPES.push(['compare','くらべる（安い・ベター・豪華）']);if(ORDER_OK)CTYPES.push(['order','カート入れ']);
 QUICK.push(['money','🏪 スーパーとネット、どっちが安い？','買い物リストの品を、近くのスーパー（特売）とネット通販でくらべて、どっちで買うのが安いか教えて。送料も考えてね。']);
-QUICK.push(['menu','🛵 今夜は作る？出前？','冷蔵庫の中身と今月の家計を見て、今夜は作るのと出前にするのと、どっちがいいか教えて。作るなら献立、出前なら料理の案も。']);
+QUICK.push(['menu','🛵 今夜は作る？出前？','冷蔵庫の中身と今月の家計を見て、今夜は作るのと出前にするのと、どっちがいいか教えて。作るなら献立、出前なら料理の案も。\n'+kitchenNote()]);
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-ns],[data-deli],[data-cmp],[data-ord],[data-openall],[data-pick],[data-odel],[data-olog],[data-onolog]');if(!t)return;const d=t.dataset,y=scrollY;
  if(d.ns!==undefined){NSF=!!t.closest('.often');NS=NS===d.ns?null:d.ns;render();scrollTo(0,y);return}
  if(d.deli!==undefined){NS=NS==='🛵'+d.deli?null:'🛵'+d.deli;render();scrollTo(0,y);return}

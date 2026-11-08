@@ -37,7 +37,7 @@ function frHas(n){const b=s=>normDish(baseName(s));const m=b(n);return x=>{const
 function frMissing(){const miss=oft().filter(o=>{const h=frHas(o.name);return !S.fridge.some(f=>h(f.name))&&!S.list.some(i=>!i.done&&h(i.name))});if(!miss.length)return toast('足りない物はありません（よく買う品はそろっています）');
  const add=miss.map(o=>{const it={name:o.name,qty:o.qty||'',store:'',trip:curTrip(today()).wd,done:false};if(o.cat)it.cat=o.cat;if(o.price)it.price=o.price;return it});S.list.push(...add);save();render();
  undo1(`${add.length}品をリストに入れました（${add.slice(0,3).map(i=>i.name).join('、')}${add.length>3?'…':''}）`,()=>{S.list=S.list.filter(i=>!add.includes(i));save();render()},add.length)}
-function frMenu(){CON.open=true;CON.from=location.hash;CON.type='menu';CON.stage='form';CON.status='';CON.q='冷蔵庫の中身（場所・量つき）を見て、使い切れる献立を考えて。期限が近いものから先に使ってね。足りない材料があれば買い物リストの形でも教えて。';render();scrollTo(0,0)}
+function frMenu(){CON.open=true;CON.from=location.hash;CON.type='menu';CON.stage='form';CON.status='';CON.q='冷蔵庫の中身（場所・量つき）を見て、使い切れる献立を考えて。期限が近いものから先に使ってね。足りない材料があれば買い物リストの形でも教えて。\n'+kitchenNote();render();scrollTo(0,0)}
 function frPhoto(){CON.open=true;CON.from=location.hash;CON.type='fridge';CON.stage='form';CON.status='';CON.q='冷蔵庫の写真です。中身を読み取って fridge の形で返してください。';render();scrollTo(0,0);const f=document.getElementById('rc_file');if(f&&secret().url)f.click()}
 // --- 読み取り結果の確認画面 ---
 AISHAPE.fridge=r=>isArr(r.items)&&r.items.length>0&&r.items.length<=200&&r.items.every(i=>isObj(i)&&isStr(i.name)&&i.name.length>0&&i.name.length<=200&&(i.zone===undefined||isStr(i.zone))&&(i.amount===undefined||isStr(i.amount))&&(i.note===undefined||isStr(i.note))&&(i.until===undefined||i.until===''||isDate(i.until)));
@@ -81,11 +81,12 @@ function whApply(){const R=FR.wh;if(!R)return;const prev=S.fridge.map(f=>Object.
   const o=i.how==='over'&&S.fridge.find(x=>x.name===i.name);if(o)Object.assign(o,f,{id:o.id});else S.fridge.push(f);n++});
  if(!whSet().includes(R.rc))S.whrc.push(R.rc);if(S.whrc.length>1000)S.whrc=S.whrc.slice(-1000);
  FR.wh=null;save();render();scrollTo(0,0);undo1(`📦 倉庫に${n}品入れました`,()=>{S.fridge=prev;S.whrc=prevRc;save();render()},n)}
+document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-whid]');if(!c)return;const id=c.dataset.whid;if(c.checked)WHS.add(id);else WHS.delete(id);render()});
 // 倉庫の一覧：複数えらんで移動・おすすめどおり移動
 function whView(L){const its=L.filter(f=>f.zone===WH);if(!its.length)return '';[...WHS].forEach(id=>{if(!its.some(f=>f.id===id))WHS.delete(id)});
  const all=its.length>0&&its.every(f=>WHS.has(f.id)),n=WHS.size,selWh=!!(FR.sel&&its.some(f=>f.id===FR.sel));
  return `<h2>📦 倉庫 <span class="muted">${its.length}品</span></h2><div class="card wh"><div class="muted">チェックして好きな場所へうつす／消す。品名タップで1品ずつ・一部移動も可。</div>
- <ul class="chk whlist">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} onchange="this.checked?WHS.add('${esc(f.id)}'):WHS.delete('${esc(f.id)}');render()"></label>${frChip(f)}${f.sug?`<span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
+ <ul class="chk whlist">${its.map(f=>`<li><label class="lrow"><input type="checkbox" ${WHS.has(f.id)?'checked':''} data-whid="${esc(f.id)}"></label>${frChip(f)}${f.sug?`<span class="tag">おすすめ：${esc(f.sug)}</span>`:''}</li>`).join('')}</ul>
  <div class="row"><button class="sub" onclick="its_all()">${all?'ぜんぶ外す':'ぜんぶ選ぶ'}</button><button class="sub" onclick="whDel()" ${n?'':'disabled'}>✕ 倉庫から消す${n?`（${n}品）`:''}</button></div>
  <div class="muted">${n?`選んだ${n}品を好きな場所へうつす`:'下のボタンで好きな場所へ（先にチェック）'}</div>
  <div class="frmv">${ZONES.filter(x=>x!==WH).map(x=>`<button class="sub" onclick="whMove('${x}')" ${n?'':'disabled'}>${ZICON[x]} ${x}</button>`).join('')}</div>

@@ -11,7 +11,7 @@ function setConsult(field,v,el){const s=secret();v=String(v).trim();
  if(field==='key'){if(v.length>1000){if(el)el.value='';alert('キーが長すぎます');return}s.key=v}
  if(field==='header'){if(!/^[A-Za-z0-9-]{1,64}$/.test(v)){alert('ヘッダ名は英数字とハイフンだけです');return}s.header=v}
  saveSecret(s);render()}
-const mask=k=>k?'●'.repeat(Math.min(8,k.length))+k.slice(-4):'未設定';
+const mask=k=>k?'設定済み（キーは表示しません）':'未設定';
 function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃんに相談</h2><div class="card">
  相談の受け取りURL（https）<input id="c_url" value="${esc(s.url)}" placeholder="https://…" style="width:100%" onchange="setConsult('url',this.value,this)">
  送信キー（いま：${esc(mask(s.key))}）<input id="c_key" type="password" autocomplete="off" placeholder="貼り付けると上書き" style="width:100%" onchange="setConsult('key',this.value,this)">
@@ -45,6 +45,7 @@ function confirmPanel(){let pl;try{pl=consultPayload(CON.type,CON.q)}catch(e){pl
  <div>家計（今月${i.spend==='off'?'・送らない':i.spend==='sum'?'・'+(d.spendingCount||0)+'件を集計':'・'+((d.spending||[]).length)+'件'}）：<select aria-label="家計の送り方" onchange="setInc('spend',this.value)">${[['sum','費目別の集計だけ'],['detail','明細も送る'],['off','送らない']].map(([k,l])=>`<option value="${k}"${i.spend===k?' selected':''}>${l}</option>`).join('')}</select></div>
  <div class="muted">見本：${i.spend==='sum'?ex(Object.entries(d.spendingByCat||{}),([k,v])=>k+' '+yen(v)):i.spend==='detail'?ex(d.spending,r=>md(r.date)+' '+yen(r.amount)+(r.memo?' '+r.memo:'')):'送らない'}</div>
  ${cb('memo','メモ（品名以外の書き込み）も含める')}
+ ${['menu','recipe','lesson'].includes(CON.type)?'<div class="muted">家のグリルトースター（グリーン・100〜280℃・タイマー15分・品番は不明）の条件も、送信データに添えます。確認できていない容器や、煮る・蒸すは「できる」と書かないよう頼んでいます。</div>':''}
  <div class="muted">設定（地域・買い物日・予算）は毎回送ります。約${pl?Math.ceil(new Blob([pl.body]).size/1024):'?'}KB${pl&&pl.dropped?`（古い家計記録${pl.dropped}件は省きます）`:''}</div>
  <div class="row"><button class="sub" onclick="CON.stage='form';render()">もどる</button><button onclick="sendConsult()" ${CON.sending||!pl?'disabled':''}>${CON.sending?'送信中…':'この内容で送信'}</button></div>${st()}</div>`}
 function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
@@ -56,6 +57,7 @@ function consultPayload(type,q){const mo=ymd(today()).slice(0,7),i=CON.inc;
  if(i.spend!=='off'){const by={};month.forEach(r=>by[r.cat||'その他']=(by[r.cat||'その他']||0)+Number(r.amount||0));data.spendingByCat=by;data.spendingCount=month.length}
  if(i.spend==='detail')data.spending=month.map(r=>strip({date:r.date,store:r.store,cat:r.cat,amount:r.amount,memo:r.memo}));
  if(isObj(CON.extra)&&(CON.type==='compare'||CON.type==='order'))Object.assign(data,CON.extra);if(isObj(CON.orig)&&CON.type==='recipe')data.request=CON.orig; // v46：オリジナルレシピの依頼
+ if(['menu','recipe','lesson'].includes(type)&&typeof kitchenData==='function')data.kitchen=kitchenData();
  const p={app:'okaimono',id:CON.reqId||'',type,question:q,sentAt:new Date().toISOString(),data};
  if(CON.type==='receipt'){data.categories=CATS.map(c=>c[0]);data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'];data.itemTypes=['食材','日用品','その他']}if(CON.type==='fridge')data.zones=['冷蔵室','チルド','ドアポケット','野菜室','冷凍室','保存棚1','保存棚2','保存棚3'];
  let body=JSON.stringify(p),dropped=0;const size=t=>new Blob([t]).size;
