@@ -154,6 +154,14 @@ const MAIN = `(() => {
   location.hash = '#settings'; render();
   const setTxt = document.body.innerText;
   rec('key-mask', '高', setTxt.includes('設定済み（キーは表示しません）') && !setTxt.includes('ABCDEFGHIJKLMNOP') && !setTxt.includes('MNOP'), '末尾表示なし');
+  rec('no-origin-gate', '高', !document.getElementById('migrate') && typeof wipeSecret !== 'function' && typeof originShared !== 'function' && !!document.getElementById('c_url') && document.getElementById('c_key') && document.getElementById('c_key').type === 'password', '設定の相談欄');
+  const fetchesGate = [];
+  const fetchGate = window.fetch;
+  window.fetch = (u, o) => { fetchesGate.push(String(u)); return Promise.reject(new Error('blocked')); };
+  CON.open = true; CON.from = '#settings'; CON.type = 'menu'; CON.stage = 'confirm'; CON.q = '献立の確認'; CON.sending = false;
+  sendConsult();
+  rec('consult-not-gated', '高', fetchesGate.length === 1 && !(CON.status || '').includes('このアドレスからは送信しません') && !(CON.status || '').includes('専用アドレス'), (CON.status || '') + ' fetches=' + fetchesGate.length);
+  window.fetch = fetchGate;
   rec('csp-meta', '高', !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'), (document.querySelector('meta[http-equiv="Content-Security-Policy"]') || {}).content || 'なし');
   let captured = null;
   const oldCreate = URL.createObjectURL;
@@ -310,7 +318,7 @@ const MAIN = `(() => {
         const mm = monthsFrom(S.spend)['2026-11'];
         rec('ledger-split', '中', inside === 3510 && tripNow === 2010 && mm.total === 3510 && mm.zappi === 300 && mm.tabako === 40 && mm.sake === 30, 'inside=' + inside + ' trip=' + tripNow + ' ' + JSON.stringify({ t: mm.total, z: mm.zappi, tb: mm.tabako, sk: mm.sake }));
         rec('no-wakugai-word', '低', true, '画面は別ナビゲーションで見る');
-        rec('app-ver', '情報', APP_VER === 'okaimono-v59', APP_VER);
+        rec('app-ver', '情報', APP_VER === 'okaimono-v60', APP_VER);
         return JSON.stringify(R);
       });
     });

@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v59'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v60'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -110,16 +110,6 @@ function rescueHtml(){const canGo=RESCUE_OK||RAW_SAVED;
  if(LOAD_DROP)return `<div class="card tip" role="status">⚠️ 読めない記録が${LOAD_DROP}件あったので、それだけ外して開きました。元のデータは退避してあります。${droppedHtml()}<div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rok">わかった</button></div></div>`;return ''}
 function exportRescue(){const a=rescues();if(LOAD_RAW&&!a.some(x=>x.raw===LOAD_RAW))a.push({at:new Date().toISOString(),why:'退避できなかった元のデータ',raw:LOAD_RAW});if(!a.length)return toast('退避データはありません');RAW_SAVED=true;setTimeout(render,0);const blob=new Blob([JSON.stringify({app:'okaimono',rescue:true,exported:new Date().toISOString(),items:a.map(x=>({at:x.at,why:x.why,data:(()=>{try{return JSON.parse(x.raw)}catch(e){return x.raw}})()}))},null,1)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='おかいもの_退避データ_'+ymd(today())+'.json';l.click()}
 const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// github.io はパスが違っても一つのオリジン。そこに置いた秘密は別アプリから読める。専用ホストだけを隔離とみなす。
-function isSharedHost(host){host=String(host||'').split(':')[0].toLowerCase().replace(/\.$/,'');return host==='github.io'||host.endsWith('.github.io')}
-function originHost(){return location.hostname}
-function originShared(){return isSharedHost(originHost())}
-let PUBLIC_ORIGIN='';
-function dedicatedOrigin(){const u=String(PUBLIC_ORIGIN||'').trim();if(!u)return '';try{const x=new URL(u);if(x.protocol!=='https:'||x.username||x.password||x.search||x.hash)return '';if(isSharedHost(x.hostname))return '';return x.origin}catch(e){return ''}}
-function wipeSecret(){if(!confirm('このアドレスに残っている合言葉だけを消します。買い物・家計・冷蔵庫・献立は残します。よろしいですか？'))return;try{localStorage.removeItem('okaimono_secret');localStorage.removeItem('okaimono_pending_authng')}catch(e){}toast('合言葉を消しました');render()}
-function wipeOriginData(){if(!confirm('このアドレスのアキラハックの保存（買い物・家計・冷蔵庫・献立・返事・合言葉）を消します。専用アドレスで読み込んだあとに押してください。他のアプリの保存は消しません。'))return;const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('okaimono_'))keys.push(k)}keys.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});location.reload()}
-function migrationHtml(){if(!originShared())return '';const go=dedicatedOrigin();return `<div class="card err" id="migrate"><b>このアドレスでは合言葉を置けません</b><div>github.io は、パスが違っても同じ保存領域です。ここにある合言葉も買い物データも、同じサイトの別ページから読めます。アプリ本体は、別のホスト（専用アドレス）で開きます。</div><div>まず「全部を書き出す」でファイルを保存します。合言葉はファイルに入りません。専用アドレスの設定で入れ直します。読み込めたら、下のボタンでこのアドレスの合言葉を消してください。</div>${go?`<div class="row"><a class="link" href="${esc(go)}">専用アドレスを開く</a></div>`:'<div>専用アドレスはまだ入っていません。公開前に data/public-origin.json へ、github.io ではない https のホストだけを書きます。</div>'}<div class="row"><button onclick="backup()">全部を書き出す</button><button class="sub" onclick="wipeSecret()">合言葉をこのアドレスから消す</button></div><div class="row"><button class="sub" onclick="wipeOriginData()">読み込めたので、このアドレスのアキラハックの保存も消す</button></div></div>`}
-function freshHint(){if(originShared())return '';if(S.list.length||S.spend.length||S.fridge.length||String(S.prep||'').trim()||menuArr().some(x=>String(x||'').trim()))return '';return `<div class="card tip"><b>このアドレスは専用です</b><div>前のアドレスから移すときは、設定の「読み込んで戻す」で書き出したファイルを開きます。合言葉はファイルに入っていないので、設定で入れ直します。</div></div>`}
 // 本人のグリルトースター。色・温度・タイマー以外は未確認（品番不明）。使える容器や調理法は断定しない。
 const GRILL={name:'アラジンのグリルトースター（グリーン）',tempLo:100,tempHi:280,timerMin:15};
 function kitchenData(){const g=GRILL;return {appliance:'アラジン グリルトースター',color:'グリーン',modelKnown:false,tempC:[g.tempLo,g.tempHi],timerMin:g.timerMin,doNotAssert:['グリルパン','深皿','浅皿','ふた','焼き網','すのこ','アルミホイル','耐熱ガラス','クッキングシート','シリコン','煮る','蒸す','炊く','油をためる','汁や水を入れる']}}
@@ -211,7 +201,7 @@ settings(){const st=S.settings;return `${IS_DEMO?'<div class="card sample">🧪 
  <div class="row"><button onclick="backup()">全部を書き出す</button><label class="btnlike">読み込んで戻す<input type="file" accept=".json" hidden onchange="restore(event)"></label></div>
  <div class="muted">お店（追加した店）・買い物リスト・冷蔵庫・献立・家計・設定に加えて、献立とレシピのつながり（リンク）・アキラちゃんの答えの保管庫・注文の一覧もまとめて1つのファイルにします。</div></div>
  ${rescues().length?`<h2>退避データ</h2><div class="card"><div class="muted">読めなかったときに残した元のデータが${rescues().length}件あります。書き出したあとは消してかまいません。</div><div class="row"><button class="sub" data-act="rxp">退避データを書き出す</button><button class="sub" data-act="rdel">退避データを消す</button></div></div>`:''}<h2>見本データ</h2><div class="card"><button class="sub" onclick="clearSamples()">見本（サンプル）のデータをまとめて消す</button></div>
- <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p><p class="muted">${originShared()?'このアドレスは他のアプリと保存領域を共有しています。上の案内から書き出し、専用アドレスで戻したあと、合言葉をここから消してください。':'このアドレスは他のアプリと保存領域を共有していません。合言葉はこのアドレスの中だけにあり、書き出したファイルには入りません。'}</p><p class="muted ver">版：${esc(APP_VER)}</p>`}
+ <p class="muted">データはこのスマホの中だけに保存されます。機種変更の前に書き出してください。</p><p class="muted">送信キーはこのスマホのlocalStorageに保存し、バックアップには入れません。ただし同じgithub.ioオリジンにある別ページのスクリプトからも読めるため、この端末では信頼できるページだけ開いてください。</p><p class="muted ver">版：${esc(APP_VER)}</p>`}
 };
 function regName(){return (BASE.regions.find(r=>r.id===S.settings.region)||{}).name||''}
 function regionSeg(){return `<div class="seg wrap">${BASE.regions.map(r=>`<button class="${r.id===S.settings.region?'on':''}" data-act="region" data-id="${esc(r.id)}">${esc(r.name)}</button>`).join('')}</div>`}
@@ -337,7 +327,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  case 'smore':if(TYPES.includes(id)){SMORE[id]=1;render()}break;
  case 'region':if(BASE.regions.some(r=>r.id===id)){S.settings.region=id;save();render()}break;
  case 'often':{const o=oft()[+b.dataset.id];if(o){const t=val('li_trip');const it={name:o.name,qty:o.qty||'',store:val('li_store'),trip:t!==''?+t:curTrip(today()).wd,done:false};if(o.cat)it.cat=o.cat;if(o.price)it.price=o.price;S.list.push(it);save();render();toast('「'+o.name.slice(0,14)+'」を入れました')}break}}});
-function render(){const t=(location.hash||'#home').slice(1);const f=V[t]||V.home;$('#view').innerHTML=rescueHtml()+migrationHtml()+freshHint()+f();
+function render(){const t=(location.hash||'#home').slice(1);const f=V[t]||V.home;$('#view').innerHTML=rescueHtml()+f();
  document.querySelectorAll('#view input:not([type=checkbox]):not([type=radio]):not([type=file]),#view select,#view textarea').forEach(e=>{if(e.getAttribute('aria-label')||(e.id&&document.querySelector('label[for="'+e.id+'"]'))||e.closest('label'))return;const p=e.getAttribute('placeholder');if(p)e.setAttribute('aria-label',p);if(e.tagName!=='SELECT'&&!e.hasAttribute('maxlength')&&e.type!=='number'&&e.type!=='date')e.setAttribute('maxlength',e.tagName==='TEXTAREA'?'4000':'200')});showSaveErr();
  document.querySelectorAll('nav a,#hset').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+t));if(render._t!==t){render._t=t;window.scrollTo(0,0)}}
 function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def);
@@ -345,7 +335,7 @@ function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def
  S.spend=[{id:'a',date:d,store:'KOHYO 武庫之荘店',cat:'食材',amount:5480,memo:'サンプル'},{id:'b',date:d,store:'ウエルシア 尼崎南武庫之荘店',cat:'日用品',amount:1260,memo:'サンプル'}];
  S.fridge=[{id:'c',name:'にんじん',until:d,sample:true},{id:'d',name:'豚こま',until:'',sample:true}];S.menu=['','豚の生姜焼き（サンプル）','カレー（サンプル）','','','',''];S.prep='きんぴら（日曜に作る・水曜まで）';S.sampleKeys=['prep'];save()}
 window.addEventListener('hashchange',render);
-Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json()),fetch('data/public-origin.json').then(r=>r.ok?r.json():{}).catch(()=>({}))]).then(([r,s,o])=>{PUBLIC_ORIGIN=isObj(o)&&isStr(o.origin)?o.origin:'';BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
+Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json())]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
  const q=new URLSearchParams(location.search);if(IS_DEMO)demo();render();if(q.get('ai'))setTimeout(()=>aiDemo(q),50)}).catch(e=>{$('#view').innerHTML='データを読めませんでした：'+esc(e)});
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(r=>{if(!r)return;r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}
 async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();AT.open='demo';render();return}

@@ -198,9 +198,12 @@ try {
   const logic = JSON.parse(await evalJson(page.send, LOGIC));
   if (logic.fails.length) { console.log(JSON.stringify(logic, null, 2)); throw new Error('logic ' + logic.fails.length); }
   await page.send('Page.navigate', { url: 'http://127.0.0.1:' + port + '/index.html?demo=1#ai' });
-  await waitText(page.send, 'アキラハック');
-  await evalJson(page.send, `if((location.hash||'')!=='#ai')location.hash='#ai'`);
-  await waitText(page.send, 'ワンタップ相談');
+  for (let i = 0; i < 25; i++) {
+    const shown = await evalJson(page.send, `(() => { if (typeof render==='function' && location.hash!=='#ai') location.hash='#ai'; return !!(document.body && document.body.innerText.includes('ワンタップ相談') && !document.getElementById('migrate')); })()`).catch(() => false);
+    if (shown) break;
+    await sleep(300);
+    if (i === 24) throw new Error('アキラちゃん欄が開きません');
+  }
   await evalJson(page.send, `(async()=>{AI.mode='menu';await aiAsk();AT.open='demo';location.hash='#ai';render();})()`);
   await waitText(page.send, '料理レッスンを始める');
   await shot(page.send, 'lesson-entry.png');
