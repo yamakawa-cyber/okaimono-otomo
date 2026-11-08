@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v57'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v58'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -98,6 +98,8 @@ function load(){let t=null;try{t=localStorage.getItem(K)}catch(e){LOAD_ERR='保�
  catch(e){LOAD_ERR=e.message||'読めませんでした';LOAD_RAW=t;RESCUE_OK=stash(t,LOAD_ERR);console.log('load: 保存を止めて開始',LOAD_ERR);return structuredClone(def)}}
 function save(){closeUndo();if(LOAD_ERR){SAVE_ERR='データを読めなかったため、いまは保存を止めています（元のデータを守るため）。上の案内から退避データを書き出してください。';showSaveErr();return false}
  try{localStorage.setItem(K,JSON.stringify(S));if(SAVE_ERR){SAVE_ERR='';showSaveErr()}return true}catch(e){noteSaveErr(e);return false}}
+// 別タブが本体を書いたら、こちらの古い内存で上書きしない（このタブの storage イベントは自分の保存では来ない）
+window.addEventListener('storage',e=>{if(e.key!==K||LOAD_ERR||e.newValue==null)return;try{const d=validate(JSON.parse(e.newValue));S=d;if(document.getElementById('view'))render()}catch(err){}});
 function noteSaveErr(e){SAVE_ERR='保存できませんでした（スマホの保存領域がいっぱいの可能性があります）。いまの変更はアプリを閉じると消えます。不要な写真やデータを減らして、バックアップを書き出してください。';console.log('save failed',e&&e.name);showSaveErr()}
 function showSaveErr(){let b=document.getElementById('saveerr');if(!SAVE_ERR){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='saveerr';b.className='err saveerr';b.setAttribute('role','alert');document.body.insertBefore(b,document.body.firstChild)}b.textContent='⚠️ '+SAVE_ERR}
 function setLS(k,v){try{localStorage.setItem(k,v);return true}catch(e){noteSaveErr(e);return false}}
@@ -217,14 +219,14 @@ function tog(n){const i=S.list[n];if(!i)return;i.done=!i.done;delete i.cart;if(i
 let LV=null;const lvNow=()=>LV||(S.list.some(i=>i.uses&&i.uses.length)?'day':'trip');
 const baseName=n=>String(n).replace(/[\s　]+[0-9０-９０-９\/½¼].*$/,'').replace(/[\s　]+(少々|適量|1袋|1箱|1本|1個|1房|1丁|1束)$/,'').trim()||String(n);
 const qtyOf=n=>{const m=String(n).match(/[\s　]+([0-9０-９].*)$/);return m?m[1]:''};
-function cartField(its){const root=document.querySelector('li[data-del="'+its.map(i=>S.list.indexOf(i)).join(',')+'"]');const ai=root&&root.querySelector('input[data-yen]'),cs=root&&root.querySelector('select[data-cat]');return ai?{a:+ai.value,c:cs?cs.value:'',present:true}:{a:NaN,c:'',present:false}}
+function cartField(its,root){if(!root)root=document.querySelector('li[data-del="'+its.map(i=>S.list.indexOf(i)).join(',')+'"]');const ai=root&&root.querySelector('input[data-yen]'),cs=root&&root.querySelector('select[data-cat]');return ai?{a:+ai.value,c:cs?cs.value:'',present:true}:{a:NaN,c:'',present:false}}
 function markBought(its,field){const f=field||cartField(its),sid=its[0].spendId||uid();its.forEach(i=>{i.done=true;delete i.cart;i.spendId=sid});const first=its[0];S.spend=S.spend.filter(r=>r.id!==sid);first.yen=undefined;first.cat=undefined;
  if(f.present&&okAmt1(f.a)){first.yen=f.a;first.cat=f.c||'食材';S.spend.push({id:sid,date:ymd(today()),store:first.store||'',cat:first.cat,amount:f.a,memo:its.length>1?baseName(first.name):first.name});return true}return false}
 function togMany(ns,root){const its=ns.map(n=>S.list[n]).filter(Boolean);if(!its.length)return;const nd=!its.every(i=>i.done);
- if(nd)markBought(its);else its.forEach(i=>{if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId}delete i.yen;delete i.cat;i.done=false;delete i.cart});
+ if(nd)markBought(its,cartField(its,root));else its.forEach(i=>{if(i.spendId){S.spend=S.spend.filter(r=>r.id!==i.spendId);delete i.spendId}delete i.yen;delete i.cat;i.done=false;delete i.cart});
  const y=scrollY;save();render();scrollTo(0,y)}
 const cartBtn=(ns,on)=>`<button class="cartb${on?' on':''}" data-cart="${ns}" aria-pressed="${on?'true':'false'}" aria-label="カゴに入れた">${on?'✅ カゴ':'🛒 カゴ'}</button>`;
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-cart]');if(!b)return;e.preventDefault();const its=b.dataset.cart.split(',').map(Number).filter(Number.isInteger).map(n=>S.list[n]).filter(Boolean);if(!its.length)return;const f=cartField(its);if(f.present){if(okAmt1(f.a)){its[0].price=f.a;its[0].cat=f.c||its[0].cat||'食材'}else delete its[0].price}const on=!its.every(i=>i.cart);its.forEach(i=>{if(on)i.cart=true;else delete i.cart});const y=scrollY;save();render();scrollTo(0,y)});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-cart]');if(!b)return;e.preventDefault();const its=b.dataset.cart.split(',').map(Number).filter(Number.isInteger).map(n=>S.list[n]).filter(Boolean);if(!its.length)return;const f=cartField(its,b.closest('li'));if(f.present){if(okAmt1(f.a)){its[0].price=f.a;its[0].cat=f.c||its[0].cat||'食材'}else delete its[0].price}const on=!its.every(i=>i.cart);its.forEach(i=>{if(on)i.cart=true;else delete i.cart});const y=scrollY;save();render();scrollTo(0,y)});
 function oftEditor(){const L=oft();return `<div class="oftbox"><b>よく買う品の編集</b><div class="muted">変えたらそのまま保存されます。↑↓で並べかえ。</div>${L.map((o,k)=>`<div class="oftrow" data-ok="${k}"><input data-of="name" value="${esc(o.name)}" placeholder="品名" aria-label="品名"><input data-of="qty" value="${esc(o.qty||'')}" placeholder="いつもの量" aria-label="いつもの量"><select data-of="cat" aria-label="費目">${catOpts(o.cat||'食材')}</select><input data-of="price" type="number" inputmode="numeric" value="${o.price||''}" placeholder="いつもの値段" aria-label="いつもの値段"><div class="oftbtn"><button class="sub" onclick="oftMove(${k},-1)" ${k?'':'disabled'} aria-label="上へ">↑</button><button class="sub" onclick="oftMove(${k},1)" ${k<L.length-1?'':'disabled'} aria-label="下へ">↓</button><button class="sub" onclick="oftDel(${k})" aria-label="消す">✕</button></div></div>`).join('')}
 <div class="oftrow"><input id="of_name" maxlength="100" aria-label="新しい品名" placeholder="新しい品名"><input id="of_qty" maxlength="50" aria-label="いつもの量" placeholder="いつもの量"><select id="of_cat" aria-label="費目">${catOpts('食材')}</select><input id="of_price" aria-label="いつもの値段" min="1" type="number" inputmode="numeric" placeholder="いつもの値段"><div class="oftbtn"><button onclick="oftAdd()">＋ 追加</button></div></div>
 <div class="row"><button class="sub" onclick="oftReset()">はじめの品ぞろえに戻す</button></div></div>`}
@@ -236,8 +238,8 @@ function oftReset(){const prev=oft().slice();delete S.often;save();const y=scrol
 document.addEventListener('change',e=>{const f=e.target.dataset&&e.target.dataset.of;if(!f)return;const row=e.target.closest('[data-ok]');if(!row)return;const k=+row.dataset.ok;const L=oft().map(o=>Object.assign({},o));const o=L[k];if(!o)return;let v=e.target.value;
  if(f==='name'){v=v.trim().slice(0,100);if(!v){toast('品名は空にできません');return render()}o.name=v}else if(f==='price'){const p=+v;if(okAmt1(p))o.price=p;else delete o.price}else{v=v.trim().slice(0,50);if(v)o[f]=v;else delete o[f]}S.often=L;save()});
 function cartToBought(){const its=S.list.filter(i=>i.cart&&!i.done);if(!its.length)return;const rem=new Set(its),groups=[],seen=new Set();
- document.querySelectorAll('li[data-del]').forEach(li=>{const ns=li.dataset.del.split(',').map(Number),g=ns.map(n=>S.list[n]).filter(i=>rem.has(i)&&!seen.has(i));if(g.length&&g.every(i=>rem.has(i))){groups.push(g);g.forEach(i=>seen.add(i))}});its.forEach(i=>{if(!seen.has(i)){groups.push([i]);seen.add(i)}});
- const rec=[];groups.forEach(g=>{if(markBought(g))rec.push(g[0])});
+ document.querySelectorAll('li[data-del]').forEach(li=>{const ns=li.dataset.del.split(',').map(Number),g=ns.map(n=>S.list[n]).filter(i=>rem.has(i)&&!seen.has(i));if(g.length&&g.every(i=>rem.has(i))){groups.push([g,li]);g.forEach(i=>seen.add(i))}});its.forEach(i=>{if(!seen.has(i)){groups.push([[i],null]);seen.add(i)}});
+ const rec=[];groups.forEach(([g,li])=>{if(markBought(g,li?cartField(g,li):undefined))rec.push(g[0])});
  const y=scrollY;save();render();scrollTo(0,y);undo1(`カゴの中の${its.length}品（表示${groups.length}行）を「買った」にしました`+(rec.length?`（家計に${rec.length}件記録）`:''),()=>{const sids=new Set();its.forEach(i=>{i.done=false;i.cart=true;if(i.spendId){sids.add(i.spendId);delete i.spendId}delete i.yen;delete i.cat});S.spend=S.spend.filter(r=>!sids.has(r.id));save();render()},its.length)}
 document.addEventListener('change',e=>{const c=e.target.closest&&e.target.closest('input[data-tm]');if(!c)return;togMany(c.dataset.tm.split(',').map(Number).filter(Number.isInteger),c.closest('li'))});
 function delMany(ns){const gone=ns.map(k=>[k,S.list[k]]).filter(x=>x[1]);if(!gone.length)return;S.list=S.list.filter((_,k)=>!ns.includes(k));save();render();
