@@ -18,7 +18,7 @@ async function tab() {
   return { send, close: () => ws.close() };
 }
 async function ev(send, expression) { const out = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }); if (!out.result || out.result.exceptionDetails) throw new Error(JSON.stringify(out.result && out.result.exceptionDetails || out).slice(0, 900)); return out.result.result.value; }
-async function waitApp(send) { for (let i = 0; i < 40; i++) { try { const v = await ev(send, 'typeof APP_VER==="string" && document.readyState==="complete" ? APP_VER : ""'); if (v === 'okaimono-v63') return; } catch (e) {} await sleep(200); } throw new Error('reload'); }
+async function waitApp(send) { for (let i = 0; i < 40; i++) { try { const v = await ev(send, 'typeof APP_VER==="string" && document.readyState==="complete" ? APP_VER : ""'); if (v === 'okaimono-v64') return; } catch (e) {} await sleep(200); } throw new Error('reload'); }
 try {
   await ready();
   const page = await tab();
@@ -150,8 +150,8 @@ try {
     togDish('0|0');
     const panel = (document.querySelector('.dpanel') || {}).innerText || '';
     const opened = read();
-    const openOk = opened.L === 'box:' + bad + '|カレー' && panel.includes('塩') && panel.includes('牛乳') && panel.includes('自動ではつなぎません') && !panel.includes('作り方');
-    const milkBtn = [...document.querySelectorAll('[data-act=linkdish]')].find(b => (b.closest('.row') || b).innerText.includes('牛乳'));
+    const openOk = opened.L === 'box:' + bad + '|カレー' && panel.includes('塩') && panel.includes('牛乳') && panel.includes('切る') && panel.includes('煮ない') && panel.includes('自動ではつなぎません') && document.querySelectorAll('[data-act=linkdish]').length === 2;
+    const milkBtn = [...document.querySelectorAll('[data-act=linkdish]')].find(b => (b.closest('.ambig') || b).innerText.includes('牛乳'));
     if (milkBtn) milkBtn.click();
     const milk = rbox().find(r => r.ingredients[0] === '牛乳');
     const salt = rbox().find(r => r.ingredients[0] === '塩');
@@ -204,8 +204,44 @@ try {
   })()`);
   await sleep(800);
   const uniqueLate = await ev(page.send, `(() => { linkMenu(); const u = ${unique}; const lk = getLinks()['カレー'] || ''; return JSON.stringify({ lk, ok: lk === 'box:' + u.cid + '|カレー' && lk.indexOf(u.sid) < 0 }); })()`);
-  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes), links: JSON.parse(links), life: lifeJ, waited: JSON.parse(waited), imported, importSoon, importLate: JSON.parse(importLate), reloaded: JSON.parse(reloaded), manualReload: JSON.parse(manualReload), unique: JSON.parse(unique), uniqueLate: JSON.parse(uniqueLate) };
-  const a = out.amount, r = out.recipes, L = out.links, F = out.life, W = out.waited, S0 = out.importSoon || {}, S1 = out.importLate, R = out.reloaded, M = out.manualReload, U = out.uniqueLate;
+  const detail = await ev(page.send, `(() => {
+    window.__xss = 0;
+    const bad = 'id"mark';
+    const evil = '<img src=x onerror="window.__xss=1">';
+    const rec = (ings, steps) => ({ id: bad, name: 'カレー', ingredients: ings, steps, at: '2026-11-08', src: 't' });
+    S.menu = ['カレー','','','','','','']; save();
+    localStorage.setItem('okaimono_recipes', JSON.stringify([
+      rec(['塩 小さじ1', '胡椒 少々'], [{ t: '切る', d: '細かく' }, { t: '炒める', d: '弱火' + evil }]),
+      rec(['塩 小さじ1', '牛乳 200ml'], [{ t: '切る', d: '粗く' }, { t: '煮ない', d: 'そのまま' }])
+    ]));
+    localStorage.setItem('okaimono_links', JSON.stringify({ 'カレー': 'box:' + bad + '|カレー' }));
+    rbTold = false; DO = null; location.hash = '#fridge'; render();
+    linkMenu();
+    togDish('0|0');
+    const panel = document.querySelector('.dpanel');
+    const text = panel ? panel.innerText : '';
+    const html = panel ? panel.innerHTML : '';
+    const before = getLinks()['カレー'] || '';
+    const cards = [...document.querySelectorAll('.dpanel .ambig')].map(el => el.innerText);
+    const marks = ['胡椒', '牛乳', '細かく', '粗く', '炒める', '煮ない', '弱火', 'そのまま', '小さじ1', '200ml'];
+    const see = marks.every(s => text.includes(s));
+    const distinct = cards.length === 2 && cards[0] !== cards[1] && cards.some(t => t.includes('胡椒') && t.includes('細かく') && t.includes('炒める')) && cards.some(t => t.includes('牛乳') && t.includes('粗く') && t.includes('煮ない') && t.includes('そのまま'));
+    const buttons = [...document.querySelectorAll('.dpanel [data-act=linkdish]')];
+    const safe = window.__xss === 0 && !panel.querySelector('img') && html.includes('&lt;img') && buttons.every(b => /^[A-Za-z0-9_-]{1,60}$/.test(b.dataset.id));
+    const btn = buttons.find(b => { const t = b.closest('.ambig').innerText; return t.includes('牛乳') && t.includes('粗く') && t.includes('そのまま'); });
+    const second = rbox().find(r => (r.ingredients || []).some(x => String(x).includes('牛乳')));
+    const first = rbox().find(r => (r.ingredients || []).some(x => String(x).includes('胡椒')));
+    if (btn) btn.click();
+    linkMenu();
+    const after = getLinks()['カレー'] || '';
+    const pickedText = (document.querySelector('.dpanel') || {}).innerText || '';
+    const stored = JSON.parse(localStorage.getItem('okaimono_recipes') || '[]');
+    const blob = JSON.stringify(stored);
+    const kept = stored.length === 2 && blob.includes('胡椒') && blob.includes('細かく') && blob.includes('牛乳') && blob.includes('そのまま') && blob.includes('弱火');
+    return JSON.stringify({ before, see, distinct, safe, xss: window.__xss, nbtn: buttons.length, picked: !!(second && first && btn && after === 'box:' + second.id + '|カレー' && after.indexOf(first.id) < 0), shows: pickedText.includes('牛乳') && pickedText.includes('粗く') && pickedText.includes('そのまま') && !pickedText.includes('胡椒'), kept });
+  })()`);
+  const out = { amount: JSON.parse(amount), recipes: JSON.parse(recipes), links: JSON.parse(links), life: lifeJ, waited: JSON.parse(waited), imported, importSoon, importLate: JSON.parse(importLate), reloaded: JSON.parse(reloaded), manualReload: JSON.parse(manualReload), unique: JSON.parse(unique), uniqueLate: JSON.parse(uniqueLate), detail: JSON.parse(detail) };
+  const a = out.amount, r = out.recipes, L = out.links, F = out.life, W = out.waited, S0 = out.importSoon || {}, S1 = out.importLate, R = out.reloaded, M = out.manualReload, U = out.uniqueLate, D = out.detail;
   const ok = a.note && a.blank.done === false && a.blank.spend === 0 && a.blank.thuChecked === false && a.blank.said
     && a.zero.done === false && a.zero.spend === 0 && a.zero.said
     && a.bought.done === true && a.bought.n === 1 && a.bought.amount === 480 && a.bought.cat === '日用品' && a.bought.monDone
@@ -215,8 +251,9 @@ try {
     && F.immediate.L === 'box:id"mark|カレー' && F.immediate.dang && F.afterLink.L === 'box:id"mark|カレー' && F.openOk && F.manualOk && W.still
     && M.L === 'box:' + F.milkId + '|カレー' && M.L2 === M.L
     && S0.L === 'box:id"mark|カレー' && S0.both === '塩,牛乳' && S0.dang && S1.kept && S1.both === '塩,牛乳' && S1.dang
-    && R.L === 'box:id"mark|カレー' && R.L2 === R.L && R.dang && R.both === '塩,牛乳' && R.ver === 'okaimono-v63'
-    && U.ok;
+    && R.L === 'box:id"mark|カレー' && R.L2 === R.L && R.dang && R.both === '塩,牛乳' && R.ver === 'okaimono-v64'
+    && U.ok
+    && D.before === 'box:id"mark|カレー' && D.see && D.distinct && D.safe && D.xss === 0 && D.nbtn === 2 && D.picked && D.shows && D.kept;
   console.log(JSON.stringify(out, null, 2));
   if (!ok) process.exitCode = 2; else console.log('REPRO_OK');
   page.close();

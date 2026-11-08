@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v63'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v64'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -281,15 +281,18 @@ const ingName=x=>normDish(baseName(typeof x==='string'?x:(x&&x.name)||'')).repla
 function ingState(x){const n=ingName(x);const hit=S.list.filter(i=>{const m=normDish(baseName(i.name));return m&&(m===n||m.includes(n)||n.includes(m))});return hit.some(i=>i.done)?'bought':hit.length?'listed':''}
 const PANTRY=/^(塩|こしょう|しょうゆ|醤油|みりん|酒|砂糖|酢|サラダ油|油|水|顆粒だし|だし|片栗粉|小麦粉|味噌|みそ|アルミホイル|ごま油|バター)/;
 function linkDish(nk,id){if(typeof RBID==='undefined'||!RBID.test(id)||typeof rbox!=='function')return;const r=rbox().find(x=>x.id===id);if(!r)return;const L=getLinks();L[String(nk||'').slice(0,200)]='box:'+r.id+'|'+r.name;setLS(LK,JSON.stringify(L));render()}
+function ingLine(x){if(typeof x==='string')return x;if(isObj(x))return [x.name,x.qty||x.amount].filter(Boolean).join(' ');return ''}
+function stepHtml(st){if(typeof st==='string')return `<li>${esc(st)}</li>`;if(!isObj(st))return '';const d=st.d||st.detail||'',tip=isStr(st.tip)?st.tip:'';return `<li><b>${esc(st.t||st.title||'')}</b>${d?' '+esc(d):''}${tip?` <span class="muted">${esc(tip)}</span>`:''}${st.min?` <span class="muted">約${esc(st.min)}分</span>`:''}</li>`}
 function ambigPanel(dish){const wins=recipeWinners(dish).filter(r=>isStr(r.eid)&&r.eid.startsWith('box:')&&(typeof RBID==='undefined'||RBID.test(r.eid.slice(4))));const nk=normDish(dish);
- return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">同じ名前のレシピが${wins.length}件あります。自動ではつなぎません。使うものを選ぶと、そのレシピだけにつながり、あとから別のレシピへは戻りません。</div>
- ${wins.map(r=>{const ing=(r.rc.ingredients||[])[0]||'',st=r.rc.steps&&r.rc.steps[0],t=st&&(st.t||(typeof st==='string'?st:''))||'';return `<div class="row"><span>${esc(r.rc.name)}（${esc(ing)}・${esc(t)}）</span><button class="sub" data-act="linkdish" data-nk="${esc(nk)}" data-id="${esc(r.eid.slice(4))}">このレシピにつなぐ</button></div>`}).join('')}</div>`}
+ return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">同じ名前のレシピが${wins.length}件あります。自動ではつなぎません。中身を見てから、使うものを選んでください。選ぶと、そのレシピだけにつながります。</div>
+ ${wins.map(r=>{const rc=r.rc||{},meta=[rc.serves,rc.time].filter(Boolean).join('・'),ings=(rc.ingredients||[]).map(ingLine).filter(s=>s!==''),steps=(rc.steps||[]).map(stepHtml).join('');
+  return `<div class="ambig"><b>${esc(rc.name||dish)}</b>${meta?` <span class="muted">${esc(meta)}</span>`:''}<div><b>材料</b></div><ul class="ing">${ings.map(t=>`<li><span>${esc(t)}</span></li>`).join('')||'<li class="muted">なし</li>'}</ul><div><b>作り方</b></div><ol class="steps">${steps||'<li class="muted">なし</li>'}</ol><div class="row"><button class="sub" data-act="linkdish" data-nk="${esc(nk)}" data-id="${esc(r.eid.slice(4))}">このレシピにつなぐ</button></div></div>`}).join('')}</div>`}
 function dishPanel(w,dish){const wins=recipeWinners(dish);const f=findRecipeObj(dish);if(!f&&wins.length>1)return ambigPanel(dish);const id=f&&(f.eid+'|'+f.rc.name);const rc=f&&f.rc;
  if(rc){const ing=(rc.ingredients||[]);const miss=ing.filter(x=>!ingState(x)&&!PANTRY.test(ingName(x)));
   return `<div class="card dpanel"><b>🍳 ${esc(rc.name)}</b> <span class="muted">${esc(rc.serves||'')}・${esc(rc.time||'')}</span>
   <h3>材料</h3><ul class="ing">${ing.map(x=>{const st=ingState(x);const t=typeof x==='string'?x:(x.name||'')+(x.qty?' '+x.qty:'');return `<li><span>${esc(t)}</span>${st==='bought'?'<span class="tag ok">買った</span>':st==='listed'?'<span class="tag">リスト済み</span>':PANTRY.test(ingName(x))?'<span class="tag muted">家にある?</span>':''}</li>`}).join('')}</ul>
   <div class="row">${miss.length?`<button data-act="mtl" data-w="${w}" data-id="${esc(id)}">🛒 足りない材料をリストへ（${miss.length}）</button>`:'<span class="muted">材料はそろっています</span>'}</div>
-  <h3>作り方</h3><ol class="steps">${(rc.steps||[]).map(st=>`<li>${esc(st.t||'')}${st.min?` <span class="muted">約${esc(st.min)}分</span>`:''}</li>`).join('')}</ol>
+  <h3>作り方</h3><ol class="steps">${(rc.steps||[]).map(stepHtml).join('')}</ol>
   <div class="row"><button data-act="dles" data-id="${esc(id)}">👩‍🍳 料理レッスンを始める</button></div></div>`}
  const buys=S.list.filter(i=>(i.uses||[]).some(u=>u.d===w&&(!u.dish||normDish(dish).includes(normDish(u.dish))||normDish(u.dish).includes(normDish(dish)))));
  return `<div class="card dpanel"><b>🍽 ${esc(dish)}</b><div class="muted">レシピはまだ保管庫にありません</div>${buys.length?`<h3>この料理で買うもの</h3><ul class="ing">${buys.map(i=>`<li><span>${esc(i.name)}</span>${i.done?'<span class="tag ok">買った</span>':'<span class="tag">リスト済み</span>'}</li>`).join('')}</ul>`:''}
