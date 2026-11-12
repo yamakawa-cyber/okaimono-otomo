@@ -1,5 +1,5 @@
 {
- "source": "メイミーの店舗リスト（2026-10-25調査）。スーパー・ドラッグストア・100均は各チェーンの公式店舗ページで確認（確認日 2026-10-25）。距離はすべて阪急武庫之荘駅からの直線距離（店の住所を国土地理院の住所検索で位置にして計算。道のりはもっと長い）。「不明」は公式で確認できなかった項目。 2026-11-01 週1回の見直し（閉店・休業・営業時間のお知らせ、阪急オアシスマルシェ武庫之荘店を追加）。 2026-11-08 週1回の見直し（公式ページで営業時間・休業・お知らせを確認。業務スーパー数店の営業時間を公式の営業時間欄に合わせて更新）。",
+ "source": "メイミーの店舗リスト（2026-10-25調査）。スーパー・ドラッグストア・100均は各チェーンの公式店舗ページで確認（確認日 2026-10-25）。距離はすべて阪急武庫之荘駅からの直線距離（店の住所を国土地理院の住所検索で位置にして計算。道のりはもっと長い）。「不明」は公式で確認できなかった項目。 2026-11-01 週1回の見直し（閉店・休業・営業時間のお知らせ、阪急オアシスマルシェ武庫之荘店を追加）。 2026-11-08 週1回の見直し（公式ページで営業時間・休業・お知らせを確認。業務スーパー数店の営業時間を公式の営業時間欄に合わせて更新）。 2026-11-12 固定の特売日を出典つきで追加（オオジ武庫之荘北店・関西スーパー全店・マルハチ全店・マックスバリュ武庫元町店ほか）。",
  "stores": [
   {
    "id": "s01",
@@ -12,18 +12,74 @@
    "dist": "約0.8km",
    "hours": "9:30〜19:30（公式）",
    "closed": "なし（年末年始変更あり／公式）",
-   "saleInfo": "不明",
+   "saleInfo": "日 米・精肉鮮魚／月 たまご・鮮魚／火 青果ビックリ市（公式）／水 米・乳製品／木 パン・青果均一祭／金 たまご／土 鮮魚・焼肉／毎月1日・15日ポイント2倍（トクバイ店舗ページ）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "米特売日・精肉鮮魚大奉仕",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 0
+    },
+    {
+     "text": "たまご特売日・鮮魚よりどりセール",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 1
+    },
+    {
+     "text": "青果ビックリ市",
+     "src": "https://www.superoog.com/bikkuriichi/",
+     "srcT": "公式「青果ビックリ市」（毎週火曜）",
+     "wd": 2
+    },
+    {
+     "text": "米特売日・乳製品大特価",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 3
+    },
+    {
+     "text": "パン大特価・青果均一祭",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 4
+    },
+    {
+     "text": "たまご特売日",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 5
+    },
+    {
+     "text": "鮮魚とれとれ市・焼肉大奉仕",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "wd": 6
+    },
+    {
+     "text": "ポイント2倍DAY",
+     "src": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114",
+     "srcT": "トクバイ店舗ページ（イベント情報）",
+     "md": [
+      1,
+      15
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗一覧",
      "u": "https://www.superoog.com/shop/"
+    },
+    {
+     "t": "トクバイ（特売日・チラシ）",
+     "u": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%82%AA%E3%82%AA%E3%82%B8/371114"
     }
    ],
    "lat": 34.76164,
    "lng": 135.39365,
-   "checked": "2026-11-08"
+   "checked": "2026-11-12"
   },
   {
    "id": "s02",
@@ -41,11 +97,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     }
    ],
    "links": [
@@ -73,24 +133,30 @@
    "dist": "約0.8km",
    "hours": "24時間（公式）",
    "closed": "不明",
-   "saleInfo": "毎月10日ありが10デー（イオン系共通。本店舗の適用は未確認）／チラシに『火曜得だ値』『15日iAEON祭り』の掲載あり",
+   "saleInfo": "火 得だ値（チラシ）／毎月10日 ありが10デー（店舗チラシで確認）／15日 iAEON祭り（チラシ）",
    "note": "",
    "sales": [
     {
-     "wd": 2,
-     "text": "火曜得だ値（チラシ掲載）"
+     "text": "火曜得だ値（チラシ掲載）",
+     "src": "https://www.shufoo.net/pntweb/shopDetail/176516/",
+     "srcT": "Shufoo 店舗チラシ",
+     "wd": 2
     },
     {
+     "text": "ありが10デー",
+     "src": "https://www.shufoo.net/pntweb/shopDetail/176516/",
+     "srcT": "Shufoo 店舗チラシ「10日はありが10デー」",
      "md": [
       10
-     ],
-     "text": "ありが10デー（本店舗の適用は未確認）"
+     ]
     },
     {
+     "text": "iAEON祭り（チラシ掲載）",
+     "src": "https://www.shufoo.net/pntweb/shopDetail/176516/",
+     "srcT": "Shufoo 店舗チラシ",
      "md": [
       15
-     ],
-     "text": "iAEON祭り（チラシ掲載）"
+     ]
     }
    ],
    "links": [
@@ -107,7 +173,7 @@
      "u": "https://www.shufoo.net/pntweb/shopDetail/176516/"
     }
    ],
-   "checked": "2026-11-08",
+   "checked": "2026-11-12",
    "lat": 34.7571,
    "lng": 135.38545
   },
@@ -170,34 +236,46 @@
    "dist": "約0.8km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "月パン／火玉子／水冷凍食品／木 商品限定ポイント5倍／金『金曜八撰』／毎月8日ポイント5倍（トクバイ）",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
    "sales": [
     {
-     "wd": 1,
-     "text": "パン"
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
     },
     {
-     "wd": 2,
-     "text": "玉子"
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
     },
     {
-     "wd": 3,
-     "text": "冷凍食品"
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
     },
     {
-     "wd": 4,
-     "text": "商品限定ポイント5倍"
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
     },
     {
-     "wd": 5,
-     "text": "金曜八撰"
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
     },
     {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
      "md": [
       8
-     ],
-     "text": "ポイント5倍"
+     ]
     }
    ],
    "links": [
@@ -208,9 +286,13 @@
     {
      "t": "チラシ・特売／公式",
      "u": "https://tokubai.co.jp/%E3%82%B9%E3%83%BC%E3%83%91%E3%83%BC%E3%83%9E%E3%83%AB%E3%83%8F%E3%83%81/14353"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-11-08",
+   "checked": "2026-11-12",
    "lat": 34.75268,
    "lng": 135.38538
   },
@@ -225,12 +307,13 @@
    "dist": "約0.2km",
    "hours": "9:00〜21:45（公式）",
    "closed": "不明",
-   "saleInfo": "毎週金曜 牛乳の日（トクバイ）／金曜ポイント3倍（まとめサイト情報・公式未確認）",
+   "saleInfo": "毎週金曜 牛乳の日（以前のトクバイ掲載。2026-11-12時点で公式・トクバイとも確認できず＝要確認）",
    "note": "",
    "sales": [
     {
      "wd": 5,
-     "text": "牛乳の日（ポイント3倍は公式未確認）"
+     "text": "牛乳の日",
+     "unv": true
     }
    ],
    "links": [
@@ -245,7 +328,7 @@
    ],
    "lat": 34.75272,
    "lng": 135.3923,
-   "checked": "2026-11-08"
+   "checked": "2026-11-12"
   },
   {
    "id": "s08",
@@ -265,26 +348,34 @@
      "md": [
       10
      ],
-     "text": "ありが10デー"
+     "text": "ありが10デー",
+     "src": "https://tokubai.co.jp/KOHYO/4684",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     },
     {
      "md": [
       15
      ],
-     "text": "GG感謝デー"
+     "text": "GG感謝デー",
+     "src": "https://tokubai.co.jp/KOHYO/4684",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     },
     {
      "md": [
       20,
       30
      ],
-     "text": "お客さま感謝デー"
+     "text": "お客さま感謝デー",
+     "src": "https://tokubai.co.jp/KOHYO/4684",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     },
     {
      "md": [
       25
      ],
-     "text": "iAEON祭り"
+     "text": "iAEON祭り",
+     "src": "https://tokubai.co.jp/KOHYO/4684",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     }
    ],
    "links": [
@@ -297,7 +388,7 @@
      "u": "https://tokubai.co.jp/KOHYO/4684"
     }
    ],
-   "checked": "2026-11-08",
+   "checked": "2026-11-12",
    "lat": 34.7512,
    "lng": 135.39441
   },
@@ -388,9 +479,41 @@
    "dist": "約1.8km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "伊丹寄り",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5834#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5834#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -401,7 +524,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.76096,
    "lng": 135.41128
   },
@@ -473,11 +596,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -510,11 +637,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -566,16 +697,48 @@
    "dist": "約2.0km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5840#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5840#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "チラシ・特売／公式",
      "u": "https://www.kansaisuper.co.jp/shop/5840"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.73671,
    "lng": 135.39951
   },
@@ -647,11 +810,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -684,11 +851,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/174028",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/174028",
+     "srcT": "トクバイ店舗ページ（イベント情報）"
     }
    ],
    "links": [
@@ -764,9 +935,41 @@
    "dist": "約4.9km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5835#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5835#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -777,7 +980,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.75508,
    "lng": 135.33983
   },
@@ -797,11 +1000,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -825,9 +1032,41 @@
    "dist": "約4.8km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-06-13から「関西スーパーデイリーマート広田店」（公式）",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5836#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5836#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -838,7 +1077,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-11-01",
+   "checked": "2026-11-12",
    "lat": 34.74692,
    "lng": 135.34241
   },
@@ -914,11 +1153,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -970,9 +1213,41 @@
    "dist": "約4.1km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5841#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5841#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -983,7 +1258,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.71859,
    "lng": 135.40454
   },
@@ -1031,11 +1306,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -1063,9 +1342,41 @@
    "dist": "約5.3km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5839#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5839#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1076,7 +1387,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.72793,
    "lng": 135.3452
   },
@@ -1091,9 +1402,41 @@
    "dist": "約5.1km",
    "hours": "9:00〜22:00（公式）",
    "closed": "11/18(水)〜20(金) 臨時休業（公式お知らせ）",
-   "saleInfo": "不明",
-   "note": "11/17(火)は18:00閉店、11/21(土)に「daily mart」としてリニューアル。10%引セール・木金市・たまごの日は終了（公式お知らせ 2026-10-19）",
-   "sales": [],
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
+   "note": "11/17(火)は18:00閉店、11/21(土)に「daily mart」としてリニューアル。10%引セール・木金市・たまごの日は終了（公式お知らせ 2026-10-19） 11/18(水)〜20(金)臨時休業、11/21(土)リニューアルオープン（公式お知らせ 2026-11-12確認）",
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5838#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5838#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1104,7 +1447,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-11-08",
+   "checked": "2026-11-12",
    "lat": 34.71193,
    "lng": 135.37118
   },
@@ -1124,11 +1467,15 @@
    "sales": [
     {
      "wd": 3,
-     "text": "mandai payチャージ特典日（万代共通）"
+     "text": "mandai payチャージ特典日（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     },
     {
      "wd": 6,
-     "text": "mandai pay払いでポイント3倍（万代共通）"
+     "text": "mandai pay払いでポイント3倍（万代共通）",
+     "src": "https://tokubai.co.jp/%E4%B8%87%E4%BB%A3/3104",
+     "srcT": "トクバイ（万代共通のイベント情報・伊丹野間店で確認）"
     }
    ],
    "links": [
@@ -1673,9 +2020,41 @@
    "dist": "約3.3km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5824#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5824#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1686,7 +2065,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.7779,
    "lng": 135.41628
   },
@@ -1701,16 +2080,48 @@
    "dist": "約3.4km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5831#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5831#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式ページ",
      "u": "https://www.kansaisuper.co.jp/shop/5831"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.78072,
    "lng": 135.41341
   },
@@ -1725,16 +2136,48 @@
    "dist": "約3.8km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5832#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5832#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式ページ",
      "u": "https://www.kansaisuper.co.jp/shop/5832"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.78096,
    "lng": 135.42053
   },
@@ -1749,9 +2192,41 @@
    "dist": "約5.3km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5833#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5833#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1762,7 +2237,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.80155,
    "lng": 135.38898
   },
@@ -1777,9 +2252,41 @@
    "dist": "約4.3km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5829#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5829#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1790,7 +2297,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.79118,
    "lng": 135.38016
   },
@@ -1805,9 +2312,41 @@
    "dist": "約6.8km",
    "hours": "9:00〜21:50（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "2026-10-25 公式ページで確認。チラシの中身は載せない",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5823#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5823#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
@@ -1818,7 +2357,7 @@
      "u": "https://www.kansaisuper.co.jp/shop"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.81519,
    "lng": 135.38756
   },
@@ -2173,16 +2712,59 @@
    "dist": "約2.5km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/koububashi/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.76363,
    "lng": 135.36836
   },
@@ -2988,16 +3570,59 @@
    "dist": "約2.9km",
    "hours": "9:00〜21:45（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/shinitami/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.76985,
    "lng": 135.41952
   },
@@ -3012,16 +3637,59 @@
    "dist": "約1.6km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/tachibana/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.74055,
    "lng": 135.39966
   },
@@ -4861,16 +5529,59 @@
    "dist": "約3.7km",
    "hours": "9:00〜21:45（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/shimosakabe/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.74328,
    "lng": 135.43184
   },
@@ -5121,16 +5832,59 @@
    "dist": "約3.5km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/osyo/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.7225,
    "lng": 135.39651
   },
@@ -5504,16 +6258,59 @@
    "dist": "約5.3km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/sakurasyukugawa/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.74076,
    "lng": 135.33867
   },
@@ -6070,16 +6867,59 @@
    "dist": "約4.9km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/sonoda/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.7552,
    "lng": 135.44711
   },
@@ -6118,16 +6958,59 @@
    "dist": "約4.3km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/kinrakuji/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.72561,
    "lng": 135.42459
   },
@@ -6391,16 +7274,59 @@
    "dist": "約4.5km",
    "hours": "9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/amagasaki/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.73299,
    "lng": 135.43625
   },
@@ -7176,16 +8102,48 @@
    "dist": "約6.8km",
    "hours": "平日 9:00〜22:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月・火 10%引（公式）／木・金 木金市（WEBチラシ）／土 Sポイント4倍（2027/3/27まで・公式）",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 1
+    },
+    {
+     "text": "本体価格より10%引（一部除外品あり）",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「月曜日・火曜日は10%引」",
+     "wd": 2
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5837#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 4
+    },
+    {
+     "text": "木金市（均一セール・中身は週のチラシ）",
+     "src": "https://www.kansaisuper.co.jp/shop/5837#shop_flier",
+     "srcT": "公式店舗ページのWEBチラシ「木金市」",
+     "wd": 5
+    },
+    {
+     "text": "Sポイント対象カード提示で全品Sポイント4倍",
+     "src": "https://www.kansaisuper.co.jp/",
+     "srcT": "公式トップ「3月27日(土)まで毎週土曜日」",
+     "wd": 6,
+     "until": "2027-03-27"
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.kansaisuper.co.jp/shop/5837"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.75185,
    "lng": 135.319
   },
@@ -7430,16 +8388,59 @@
    "dist": "約6.0km",
    "hours": "9:00〜21:00（公式）",
    "closed": "不明",
-   "saleInfo": "不明",
+   "saleInfo": "月 パン／火 玉子／水 冷凍食品／木 商品限定ポイント5倍／金 金曜八撰／毎月8日ポイント5倍（公式カレンダー）。ほかのポイント3倍・5倍の日は月ごとに変わる",
    "note": "",
-   "sales": [],
+   "sales": [
+    {
+     "text": "パンの日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 1
+    },
+    {
+     "text": "玉子の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 2
+    },
+    {
+     "text": "冷凍食品の日",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 3
+    },
+    {
+     "text": "商品限定ポイント5倍",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 4
+    },
+    {
+     "text": "金曜八撰",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）",
+     "wd": 5
+    },
+    {
+     "text": "ポイント5倍デー",
+     "src": "https://www.supermaruhachi.co.jp/calendar/",
+     "srcT": "公式ポイントカレンダー（11月・全店用）・トクバイ店舗ページ",
+     "md": [
+      8
+     ]
+    }
+   ],
    "links": [
     {
      "t": "公式店舗ページ",
      "u": "https://www.supermaruhachi.co.jp/shop/kuise/"
+    },
+    {
+     "t": "公式ポイントカレンダー",
+     "u": "https://www.supermaruhachi.co.jp/calendar/"
     }
    ],
-   "checked": "2026-10-25",
+   "checked": "2026-11-12",
    "lat": 34.71773,
    "lng": 135.44229
   },

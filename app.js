@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v64'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v65'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -115,14 +115,34 @@ const GRILL={name:'アラジンのグリルトースター（グリーン）',te
 function kitchenData(){const g=GRILL;return {appliance:'アラジン グリルトースター',color:'グリーン',modelKnown:false,tempC:[g.tempLo,g.tempHi],timerMin:g.timerMin,doNotAssert:['グリルパン','深皿','浅皿','ふた','焼き網','すのこ','アルミホイル','耐熱ガラス','クッキングシート','シリコン','煮る','蒸す','炊く','油をためる','汁や水を入れる']}}
 function kitchenNote(){const g=GRILL;return `【家の調理器具】${g.name}。確認できているのは、温度${g.tempLo}℃〜${g.tempHi}℃、タイマーは1回${g.timerMin}分まで、だけです。品番は不明です。グリルパン・深皿・浅皿・ふた・焼き網・すのこ・アルミホイル・耐熱ガラス・クッキングシート・シリコンが使えるとは書かないでください。煮る・蒸す・炊く・油をためる・汁や水を庫内に入れる手順も、この機種でできると書かないでください。トースターで作るなら、取扱説明書で入れてよいと確認できた受け皿に乾いた食材をのせ、${g.tempLo}〜${g.tempHi}℃・${g.timerMin}分以内で焼いてください。${g.timerMin}分で火が通らなければ、取り出して様子を見てからタイマーをやり直してください。油は薄くぬるだけです。プラスチック・紙・木は入れません。作動中はそばを離れません。本体とガラスは熱いので乾いたミトンで持ちます。肉と魚は中まで火が通ってから食べます。カーテンなど燃えやすいものから離し、子どもとペットを近づけません。`}
 const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
-const today=()=>{const p=new URLSearchParams(location.search).get('today');return p&&isDate(p)?new Date(p+'T12:00'):new Date()};
+const jstYmd=()=>{try{const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());if(isDate(f))return f}catch(e){}return ymd(new Date())};
+const today=()=>{const p=new URLSearchParams(location.search).get('today');return new Date((p&&isDate(p)?p:jstYmd())+'T12:00')}; // v65 日本時間の日付（正午に置いて曜日・日付のずれを防ぐ）
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const md=v=>{if(!isDate(v))return '';const d=new Date(v+'T12:00');return (d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）'};
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const stores=()=>BASE.stores.concat(S.userStores.filter(isObj)).sort((a,b)=>(parseFloat(String(a.dist||'').replace(/[^\d.]/g,''))||99)-(parseFloat(String(b.dist||'').replace(/[^\d.]/g,''))||99));
 const regStores=()=>stores().filter(s=>s.region===S.settings.region);
-function salesOn(s,d){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text&&((x.wd!==undefined&&x.wd===d.getDay())||(isArr(x.md)&&x.md.includes(d.getDate()))))}
-function saleText(s){return (isArr(s.sales)?s.sales:[]).filter(x=>isObj(x)&&isStr(x.text)&&x.text).map(x=>okWd(x.wd)?WD[x.wd]+'曜：'+x.text:isArr(x.md)?'毎月'+x.md.join('・')+'日：'+x.text:x.text)}
+// v65 固定の特売日。wd=曜日（nth:[1..5,-1]で第n・最終）／md=毎月の日付（-1=月末）／from・until=期間／src・srcT=出典／unv=要確認
+const okSale=x=>isObj(x)&&isStr(x.text)&&x.text.length>0;
+function saleHit(x,d){if(!okSale(x))return false;const t=ymd(d);if(isDate(x.from)&&t<x.from)return false;if(isDate(x.until)&&t>x.until)return false;
+ if(x.wd!==undefined){if(!okWd(x.wd)||x.wd!==d.getDay())return false;const n=isArr(x.nth)?x.nth.filter(Number.isInteger):[];return !n.length||n.some(k=>k===Math.ceil(d.getDate()/7)||(k===-1&&addDays(d,7).getMonth()!==d.getMonth()))}
+ if(isArr(x.md))return x.md.includes(d.getDate())||(x.md.includes(-1)&&addDays(d,1).getDate()===1);return false}
+function salesOn(s,d){return (isArr(s.sales)?s.sales:[]).filter(x=>saleHit(x,d))}
+// 同じ内容・出典の曜日をまとめて「毎週月・火曜」のように見せる。終わった期間ものは出さない
+function saleRules(s,d){const t=ymd(d||today()),g=[];
+ for(const x of (isArr(s.sales)?s.sales:[])){if(!okSale(x)||(isDate(x.until)&&t>x.until))continue;const w=x.wd!==undefined;if(w&&!okWd(x.wd))continue;if(!w&&!isArr(x.md))continue;
+  const nth=isArr(x.nth)?x.nth.filter(Number.isInteger):[];const k=[x.text,x.src||'',x.unv?1:0,x.from||'',x.until||'',nth.join(','),w?'w':'m'].join('|');let o=g.find(y=>y.k===k);
+  if(!o){o={k,text:x.text,src:safeUrl(x.src||''),srcT:isStr(x.srcT)?x.srcT:'',unv:!!x.unv,from:isDate(x.from)?x.from:'',until:isDate(x.until)?x.until:'',nth,wds:[],mds:[],on:false};g.push(o)}
+  if(w)o.wds.push(x.wd);else o.mds.push(...x.md.filter(Number.isInteger));if(d&&saleHit(x,d))o.on=true}
+ const mon=w=>(w+6)%7;
+ g.forEach(o=>{const n=o.nth.length?o.nth.map(k=>k===-1?'最終':'第'+k).join('・'):'毎週';o.wds=[...new Set(o.wds)].sort((a,b)=>mon(a)-mon(b));o.mds=[...new Set(o.mds)].sort((a,b)=>(a<0?99:a)-(b<0?99:b));
+  o.label=o.wds.length?n+o.wds.map(w=>WD[w]).join('・')+'曜':'毎月'+o.mds.map(k=>k===-1?'末':k).join('・')+'日';o.ord=o.wds.length?mon(o.wds[0]):10+(o.mds[0]<0?40:o.mds[0])});
+ return g.sort((a,b)=>a.ord-b.ord)}
+function saleText(s){return saleRules(s).map(o=>o.label+'：'+o.text+(o.unv?'（要確認）':''))}
+const saleSrcs=rs=>{const m=new Map();rs.forEach(o=>{if(o.src&&!m.has(o.src))m.set(o.src,o.srcT||'出典')});return [...m].map(([u,l])=>`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>`).join('')};
+const saleLine=(o,showOn)=>`<li class="${o.on&&showOn?'on':''}"><b>${esc(o.label)}</b><span>${esc(o.text)}${o.on&&showOn?' <span class="tag today">きょう</span>':''}${o.unv?' <span class="tag unv">要確認</span>':''}${o.until?` <span class="muted">（${esc(md(o.until))}まで）</span>`:''}</span></li>`;
+function saleBlock(s,d){const rs=saleRules(s,d);if(!rs.length)return (s.type||'super')==='super'&&!s.user?'<div class="muted sdnone">🏷 決まった特売日：まだ確認できていません</div>':'';
+ return `<div class="sdays"><div class="sdh">🏷 決まった特売日</div><ul class="sdl">${rs.map(o=>saleLine(o,true)).join('')}</ul>${rs.some(o=>o.src)?`<div class="muted srcs">出典：${saleSrcs(rs)}</div>`:''}</div>`}
 function weekStart(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)} // 月曜始まり
 function spentBetween(a,b,f){return S.spend.filter(r=>r.date>=a&&r.date<=b&&(f?f(r):!OUTS.includes(normCat(r.cat)))).reduce((t,r)=>t+Number(r.amount||0),0)}
 function bar(used,max){const r=max>0?used/max:0;return `<div class="bar"><div class="${r>1?'over':r>=0.8?'warn':''}" style="width:${Math.min(100,r*100)}%"></div></div>`}
@@ -137,20 +157,35 @@ function storeCard(s,d){const on=d?salesOn(s,d):[];
  ${s.kind?`<span class="tag">${esc(s.kind)}</span>`:''}${s.address?`<div class="muted">📍${esc(s.address)}</div>`:''}
  <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}${s.checked?'／確認日 '+esc(s.checked):''}</div>
  ${s.note?`<div class="muted">${esc(s.note)}</div>`:''}
- ${saleText(s).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}
+ ${saleBlock(s,d)}
  <div>${links(s)}</div>
  ${s.user?`<button class="sub" data-act="delStore" data-id="${esc(s.id)}">このお店を消す</button>`:''}</div>`}
+// v65 ホームの「きょうの特売日」：端末の日本時間の日付で、決まった特売日に当たるお店だけ出す
+function todaySales(d,goes){const km=s=>parseFloat(String(s.dist||'').replace(/[^\d.]/g,''))||99,isDrug=s=>s.type==='drug';
+ const hit=a=>a.map(s=>({s,rs:saleRules(s,d).filter(o=>o.on)})).filter(x=>x.rs.length);
+ const mine=hit(regStores()).sort((a,b)=>(goes.has(b.s.name)-goes.has(a.s.name))||(isDrug(a.s)-isDrug(b.s))||(km(a.s)-km(b.s)));
+ const near=hit(stores().filter(s=>s.region!==S.settings.region&&!isDrug(s)&&km(s)<=2.5));
+ const tm=addDays(d,1),tmr=regStores().filter(s=>!isDrug(s)&&saleRules(s,tm).some(o=>o.on&&!o.unv));
+ const card=({s,rs})=>`<div class="card sale tsale">${mapA(s.name,s)} <span class="muted">${esc(s.dist||'')}</span>${goes.has(s.name)?' <span class="tag">🛒きょう行く</span>':''}<ul class="sdl">${rs.map(o=>saleLine(o,false)).join('')}</ul><div class="muted srcs">${rs.some(o=>o.src)?'出典：'+saleSrcs(rs):''}${links(s)}</div></div>`;
+ const sup=mine.filter(x=>!isDrug(x.s)),drg=mine.filter(x=>isDrug(x.s));
+ let h=`<h2>🏷 きょうの特売日（${esc(md(ymd(d)))}・${esc(regName())}）</h2>`;
+ if(!mine.length)h+='<div class="card muted tnone">きょうは決まった特売日のお店はありません（特売日を確認できていないお店もあります）</div>';
+ h+=sup.map(card).join('');
+ if(drg.length)h+=`<div class="card tsale drugs"><b>💊 ドラッグストア</b><ul class="sdl">${drg.map(({s,rs})=>`<li><b>${esc(s.name)}</b><span>${rs.map(o=>esc(o.text)+(o.unv?'（要確認）':'')).join('／')}</span></li>`).join('')}</ul></div>`;
+ if(near.length)h+=`<div class="card muted tnear">近くのほかの地域（2.5km以内）：${near.map(({s,rs})=>`<b>${esc(s.name)}</b>（${esc(s.dist||'')}・${rs.map(o=>esc(o.text)).join('／')}）`).join('、')}</div>`;
+ if(tmr.length)h+=`<div class="muted tnext">あした（${esc(md(ymd(tm)))}）の特売日：${tmr.slice(0,6).map(s=>esc(s.name)).join('、')}${tmr.length>6?' ほか'+(tmr.length-6)+'店':''} → <a class="link" href="#stores">お店で見る</a></div>`;
+ return h}
 const links=s=>(isArr(s.links)?s.links:[]).filter(isObj).map(l=>({t:l.t,u:safeUrl(l.u)})).filter(l=>l.u).map(l=>`<a class="link" href="${esc(l.u)}" target="_blank" rel="noopener">🔗${esc(l.t)}</a>`).join('');
 const catOpts=sel=>CATS.map(([c])=>`<option${c===sel?' selected':''}>${c}</option>`).join('');
 const V={
 home(){const d=today(),st=S.settings,mo=ymd(d).slice(0,7);
- const goes=new Set(S.list.filter(i=>!i.done).map(i=>i.store));const sale=regStores().filter(s=>salesOn(s,d).length).sort((a,b)=>goes.has(b.name)-goes.has(a.name));const isShop=st.shopDays.includes(d.getDay()),isFr=st.fridgeDay===d.getDay();
+ const goes=new Set(S.list.filter(i=>!i.done).map(i=>i.store));const isShop=st.shopDays.includes(d.getDay()),isFr=st.fridgeDay===d.getDay();
  const tr=trips(d),mUsed=spentBetween(mo+'-01',mo+'-31');
  return `<h2>${md(ymd(d))}</h2>
  <div class="card">${isShop?'🛒 きょうは買い物の日':'買い物の日：'+st.shopDays.map(x=>WD[x]).join('・')+'曜'}<br>${isFr?'<a class="link" href="#stock">🧊 きょうは冷蔵庫点検と献立の日 → 点検する</a>':'冷蔵庫点検：'+WD[st.fridgeDay]+'曜'}</div>
  <div class="card">${tr.map(t=>{const u=spentBetween(t.from,t.to);return `${t.label}（${md(t.from)}〜${md(t.to)}） ${yen(u)} / ${yen(st.perTrip)}${bar(u,st.perTrip)}<div class="muted">残り ${yen(st.perTrip-u)}</div>`}).join('')}
  今月 ${yen(mUsed)} / ${yen(st.monthly)}${bar(mUsed,st.monthly)}</div>
- <h2>きょう特売のお店（${esc(regName())}）</h2>${sale.length?sale.map(s=>`<div class="card sale">${mapA(s.name,s)}${goes.has(s.name)?' <span class="tag">🛒きょう行く</span>':''}<br>${salesOn(s,d).map(x=>`<span class="tag">${esc(x.text)}</span>`).join('')}<div>${links(s)}</div></div>`).join(''):'<div class="card muted">きょう決まった特売日のお店はありません（特売日が未確認のお店もあります）</div>'}
+ ${todaySales(d,goes)}
  <h2>買い物リスト</h2><div class="card">${S.list.filter(i=>!i.done).length} 品が未購入 <a class="link" href="#list">ひらく</a></div>`},
 stores(){const d=today(),all=regStores(),inC=s=>SC==='all'||stCat(s)===SC;const grp=(t,l)=>{const a=all.filter(s=>(s.type||'super')===t&&inC(s));if(!a.length)return '';const lim=SMORE[t]?a.length:30;return `<h2>${l}（${a.length}店）</h2>`+a.slice(0,lim).map(s=>storeCard(s,d)).join('')+(a.length>lim?`<button class="sub more" data-act="smore" data-id="${t}">残り${a.length-lim}店を表示</button>`:'')};
  return regionSeg()+`<div class="seg wrap">${SCATS.map(([k,l])=>`<button class="${SC===k?'on':''}" data-act="scat" data-id="${k}">${l}（${all.filter(s=>k==='all'||stCat(s)===k).length}）</button>`).join('')}</div><p class="muted">${all.length}店。${esc(BASE.source||'')} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>`
