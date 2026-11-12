@@ -132,3 +132,12 @@ ul.sdl li>b{flex:0 0 auto;min-width:6.2em;color:#333;font-size:14px}ul.sdl li>sp
 .tag.today{background:#c62828;color:#fff;font-weight:bold}.tag.unv{background:#fff3cd;color:#7a5b00}
 .srcs{font-size:12px;margin-top:2px}.srcs a.src{color:#1f3a8a;margin-right:8px;display:inline-flex;align-items:center;min-height:44px;padding:0 2px}.sdnone{font-size:13px;margin-top:4px}
 .tsale ul.sdl li>b{min-width:7em}.drugs ul.sdl li>b{flex:0 1 45%;min-width:0;font-weight:normal}.tnear{font-size:13px}.tnext{margin:4px 2px 8px;font-size:13px}
+/* v66 冷蔵庫点検（タップで選ぶ・色と枠で表示） */
+.chkopen button{width:100%;background:#2e7d32}
+.ckbar{position:sticky;top:0;z-index:6;background:#fff;border:2px solid #2e7d32;border-radius:12px;padding:8px 10px;margin:8px 0;box-shadow:0 2px 6px #0002}.ckcount{font-size:16px;margin-bottom:2px}.ckbar .row{margin:4px 0}
+button.ckdel{background:#c62828}button.ckdel:disabled{background:#d9a3a3}
+.ckz{background:#fff;border-radius:12px;padding:8px 10px;margin:8px 0;box-shadow:0 1px 3px #0002}.ckzh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.ckzh b{flex:1 1 auto;color:#1f3a8a}.ckzh .ckall{flex:0 0 auto;font-size:14px}
+.ckc{display:flex;flex-wrap:wrap;gap:8px}
+.ckit{min-height:48px;background:#fff;color:#333;border:2px solid #c9d3e3;border-radius:24px;padding:6px 14px 6px 10px;font-size:16px;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;max-width:100%;text-align:left;overflow-wrap:anywhere}
+.ckit small{color:#666;font-size:13px}.ckit .ckm{display:inline-block;width:0;overflow:hidden;font-weight:bold}
+.ckit.on{background:#ffe0b2;border:3px solid #e65100;color:#4a2000;font-weight:bold;box-shadow:0 0 0 2px #ffcc80}.ckit.on .ckm{width:1.1em;color:#e65100}.ckit.on small{color:#6d3a00}

@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v65'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const DATA_VERSION=2;const APP_VER='okaimono-v66'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -382,7 +382,9 @@ function demo(){const d=ymd(today()),w=curTrip(today()).wd;S=structuredClone(def
  S.spend=[{id:'a',date:d,store:'KOHYO 武庫之荘店',cat:'食材',amount:5480,memo:'サンプル'},{id:'b',date:d,store:'ウエルシア 尼崎南武庫之荘店',cat:'日用品',amount:1260,memo:'サンプル'}];
  S.fridge=[{id:'c',name:'にんじん',until:d,sample:true},{id:'d',name:'豚こま',until:'',sample:true}];S.menu=['','豚の生姜焼き（サンプル）','カレー（サンプル）','','','',''];S.prep='きんぴら（日曜に作る・水曜まで）';S.sampleKeys=['prep'];save()}
 window.addEventListener('hashchange',render);
-Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json())]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
+// v66 ほかの部品（fridge.js など）を読み終えてから最初の画面を出す（冷蔵庫タブを開いたまま再読込すると frView が無いと出ていた）
+const DOMREADY=new Promise(r=>document.readyState==='loading'?document.addEventListener('DOMContentLoaded',r,{once:true}):r());
+Promise.all([fetch('data/regions.json').then(r=>r.json()),fetch('data/stores.json').then(r=>r.json()),DOMREADY]).then(([r,s])=>{BASE={regions:r.regions,stores:s.stores,source:s.source};if(!BASE.regions.some(x=>x.id===S.settings.region))S.settings.region=def.settings.region;
  const q=new URLSearchParams(location.search);if(IS_DEMO)demo();render();if(q.get('ai'))setTimeout(()=>aiDemo(q),50)}).catch(e=>{$('#view').innerHTML='データを読めませんでした：'+esc(e)});
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(r=>{if(!r)return;r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})})}
 async function aiDemo(q){AI.mode=q.get('ai');if(AI.mode==='chat'||AI.mode==='advise'){render();document.getElementById('aiq').value=AI.mode==='chat'?'あしたの晩ごはん、何がいい？':'お弁当を毎日作りたい';await aiAsk();AT.open='demo';render();return}

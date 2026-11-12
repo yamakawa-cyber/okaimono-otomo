@@ -18,7 +18,7 @@ async function tab() {
   return { send, close: () => ws.close() };
 }
 async function ev(send, expression) { const out = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }); if (!out.result || out.result.exceptionDetails) throw new Error(JSON.stringify(out.result && out.result.exceptionDetails || out).slice(0, 900)); return out.result.result.value; }
-async function waitApp(send) { for (let i = 0; i < 40; i++) { try { const v = await ev(send, 'typeof APP_VER==="string" && document.readyState==="complete" ? APP_VER : ""'); if (v === 'okaimono-v65') return; } catch (e) {} await sleep(200); } throw new Error('reload'); }
+async function waitApp(send) { for (let i = 0; i < 40; i++) { try { const v = await ev(send, 'typeof APP_VER==="string" && document.readyState==="complete" ? APP_VER : ""'); if (v === 'okaimono-v66') return; } catch (e) {} await sleep(200); } throw new Error('reload'); }
 try {
   await ready();
   const page = await tab();
@@ -251,7 +251,7 @@ try {
     && F.immediate.L === 'box:id"mark|カレー' && F.immediate.dang && F.afterLink.L === 'box:id"mark|カレー' && F.openOk && F.manualOk && W.still
     && M.L === 'box:' + F.milkId + '|カレー' && M.L2 === M.L
     && S0.L === 'box:id"mark|カレー' && S0.both === '塩,牛乳' && S0.dang && S1.kept && S1.both === '塩,牛乳' && S1.dang
-    && R.L === 'box:id"mark|カレー' && R.L2 === R.L && R.dang && R.both === '塩,牛乳' && R.ver === 'okaimono-v65'
+    && R.L === 'box:id"mark|カレー' && R.L2 === R.L && R.dang && R.both === '塩,牛乳' && R.ver === 'okaimono-v66'
     && U.ok
     && D.before === 'box:id"mark|カレー' && D.see && D.distinct && D.safe && D.xss === 0 && D.nbtn === 2 && D.picked && D.shows && D.kept;
   console.log(JSON.stringify(out, null, 2));

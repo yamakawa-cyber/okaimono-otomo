@@ -15,10 +15,11 @@ function frSelHtml(){const f=S.fridge.find(x=>x.id===FR.sel);if(!f)return '';con
  <div class="row"><input id="fr_amt" value="${esc(f.amt||'')}" placeholder="量（例：半分・2個）" aria-label="量"><button class="sub" onclick="frSetAmt()">量を変える</button></div>
  <div class="muted">量の一部だけうつす</div><div class="row"><input id="fr_part" placeholder="うつす量（例：1個）" aria-label="うつす量" style="flex:0 0 140px"><select id="fr_pz" aria-label="うつす先">${ZONES.filter(x=>x!==z).map(x=>`<option>${x}</option>`).join('')}</select><button class="sub" onclick="frPart(val('fr_pz'))">一部をうつす</button></div>
  <div class="row"><button class="sub" onclick="frToList()">🛒 →買い物リスト</button><button class="sub" onclick="frDel()">${z===WH?'✕ 倉庫から消す':'✕ 消す（使い切った）'}</button><button class="sub" onclick="FR.sel=null;render()">とじる</button></div></div>`}
-function frView(){const L=frItems();if(FR.wh)return whReviewHtml();if(FR.rev)return frReviewHtml();
+function frView(){const L=frItems();if(FR.wh)return whReviewHtml();if(FR.rev)return frReviewHtml();if(FR.chk)return chkView(L);
  return `${CON.open&&CON.from===location.hash?consultPanel():''}<div class="row frtop"><button onclick="frMenu()">🍳 この中身で献立を相談</button></div>
  <div class="card"><b>手で入れる</b><div class="row"><input id="fr_name" placeholder="品名"><input id="fr_amt2" placeholder="量" style="flex:0 0 80px"></div>
  <div class="row"><select id="fr_zone" aria-label="しまう場所">${ZONES.map(z=>`<option>${z}</option>`).join('')}</select><input id="fr_until" type="date" lang="ja" aria-label="期限"></div><div class="row"><button onclick="addFr()">しまう</button></div></div>
+ <div class="row chkopen"><button onclick="chkOpen()">✅ 冷蔵庫点検（まとめて消す）</button></div>
 ${whView(L)}
  <h2>🧊 冷蔵庫と保存棚（${WD[S.settings.fridgeDay]}曜に点検）</h2>
  <div class="fridge">${frZone('冷蔵室',L)}${frZone('チルド',L)}${frZone('野菜室',L)}${frZone('冷凍室',L)}</div><div class="fdoorbar">${frZone('ドアポケット',L)}</div>
@@ -102,3 +103,27 @@ function frPart(z){const f=S.fridge.find(x=>x.id===FR.sel);if(!f)return;const p=
  if(a&&b&&a[2].trim()===b[2].trim()){const r=+a[1]-+b[1];if(r<=0)return toast('今ある量より少なく入れてね（ぜんぶなら上の場所ボタン）');rest=(Math.round(r*100)/100)+a[2]}
  else{rest=prompt(`残る量を入れてね（いま：${f.amt||'量なし'}）`,'');if(rest===null)return;rest=rest.trim().slice(0,50)}
  const prev=S.fridge.map(x=>Object.assign({},x));const g=Object.assign({},f,{id:uid(),zone:z,amt:p});if(rest)f.amt=rest;else delete f.amt;S.fridge.push(g);save();render();undo1(`${f.name.slice(0,12)} を${p}だけ${z}へうつしました`,()=>{S.fridge=prev;save();render()})}
+
+// v66 冷蔵庫点検：場所ごとに並べ、タップで複数選択（色と枠で表示・チェックボックスなし）→ まとめて消す
+function chkOpen(){FR.chk=new Set();FR.sel=null;CON.open=false;render();scrollTo(0,0)}
+function chkClose(){FR.chk=null;render();scrollTo(0,0)}
+function chkView(L){const C=FR.chk;[...C].forEach(id=>{if(!L.some(f=>f.id===id))C.delete(id)});const n=C.size,all=L.length>0&&L.every(f=>C.has(f.id));
+ const grp=z=>{const its=L.filter(f=>f.zone===z);if(!its.length)return '';const k=its.filter(f=>C.has(f.id)).length,za=k===its.length;
+  return `<div class="ckz"><div class="ckzh"><b>${ZICON[z]} ${esc(z)}</b><span class="muted">${k?k+'／':''}${its.length}品</span><button class="sub ckall" data-ckz="${esc(z)}" aria-label="${esc(z)}を${za?'ぜんぶ外す':'ぜんぶ選ぶ'}">${za?'ぜんぶ外す':'ぜんぶ選ぶ'}</button></div>
+  <div class="ckc">${its.map(f=>{const on=C.has(f.id);return `<button class="ckit${on?' on':''}" data-ck="${esc(f.id)}" aria-pressed="${on}"><span class="ckm" aria-hidden="true">${on?'✓':''}</span>${emoOf(f.name)} ${esc(f.name)}${f.amt?`<small>${esc(f.amt)}</small>`:''}</button>`}).join('')}</div></div>`};
+ return `<h2>✅ 冷蔵庫点検</h2><div class="card ckhelp muted">食べた・使った物をタップして選んでね（もう一度タップで外す）。選んだ物は色が変わります。</div>
+ <div class="ckbar" role="region" aria-label="点検の操作"><div class="ckcount" aria-live="polite">${n?`<b>${n}品</b> 選んでいます`:'まだ選んでいません'}</div>
+ <div class="row"><button class="sub" onclick="chkAll()">${all?'ぜんぶ外す':'ぜんぶ選ぶ'}</button><button class="ckdel" onclick="chkDel()" ${n?'':'disabled'}>🗑 まとめて消す（食べた・使った）${n?`（${n}品）`:''}</button></div>
+ <div class="row"><button class="sub" onclick="chkClose()">やめる（変えずにもどる）</button></div></div>
+ ${L.length?ZONES.map(grp).join(''):'<div class="card muted">冷蔵庫も保存棚もからっぽです。</div>'}`}
+function chkKeep(f){const y=scrollY;f();render();scrollTo(0,y)}
+function chkAll(){const C=FR.chk;if(!C)return;const L=frItems();chkKeep(()=>{if(L.length&&L.every(f=>C.has(f.id)))C.clear();else L.forEach(f=>C.add(f.id))})}
+function chkDel(){const C=FR.chk;if(!C||!C.size)return;const g=S.fridge.filter(f=>C.has(f.id));if(!g.length)return;
+ const nm=g.slice(0,5).map(f=>f.name.slice(0,12)).join('、')+(g.length>5?` ほか${g.length-5}品`:'');
+ if(!confirm(`食べた・使った物として${g.length}品を消しますか？\n${nm}\n（消したあと「元に戻す」もできます）`))return;
+ const prev=S.fridge.map(f=>Object.assign({},f));S.fridge=S.fridge.filter(f=>!C.has(f.id));g.forEach(f=>WHS.delete(f.id));if(FR.sel&&C.has(FR.sel))FR.sel=null;FR.chk=null;save();render();scrollTo(0,0);
+ undo1(`${g.length}品を消しました（食べた・使った）`,()=>{S.fridge=prev;save();render()},g.length)}
+document.addEventListener('click',e=>{if(!FR.chk)return;const b=e.target.closest&&e.target.closest('[data-ck],[data-ckz]');if(!b)return;const C=FR.chk;
+ if(b.dataset.ck!==undefined){const id=b.dataset.ck;chkKeep(()=>{if(C.has(id))C.delete(id);else C.add(id)});return}
+ const z=b.dataset.ckz,its=frItems().filter(f=>f.zone===z);chkKeep(()=>{if(its.every(f=>C.has(f.id)))its.forEach(f=>C.delete(f.id));else its.forEach(f=>C.add(f.id))})});
+window.addEventListener('hashchange',()=>{if(FR.chk&&location.hash!=='#stock')FR.chk=null});
