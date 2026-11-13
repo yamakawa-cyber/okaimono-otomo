@@ -19,10 +19,17 @@ async function rcPick(inp){const q=document.getElementById('c_q'),t=document.get
  RC.busy=true;render();try{for(const f of fs.slice(0,Math.max(0,room)))RC.imgs.push(rcShrink(await rcLoad(f),Math.floor(RC_MAXBYTES/RC_MAX_IMGS)-2000))}catch(e){alert(e.message)}
  RC.busy=false;if(RC.imgs.length&&CON.type!=='receipt'&&CON.type!=='fridge'&&confirm('レシートの読み取り（家計簿に入れる）として送りますか？'))CON.type='receipt';render()}
 // --- 送った相談の番号（返事を受け取るため。7日で忘れる）---
-function pending(){try{const a=JSON.parse(localStorage.getItem(PK)||'[]');return isArr(a)?a.filter(x=>isObj(x)&&/^c[a-z0-9]{4,40}$/.test(x.id)&&Date.now()-x.at<7*864e5&&!(x.tk&&Date.now()-x.tk>2*864e5)):[]}catch(e){return []}}
+const BOT_PUSH=true,BOTBOX='cbotpush1'; // ライフハック！では port.py が false にする
+// v67：返事が届いた相談（got/tk）は「返事待ち」に数えず、2日で忘れる。返事が来ないまま1日たった相談も数えず（裏で確かめるだけ）、3日で忘れる
+const WAIT_SHOW=864e5,WAIT_KEEP=3*864e5,GOT_KEEP=2*864e5;
+const gotAt=x=>x.tk||x.got||0;
+function pending(){try{const a=JSON.parse(localStorage.getItem(PK)||'[]'),now=Date.now();return isArr(a)?a.filter(x=>isObj(x)&&/^c[a-z0-9]{4,40}$/.test(x.id)&&Number.isFinite(x.at)&&(x.id===BOTBOX||(gotAt(x)?now-gotAt(x)<GOT_KEEP:now-x.at<WAIT_KEEP))):[]}catch(e){return []}}
+// 本当に返事を待っている相談（送ってから1日以内・まだ何も届いていない・返事の箱にも入っていない）
+function waiting(){const now=Date.now();return pending().filter(x=>x.type!=='bot'&&x.id!==BOTBOX&&!gotAt(x)&&now-x.at<WAIT_SHOW&&!INBOX.some(e=>e.id===x.id))}
+// 待ちを取り消す（記録・家計簿・返事の箱は消さない。番号を忘れるだけ）
+function forgetWait(id){const a=pending().filter(x=>x.id===BOTBOX||(id?x.id!==id:!(x.type!=='bot'&&!gotAt(x))));savePending(a);render()}
 function savePending(a){setLS(PK,JSON.stringify(a.slice(-30)))}
 // v40：ボットからの差し入れ箱（Amazon・後払いなどの明細をボットが /reply の id=cbotpush1 に置く）。いつも受け取り待ちにしておく
-const BOT_PUSH=true,BOTBOX='cbotpush1'; // ライフハック！では port.py が false にする
 function ensureBotBox(){if(!BOT_PUSH||IS_DEMO)return;const a=pending();let e=a.find(x=>x.id===BOTBOX);if(!e){e={id:BOTBOX,type:'bot',at:Date.now()};a.push(e)}e.at=Date.now();delete e.tk;savePending(a)}
 function addPending(id,type){const a=pending();if(a.some(x=>x.id===id))return;a.push({id,type,at:Date.now()});savePending(a);[20,60,180].forEach(s=>setTimeout(fetchReplies,s*1000))}
 function relayBase(){const s=secret();if(s.header!=='X-App-Pass'||!s.url||!s.key)return null;try{return new URL(s.url).origin}catch(e){return null}}
@@ -32,7 +39,7 @@ const NGK=PK+'_authng';const authNg=()=>{try{return !!localStorage.getItem(NGK)}
 async function fetchReplies(manual){ensureBotBox();const b=relayBase(),p=pending();if(IS_DEMO||fetching)return;if(!manual&&authNg())return;if(!b){if(manual){INBOX_ST='返事の受け取りは中継サーバー（X-App-Pass）を使うときだけです';render()}return}
  if(!p.length){if(manual){INBOX_ST='待っている返事はありません';render()}return}
  fetching=true;try{const r=await fetch(b+'/replies?ids='+p.map(x=>x.id).join(','),{headers:{'X-App-Pass':secret().key}});if(r.status===401||r.status===429){setLS(NGK,'1');throw new Error(r.status===401?'合言葉がちがいます。自動の確認を止めました。設定で合言葉を確かめてください':'合言葉のまちがいが続いたため止められています。自動の確認を止めました。しばらくしてから設定の合言葉を確かめてください')}if(!r.ok)throw new Error('受け取りエラー（'+r.status+'）');try{localStorage.removeItem(NGK)}catch(_){}
-  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};if(x.id===BOTBOX&&(pe.taken||0)>off){pe.taken=off;pe.done=[];savePending(p)}x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||(isArr(pe.done)&&pe.done.includes(k))||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
+  const j=await r.json();let n=0;(isArr(j.replies)?j.replies:[]).forEach(x=>{if(!isObj(x)||!isArr(x.items))return;const off=Number.isInteger(x.off)&&x.off>=0?x.off:0,pe=p.find(y=>y.id===x.id)||{};if(x.items.length&&pe.id&&pe.id!==BOTBOX&&!pe.got){pe.got=Date.now();savePending(p)}if(x.id===BOTBOX&&(pe.taken||0)>off){pe.taken=off;pe.done=[];savePending(p)}x.items.forEach((it,k0)=>{const k=off+k0,key=x.id+'#'+k;if(k<(pe.taken||0)||(isArr(pe.done)&&pe.done.includes(k))||INBOX.some(e=>e.key===key))return;let err='';try{checkAI(it);histAdd(it,'reply')}catch(e){err=e.message}INBOX.push({key,id:x.id,item:it,err});n++})});
   INBOX_ST=n?'':(manual?'まだ返事は届いていません':INBOX_ST)}
  catch(e){if(manual||authNg())INBOX_ST='返事を確かめられませんでした：'+e.message}finally{fetching=false;render()}}
 // 受取済み：取り込んだ番号(#k)までを知らせる。後から届いた分は消さない
@@ -80,3 +87,5 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(
   case 'applyall':return rcApply(INBOX.filter(e=>!e.err&&e.item.kind==='receipt'&&!rcDup(e.item)).map(e=>e.key));
   case 'hdel':return histDel(k);case 'hopen':return histOpen(k);case 'hfilter':AT.filter=k;return render()}});
 setTimeout(()=>{try{if(linkMenu()&&location.hash==='#fridge')render()}catch(e){}},400);
+// v67：開いたときに、もう要らない待ち番号を片づけて保存する（家計簿などの記録には触らない）
+try{if(localStorage.getItem(PK))savePending(pending())}catch(_){}

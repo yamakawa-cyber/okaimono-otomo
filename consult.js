@@ -31,7 +31,7 @@ function consultPanel(){const s=secret();
  ${rcPickHtml()}
  <div class="row"><button onclick="toConfirm()" ${CON.sending?'disabled':''}>送る</button><button class="sub" onclick="CON.code=!CON.code;render()">取り込みコードを貼る</button></div>
  ${CON.code?`<textarea id="c_code" rows="4" style="width:100%" placeholder="アキラちゃんから届いた取り込みコード（JSON）"></textarea><div class="row"><button class="sub" onclick="importCode()">取り込む</button></div>`:''}
- ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${(()=>{const n=waitN();return relayBase()&&(n||BOT_PUSH)?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる${n?`（相談の返事待ち ${n}件）`:''}</button></div>`:''})()}</div>`}
+ ${st()}<div class="muted">送る前に、送る内容を確認できます。</div>${(()=>{const n=waitN();return relayBase()&&(n||BOT_PUSH)?`<div class="row"><button class="sub" onclick="fetchReplies(true)">📩 返事を確かめる${n?`（相談の返事待ち ${n}件）`:''}</button></div>${waitListHtml()}`:''})()}</div>`}
 function toConfirm(){let q=val('c_q');CON.type=val('c_type')||CON.type;if(!q&&RC.imgs.length)q=CON.type==='receipt'?'レシートの写真です。読み取って receipt の形で返してください。':CON.type==='fridge'?'冷蔵庫の写真です。中身を読み取って fridge の形で返してください。':'写真を見て相談にのってください。';if(!q){alert('相談したいことを書いてください');return}if(CON.type==='receipt'&&!RC.imgs.length){alert('レシートの写真を選んでください');return}if(CON.type==='fridge'&&!RC.imgs.length){alert('冷蔵庫の写真を選んでください');return}if(CON.incType!==CON.type){CON.inc=CON.type==='receipt'?{fridge:false,list:false,spend:'off',memo:false}:{fridge:true,list:true,spend:'sum',memo:false};CON.incType=CON.type}if(!['compare','order'].includes(CON.type))CON.extra=null;CON.q=q;CON.stage='confirm';CON.status='';render()}
 function keepQ(){const e=document.getElementById('c_qe');if(e)CON.q=e.value}
 function setInc(k,v){keepQ();CON.inc[k]=v;render()}
@@ -74,6 +74,7 @@ async function sendConsult(){const s=secret();if(IS_DEMO||CON.sending)return;kee
  CON.sending=true;CON.status='送信中…（番号 '+CON.reqId+'）';CON.ok=true;render();
  try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),RC.imgs.length?40000:15000);
   const r=await fetch(s.url,{method:'POST',headers:h,body:pl.body,signal:ctl.signal});clearTimeout(tm);
+  if(r.status===504){let jj=null;try{jj=await r.clone().json()}catch(_){}if(jj&&jj.error==='hook down')throw new Error('受け取り側（アキラちゃん）につながりませんでした。届いていないので、少しあとでもう一度送ってください。')}
   if(r.status===504||r.status===409){addPending(CON.reqId,CON.type);CON.retry={id:CON.reqId,q:CON.q,type:CON.type};const e=new Error('maybe');e.maybe=true;throw e}
   if(!r.ok){let m='';try{const jj=await r.json();if(jj&&typeof jj.message==='string')m=jj.message.slice(0,200)}catch(_){}throw new Error(r.status===429?(m||'きょうの相談の上限に達しました。日本時間の0時を過ぎたら、また送れます。'):'受け取り側のエラー（'+r.status+'）'+(m?'：'+m:''))}
   CON.retry=null;addPending(CON.reqId,CON.type);if(typeof onSent==='function')onSent(CON.type,CON.extra);CON.extra=null;RC.imgs=[];CON.status='送りました！（番号 '+CON.reqId+'）返事が届くと、この画面の上に「📩 返事」が出ます。'+(pl.dropped?`（古い家計記録${pl.dropped}件は省きました）`:'');CON.ok=true;CON.q='';CON.stage='form'}
@@ -88,4 +89,7 @@ for(const [tab,t] of [['home','menu'],['fridge','menu'],['list','shop'],['money'
 {const f=V.settings;V.settings=function(){return f.apply(this,arguments).replace('<h2>バックアップ</h2>',consultSettingsHtml()+'<h2>バックアップ</h2>')}}
 
 // v52：差し入れ箱（cbotpush1・type=bot）はいつも待ちにあるので、件数には数えない
-function waitN(){return pending().filter(x=>x.type!=='bot'&&x.id!==BOTBOX).length}
+function waitN(){return waiting().length}
+const CTL=t=>(CTYPES.find(x=>x[0]===t)||[])[1]||({compare:'値段くらべ',order:'注文'})[t]||'相談';
+function waitListHtml(){const w=waiting();if(!w.length)return '';const hm=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+ return `<details class="waitlist"><summary class="muted">返事待ちの中身（${w.length}件）</summary>${w.map(x=>`<div class="row muted">${esc(CTL(x.type))}・${esc(hm(x.at))}送信 <button class="sub" onclick="forgetWait('${esc(x.id)}')">取り消す</button></div>`).join('')}<div class="muted">1日たっても返事が来ない相談は、自動で数えなくなります。取り消しても家計簿や記録は消えません。</div>${w.length>1?`<div class="row"><button class="sub" onclick="if(confirm('返事待ちを全部取り消しますか？（家計簿や記録は消えません）'))forgetWait()">全部取り消す</button></div>`:''}</details>`}
