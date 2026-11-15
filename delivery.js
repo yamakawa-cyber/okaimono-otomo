@@ -8,9 +8,9 @@ function dlvCard(s){const st=dlvOk(s),u=(s.urls||[]).map(shopUrl).find(Boolean)|
  return `<div class="card dlv ${st}"><div class="dlvh" data-dlv="${esc(s.id)}">${s.rank?`<span class="tag rk">おすすめ${s.rank}</span> `:''}<b>${esc(s.name)}</b> <span class="tag">${st==='ok'?'✅ 武庫之荘駅の近くに届く':st==='ng'?'✖ エリア外':'❓ 要確認'}</span> ${op?'▲':'▼'}</div>
  <div class="muted">送料：${esc(unk(s.fee))}</div><div class="muted">送料無料：${esc(unk(s.free_threshold))}</div>
  ${op?`<table class="dlvt">${[['最低注文',s.min_order],['届く早さ',s.cutoff_to_delivery],['支払い',s.payment],['会員',s.membership],['ほかの料金',s.other_fees],['キャンペーン',s.campaign],['届く範囲',s.covers_home],['近くのお店',(s.related_stores||[]).join('、')]].filter(([k,v])=>k!=='キャンペーン'||v).map(([k,v])=>`<tr><th>${k}</th><td>${esc(unk(v))}</td></tr>`).join('')}</table>`:`<div class="muted">最低注文：${esc(unk(s.min_order))}／届く早さ：${esc(unk(s.cutoff_to_delivery)).slice(0,60)}</div>`}
- <div class="muted">確認日：${esc(unk(s.checked_at))}</div>${u?`<div class="row"><a class="chip" target="_blank" rel="noopener" href="${esc(u)}">公式ページ</a></div>`:''}</div>`}
+ <div class="muted">確認日：${esc(ckDate(s.checked_at)||'不明')}</div>${u?`<div class="row"><a class="chip" target="_blank" rel="noopener" href="${esc(u)}">公式ページ</a></div>`:''}</div>`}
 function dlvHtml(){if(!DLV)return '';const ok=DLV.services.filter(s=>dlvOk(s)==='ok'),un=DLV.services.filter(s=>dlvOk(s)==='unk'),ng=DLV.services.filter(s=>dlvOk(s)==='ng');
- return `<h2>🚚 宅配・ネットスーパー（武庫之荘駅の近く）</h2><div class="muted">${esc(DLV.note||'')}（確認日 ${esc(DLV.checked_at||'不明')}）。タップでくわしく。</div>
+ return `<h2>🚚 宅配・ネットスーパー（武庫之荘駅の近く）</h2><div class="muted">${esc(DLV.note||'')}（確認日 ${esc(ckDate(DLV.checked_at)||'不明')}）。タップでくわしく。</div>
  ${ok.map(dlvCard).join('')}${un.length?`<details class="card"><summary>❓ 届くか要確認（${un.length}）</summary>${un.map(dlvCard).join('')}</details>`:''}
  ${ng.length||(DLV.not_available||[]).length?`<details class="card"><summary>✖ 使えない・エリア外</summary>${ng.map(dlvCard).join('')}${(DLV.not_available||[]).filter(x=>isObj(x)&&!ng.some(s=>s.name===x.name)).map(x=>`<div class="muted">・${esc(x.name)}：${esc(unk(x.reason))}</div>`).join('')}</details>`:''}
  ${(DLV.no_official_info||[]).length?`<details class="card"><summary>宅配の情報がないお店</summary>${DLV.no_official_info.filter(isObj).map(x=>`<div class="muted">・${esc(x.name)}：${esc(unk(x.note))}</div>`).join('')}</details>`:''}`}

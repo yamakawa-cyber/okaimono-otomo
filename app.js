@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const srcSplit=t=>{t=String(t||'');const i=t.search(/\s\d{4}-\d{2}-\d{2} /);return i<0?[t,'']:[t.slice(0,i),t.slice(i).trim()]};const DATA_VERSION=2;const APP_VER='okaimono-v68'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const srcSplit=t=>{t=String(t||'');const i=t.search(/\s\d{4}-\d{2}-\d{2} /);return i<0?[t,'']:[t.slice(0,i),t.slice(i).trim()]};const DATA_VERSION=2;const APP_VER='okaimono-v69'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -117,6 +117,8 @@ function kitchenNote(){const g=GRILL;return `【家の調理器具】${g.name}�
 const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
 const jstYmd=()=>{try{const f=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());if(isDate(f))return f}catch(e){}return ymd(new Date())};
 const today=()=>{const p=new URLSearchParams(location.search).get('today');return new Date((p&&isDate(p)?p:jstYmd())+'T12:00')}; // v65 日本時間の日付（正午に置いて曜日・日付のずれを防ぐ）
+// v69：お店・宅配の確認日は YYYY-MM-DD にそろえる（古い書き方 2026/11/8・2026年11月8日 も読める。読めない値は出さない）
+const ckDate=v=>{const m=String(isStr(v)?v:'').trim().match(/^(\d{4})[-/年](\d{1,2})[-/月](\d{1,2})日?$/);if(!m)return '';const s=m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');return isDate(s)?s:''};
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const md=v=>{if(!isDate(v))return '';const d=new Date(v+'T12:00');return (d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）'};
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
@@ -155,7 +157,7 @@ function curTrip(d){const t=ymd(d),a=trips(d);return a.find(x=>t>=x.from&&t<=x.t
 function storeCard(s,d){const on=d?salesOn(s,d):[];
  return `<div class="card ${on.length?'sale':''}">${mapA(s.name,s)} <span class="muted">${esc(s.dist||'')}</span>
  ${s.kind?`<span class="tag">${esc(s.kind)}</span>`:''}${s.address?`<div class="muted">📍${esc(s.address)}</div>`:''}
- <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}${s.checked?'／確認日 '+esc(s.checked):''}</div>
+ <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}${ckDate(s.checked)?'／確認日 '+ckDate(s.checked):''}</div>
  ${s.note?`<div class="muted">${esc(s.note)}</div>`:''}
  ${saleBlock(s,d)}
  <div>${links(s)}</div>

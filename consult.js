@@ -17,7 +17,15 @@ function consultSettingsHtml(){const s=secret();return `<h2>アキラちゃん�
  送信キー（いま：${esc(mask(s.key))}）<input id="c_key" type="password" autocomplete="off" placeholder="貼り付けると上書き" style="width:100%" onchange="setConsult('key',this.value,this)">
  キーを付けるヘッダ<select id="c_hdr" aria-label="キーを付けるヘッダ" onchange="setConsult('header',this.value)">${['Authorization','X-Api-Key','X-Webhook-Secret','X-App-Pass'].map(h=>`<option${h===s.header?' selected':''}>${h}</option>`).join('')}</select>
  <div class="muted">Authorization の場合は「Bearer キー」の形で送ります。中継サーバー（Cloudflare Workers）を使うときは X-App-Pass を選び、キーの欄には中継用の合言葉を入れます。キーはこのスマホの中だけに保存し、バックアップには入れません。</div>
+ ${relayBase()?`<div class="row"><button class="sub" onclick="checkLeftToday()">きょうの相談の残り回数を確かめる</button></div>${CLEFT?`<div id="c_left">きょう ${esc(md(CLEFT.day)||CLEFT.day)} の相談：のこり <b>${CLEFT.n}回</b>／${CLEFT.limit}回（日本時間の0時に戻ります）</div>`:''}`:''}
  <div class="row"><button class="sub" onclick="if(confirm('受け取りURLと送信キーを消しますか？')){localStorage.removeItem(SK);render()}">消す</button></div></div>`}
+// v69：中継サーバー（X-App-Pass）の GET /me で、きょうの相談の残り回数を確かめる（読むだけ。回数は使わない）
+let CLEFT=null;
+async function checkLeftToday(){const b=relayBase();if(!b||IS_DEMO)return;if(!navigator.onLine)return toast('いまオフラインなので確かめられません');
+ try{const r=await fetch(b+'/me',{headers:{'X-App-Pass':secret().key},cache:'no-store'});const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(r.status===401?'合言葉がちがいます':r.status===429?'合言葉のまちがいが続いたため止められています':r.status===404||r.status===405?'中継サーバーがまだ古い版です':'エラー '+r.status);
+  if(!Number.isInteger(j.remaining)||!Number.isInteger(j.limit)||j.remaining<0)throw new Error('答えの形がちがいます');
+  CLEFT={n:j.remaining,limit:j.limit,day:isDate(j.day)?j.day:ymd(new Date())};render()}catch(e){toast('確かめられませんでした：'+e.message)}}
 let CON={open:false,type:'menu',status:'',stage:'form',inc:{fridge:true,list:true,spend:'sum',memo:false}};
 function consultBtn(def){return `<div class="row"><button class="consult" data-act="consult" data-type="${esc(def)}"><img class="ava" src="img/face.webp" alt="">アキラちゃんに相談</button></div>${CON.open&&CON.from===location.hash?consultPanel():''}`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act=consult]');if(!b)return;CON.open=!(CON.open&&CON.from===location.hash);CON.from=location.hash;CON.type=b.dataset.type;CON.status='';CON.stage='form';render()});
