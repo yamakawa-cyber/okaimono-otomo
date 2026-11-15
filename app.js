@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const DATA_VERSION=2;const APP_VER='okaimono-v67'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const srcSplit=t=>{t=String(t||'');const i=t.search(/\s\d{4}-\d{2}-\d{2} /);return i<0?[t,'']:[t.slice(0,i),t.slice(i).trim()]};const DATA_VERSION=2;const APP_VER='okaimono-v68'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -188,7 +188,7 @@ home(){const d=today(),st=S.settings,mo=ymd(d).slice(0,7);
  ${todaySales(d,goes)}
  <h2>買い物リスト</h2><div class="card">${S.list.filter(i=>!i.done).length} 品が未購入 <a class="link" href="#list">ひらく</a></div>`},
 stores(){const d=today(),all=regStores(),inC=s=>SC==='all'||stCat(s)===SC;const grp=(t,l)=>{const a=all.filter(s=>(s.type||'super')===t&&inC(s));if(!a.length)return '';const lim=SMORE[t]?a.length:30;return `<h2>${l}（${a.length}店）</h2>`+a.slice(0,lim).map(s=>storeCard(s,d)).join('')+(a.length>lim?`<button class="sub more" data-act="smore" data-id="${t}">残り${a.length-lim}店を表示</button>`:'')};
- return regionSeg()+`<div class="seg wrap">${SCATS.map(([k,l])=>`<button class="${SC===k?'on':''}" data-act="scat" data-id="${k}">${l}（${all.filter(s=>k==='all'||stCat(s)===k).length}）</button>`).join('')}</div><p class="muted">${all.length}店。${esc(BASE.source||'')} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>`
+ return regionSeg()+`<div class="seg wrap">${SCATS.map(([k,l])=>`<button class="${SC===k?'on':''}" data-act="scat" data-id="${k}">${l}（${all.filter(s=>k==='all'||stCat(s)===k).length}）</button>`).join('')}</div><p class="muted">${all.length}店。${esc(srcSplit(BASE.source)[0])} チラシの中身は取り込まず、公式ページ・チラシサイトへのリンクだけ載せています。</p>${srcSplit(BASE.source)[1]?`<details class="muted srclog"><summary>見直しの記録</summary><p>${esc(srcSplit(BASE.source)[1])}</p></details>`:''}`
  +grp('super','スーパー')+grp('big','大型店（総合スーパー）')+grp('drug','ドラッグストア')+grp('yen100','100均')+grp('daily','ホームセンター・日用品')+grp('car','車圏')+(()=>{const a=all.filter(s=>!TYPES.includes(s.type||'super')&&inC(s));return a.length?'<h2>そのほか</h2>'+a.map(s=>storeCard(s,d)).join(''):''})()+(all.length?'':'<div class="card muted">この地域のお店はまだありません。下から追加してください。</div>')
  +`<h2>お店を追加（${esc(regName())}）</h2><div class="card"><input id="ns_name" maxlength="200" aria-label="店名" placeholder="店名" style="width:100%"><div class="row"><input id="ns_hours" maxlength="200" aria-label="営業時間" placeholder="営業時間"><select id="ns_type" aria-label="お店の種類"><option value="super">スーパー</option><option value="drug">ドラッグストア</option><option value="yen100">100均</option><option value="daily">日用品</option><option value="car">車圏</option></select></div>
  <div class="row"><select id="ns_wd" aria-label="特売の曜日"><option value="">特売の曜日なし</option>${WD.map((w,i)=>`<option value="${i}">${w}曜</option>`).join('')}</select><input id="ns_sale" maxlength="200" aria-label="特売の内容" placeholder="特売の内容（例：玉子）"></div>
