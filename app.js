@@ -1,6 +1,6 @@
 'use strict';
 const WD=['日','月','火','水','木','金','土'];
-const srcSplit=t=>{t=String(t||'');const i=t.search(/\s\d{4}-\d{2}-\d{2} /);return i<0?[t,'']:[t.slice(0,i),t.slice(i).trim()]};const DATA_VERSION=2;const APP_VER='okaimono-v70'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
+const srcSplit=t=>{t=String(t||'');const i=t.search(/\s\d{4}-\d{2}-\d{2} /);return i<0?[t,'']:[t.slice(0,i),t.slice(i).trim()]};const DATA_VERSION=2;const APP_VER='okaimono-v71'; // 版の表記はこの1か所（sw.js のキャッシュ名と同じにする）
 const IS_DEMO=new URLSearchParams(location.search).has('demo');
 const K=IS_DEMO?'okaimono_demo':'okaimono_v1'; // 見本は別キー（本データに保存しない）
 const CATS=[['食材',62000],['おやつ・飲み物',7000],['惣菜',3000],['日用品',13000],['子ども',5000],['雑費',0],['たばこ',0],['酒',0]];const EXTRA='雑費';const OUTS=['雑費','たばこ','酒']; // v49：たばこ・酒も枠の外で別に数える
@@ -70,6 +70,7 @@ function validate(data,opt){opt=opt||{};const LEN=!opt.strict;validate.dropped=0
   for(const k of ['dist','hours','note','kind','address','closed','flyer','type','region'])if(!okS(s[k],500))bad('userStores');
   if(s.region!==undefined&&BASE.regions.length&&!BASE.regions.some(r=>r.id===s.region))bad('userStores');
   if(s.sales!==undefined&&(!isArr(s.sales)||!s.sales.every(x=>isObj(x)&&isStr(x.text)&&x.text.length>0&&x.text.length<=200&&(x.wd!==undefined||x.md!==undefined)&&(x.wd===undefined||okWd(x.wd))&&(x.md===undefined||(isArr(x.md)&&x.md.every(n=>Number.isInteger(n)&&n>=1&&n<=31))))))bad('userStores');
+  if(s.notices!==undefined&&(!isArr(s.notices)||!s.notices.every(x=>isObj(x)&&isStr(x.text)&&x.text.length>0&&x.text.length<=500&&(x.from===undefined||x.from===''||isDate(x.from))&&(x.until===undefined||x.until===''||isDate(x.until)))))bad('userStores');
   if(s.links!==undefined&&(!isArr(s.links)||!s.links.every(l=>isObj(l)&&okS(l.t,200)&&okS(l.u,2000))))bad('userStores');
   s.links=(s.links||[]).filter(l=>safeUrl(l.u));s.sales=s.sales||[]});
  dedupe(out.spend,'s');dedupe(out.fridge,'f');dedupe(out.userStores,'u');
@@ -154,11 +155,16 @@ function trips(d){const days=[...new Set((S.settings.shopDays.length?S.settings.
  const d0=new Date(ymd(d)+'T12:00'),f=days[0],anc=addDays(d0,-((d0.getDay()-f+7)%7));
  return days.map((w,i)=>{const off=(w-f+7)%7,next=i+1<days.length?(days[i+1]-f+7)%7:7;return {wd:w,from:ymd(addDays(anc,off)),to:ymd(addDays(anc,next-1)),label:WD[w]+'曜分'}})}
 function curTrip(d){const t=ymd(d),a=trips(d);return a.find(x=>t>=x.from&&t<=x.to)||a[a.length-1]}
+// v71 期間限定のお知らせ。from・until は YYYY-MM-DD（日本時間）。until の当日までは出す。日付のないもの・note は今までどおり出す
+const okNotice=x=>isObj(x)&&isStr(x.text)&&x.text.length>0;
+function noticeHit(x,d){if(!okNotice(x))return false;const t=ymd(d||today());if(isDate(x.from)&&t<x.from)return false;if(isDate(x.until)&&t>x.until)return false;return true}
+function noticeList(s,d){const a=[];if(isStr(s.note)&&s.note)a.push(s.note);if(isArr(s.notices))for(const x of s.notices)if(noticeHit(x,d))a.push(x.text);return a}
+const noteBlock=(s,d)=>noticeList(s,d).map(t=>`<div class="muted">${esc(t)}</div>`).join('');
 function storeCard(s,d){const on=d?salesOn(s,d):[];
  return `<div class="card ${on.length?'sale':''}">${mapA(s.name,s)} <span class="muted">${esc(s.dist||'')}</span>
  ${s.kind?`<span class="tag">${esc(s.kind)}</span>`:''}${s.address?`<div class="muted">📍${esc(s.address)}</div>`:''}
  <div class="muted">営業：${esc(s.hours||'不明')}${s.closed?'／定休：'+esc(s.closed):''}${s.flyer?'／チラシ：'+esc(s.flyer):''}${ckDate(s.checked)?'／確認日 '+ckDate(s.checked):''}</div>
- ${s.note?`<div class="muted">${esc(s.note)}</div>`:''}
+ ${noteBlock(s,d)}
  ${saleBlock(s,d)}
  <div>${links(s)}</div>
  ${s.user?`<button class="sub" data-act="delStore" data-id="${esc(s.id)}">このお店を消す</button>`:''}</div>`}
